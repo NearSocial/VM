@@ -4,11 +4,12 @@ const path = require("path");
 
 module.exports = () => {
   return {
-    output: {
-      path: path.resolve(__dirname, "../dist"),
-      publicPath: "./",
-      filename: "[name].[contenthash].bundle.js",
-    },
+    // output: {
+    //   path: path.resolve(__dirname, "../dist"),
+    //   publicPath: "./",
+    //   // filename: "[name].[contenthash].bundle.js",
+    //   filename: "index.js",
+    // },
     devtool: false,
     module: {
       rules: [
@@ -61,9 +62,9 @@ module.exports = () => {
     optimization: {
       minimize: true,
       minimizer: [new CssMinimizerPlugin(), "..."],
-      runtimeChunk: {
-        name: "runtime",
-      },
+      // runtimeChunk: {
+      //   name: "runtime",
+      // },
     },
     performance: {
       hints: false,
