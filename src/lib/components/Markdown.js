@@ -5,7 +5,7 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React from "react";
 import mentions from "./remark/mentions";
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, ...rest } = props;
+  const { onLinkClick, text, onMention, syntaxHighlighterProps, ...rest } = props;
   return (
     <ReactMarkdown
       {...rest}
@@ -39,6 +39,7 @@ export const Markdown = (props) => {
               language={match[1]}
               PreTag="div"
               {...props}
+              {...syntaxHighlighterProps}
             />
           ) : (
             <code className={className} {...props}>
