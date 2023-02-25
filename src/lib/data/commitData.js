@@ -27,6 +27,7 @@ export const prepareCommit = async (
   originalData,
   forceRewrite
 ) => {
+  await near.selector;
   const signedAccountId = near.accountId;
   if (!signedAccountId) {
     alert("You're not logged in. Sign in to commit data.");
