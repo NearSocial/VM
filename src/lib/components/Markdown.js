@@ -5,7 +5,7 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React from "react";
 import mentions from "./remark/mentions";
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, ...rest } = props;
+  const { onLinkClick, text, onMention, syntaxHighlighterProps, ...rest } = props;
   return (
     <ReactMarkdown
       {...rest}
@@ -32,12 +32,20 @@ export const Markdown = (props) => {
         ),
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
+          const { 
+            wrapLines, 
+            lineProps, 
+            showLineNumbers, 
+            lineNumberStyle 
+           } = syntaxHighlighterProps;
+            
           return !inline && match ? (
             <SyntaxHighlighter
               children={String(children).replace(/\n$/, "")}
               style={tomorrow}
               language={match[1]}
               PreTag="div"
+              {...{ wrapLines, lineProps, showLineNumbers, lineNumberStyle }}
               {...props}
             />
           ) : (
