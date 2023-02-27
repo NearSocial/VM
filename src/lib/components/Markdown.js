@@ -4,16 +4,23 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React from "react";
 import mentions from "./remark/mentions";
+import hashtags from "./remark/hashtags";
+
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, syntaxHighlighterProps, ...rest } = props;
+  const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps, ...rest } = props;
   return (
     <ReactMarkdown
       {...rest}
-      plugins={[gfm, mentions]}
+      plugins={[]}
+      rehypePlugins={[]}
+      remarkPlugins={[gfm, mentions, hashtags]}
+      children={text}
       components={{
         strong({ node, children, ...props }) {
           if (onMention && node.properties?.accountId) {
             return onMention(node.properties?.accountId);
+          } else if (onHashtag && node.properties?.hashtag) {
+            return onHashtag(node.properties?.hashtag);
           }
           return <strong {...props}>{children}</strong>;
         },
@@ -55,8 +62,6 @@ export const Markdown = (props) => {
           );
         },
       }}
-    >
-      {text}
-    </ReactMarkdown>
+    />
   );
 };
