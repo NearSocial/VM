@@ -1,6 +1,6 @@
 {
   "name": "near-social-vm",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Near Social VM",
   "main": "dist/index.js",
   "files": [
