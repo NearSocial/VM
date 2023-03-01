@@ -1,6 +1,6 @@
 {
   "name": "near-social-vm",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Near Social VM",
   "main": "dist/index.js",
   "files": [
@@ -8,13 +8,6 @@
   ],
   "dependencies": {
     "@braintree/sanitize-url": "6.0.0",
-    "@near-wallet-selector/core": "^7.4.0",
-    "@near-wallet-selector/here-wallet": "^7.4.0",
-    "@near-wallet-selector/meteor-wallet": "^7.4.0",
-    "@near-wallet-selector/my-near-wallet": "^7.4.0",
-    "@near-wallet-selector/near-wallet": "^7.4.0",
-    "@near-wallet-selector/neth": "^7.4.0",
-    "@near-wallet-selector/sender": "^7.4.0",
     "acorn": "^8.8.0",
     "acorn-jsx": "^5.3.2",
     "big.js": "^6.1.1",

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+- BREAKING: Removed Wallet Selector dependency. `selector` object is required to pass into `initNear` from `useInitNear` hook. 
+
 ## 0.3.0
 
 - Add support to hashtags for `Markdown` component. Expose `onHashtag` similar to `onMention`.
