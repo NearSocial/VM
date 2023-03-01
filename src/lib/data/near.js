@@ -1,13 +1,6 @@
 import * as nearAPI from "near-api-js";
 import Big from "big.js";
 import { useEffect, useMemo, useState } from "react";
-import { setupWalletSelector } from "@near-wallet-selector/core";
-import { setupNearWallet } from "@near-wallet-selector/near-wallet";
-import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
-import { setupSender } from "@near-wallet-selector/sender";
-import { setupHereWallet } from "@near-wallet-selector/here-wallet";
-import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
-import { setupNeth } from "@near-wallet-selector/neth";
 import { singletonHook } from "react-singleton-hook";
 import { MaxGasPerTransaction, TGas } from "./utils";
 
@@ -225,22 +218,7 @@ async function _initNear({ networkId, config, keyStore, selector } = {}) {
     config = Object.assign({}, config, TestNearConfig);
   }
   keyStore = keyStore ?? new nearAPI.keyStores.BrowserLocalStorageKeyStore();
-  selector =
-    selector ??
-    setupWalletSelector({
-      network: config.networkId,
-      modules: [
-        setupNearWallet(),
-        setupMyNearWallet(),
-        setupSender(),
-        setupHereWallet(),
-        setupMeteorWallet(),
-        setupNeth({
-          gas: "300000000000000",
-          bundle: false,
-        }),
-      ],
-    });
+
 
   const nearConnection = await nearAPI.connect(
     Object.assign({ deps: { keyStore } }, config)
