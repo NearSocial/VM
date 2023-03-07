@@ -68,7 +68,6 @@ export function Widget(props) {
   const propsProps = props.props;
   const depth = props.depth || 0;
   const propsConfig = props.config;
-  const propsVersion = props.version;
 
   const [nonce, setNonce] = useState(0);
   const [code, setCode] = useState(null);
@@ -112,39 +111,13 @@ export function Widget(props) {
       return;
     }
     if (srcOrCode?.src) {
-      const src = srcOrCode.src;
-      let version = propsVersion; // may be undefined which means 'latest'
-      if (version) {
-        // console.log(`attempted to lock ${src} to ${version}`);
-        // check that the version provided matches a found version
-        const componentVersionRes = cache.cachedViewCall(
-          near,
-          near.config.contractName,
-          "keys",
-          {
-            keys: [src],
-            options: {
-              return_type: "History",
-            },
-          },
-          "final"
-        );
+      const [src, version] = srcOrCode.src.split("@");
 
-        // drill down in response to the version array
-        const srcTokens = src.split("/");
-        const componentVersions = srcTokens.reduce((acc, curr) => {
-          return acc[curr];
-        }, componentVersionRes);
-        // console.log("component versions", componentVersions);
-        if (!componentVersions.includes(version)) {
-          // provided version is not valid
-        }
-      }
       const code = cache.socialGet(
         near,
         src.toString(),
         false,
-        propsVersion,
+        version, // may be undefined, meaning `latest`
         undefined,
         () => {
           setNonce(nonce + 1);
@@ -156,7 +129,7 @@ export function Widget(props) {
       setCode(srcOrCode.code);
       setSrc(null);
     }
-  }, [near, srcOrCode, nonce, propsVersion]);
+  }, [near, srcOrCode, nonce]);
 
   useEffect(() => {
     setVm(null);
