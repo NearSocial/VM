@@ -116,6 +116,7 @@ const ApprovedTagsSimple = {
   mpath: false,
   path: true,
   pattern: true,
+  polygon: true,
   polyline: true,
   radialGradient: true,
   rect: true,

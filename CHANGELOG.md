@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Add `polygon` tag.
+
 ## 1.0.0
 
 - BREAKING: Removed Wallet Selector dependency. `selector` object is required to pass into `initNear` from `useInitNear` hook. 
