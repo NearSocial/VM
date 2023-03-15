@@ -69,6 +69,7 @@ const ApprovedTagsSimple = {
   h4: true,
   h5: true,
   h6: true,
+
   div: true,
   span: true,
   strong: true,
@@ -116,6 +117,7 @@ const ApprovedTagsSimple = {
   mpath: false,
   path: true,
   pattern: true,
+  polygon: true,
   polyline: true,
   radialGradient: true,
   rect: true,
