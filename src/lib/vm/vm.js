@@ -69,7 +69,6 @@ const ApprovedTagsSimple = {
   h4: true,
   h5: true,
   h6: true,
-
   div: true,
   span: true,
   strong: true,
