@@ -26,6 +26,12 @@ import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
 
+const MODULES_IDENTIFIER = "require";
+const ACORN_WALK_VISITORS = {
+  ...base,
+  JSXElement: () => {},
+};
+
 const AcornOptions = {
   ecmaVersion: 13,
   allowReturnOutsideFunction: true,
