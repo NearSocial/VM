@@ -48,6 +48,9 @@ const parseCode = (code) => {
   return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
 };
 
+// Search for modules in already parsed code using `acorn-walk`
+// TODO: there is an error that occurs for a few widgets `TypeError: baseVisitor[type] is not a function`
+//  - `ACORN_WALK_VISITORS` doesn't solve the problem
 const findModules = (parsedCode) => {
   let modules = [];
   try {
@@ -122,6 +125,9 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
+  // Based on the `modules` array, create a new code where every module require is replaced by module code
+  // It will set `parsedCode` state after the module's code is fetched, replaced and new code is parsed, which will result in code render
+  // TODO: `setParsedCode` should be done once after all modules code is fetched and `newCode` is final
   const parseModules = (modules) => {
     let newCode;
     modules.map((module) => {
@@ -207,11 +213,14 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       const parsedCode = parseCode(code);
       const modules = findModules(parsedCode);
 
+      // if modules were found, we don't want to set `parsedCode` yet, because `parseModules` need to fetch the module's code first
+      // `parseModules` will set `parsedCode` state after the module's code is fetched, replaced and new code is parsed
       if (modules.length) {
         parseModules(modules);
         return;
       }
 
+      // if modules were not found, we can set `parsedCode` which will result in code render
       setParsedCode({ parsedCode });
     } catch (e) {
       setElement(
