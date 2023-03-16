@@ -207,6 +207,13 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     }
     try {
       const parsedCode = parseCode(code);
+      const modules = findModules(parsedCode);
+
+      if (modules.length) {
+        parseModules(modules);
+        return;
+      }
+
       setParsedCode({ parsedCode });
     } catch (e) {
       setElement(
