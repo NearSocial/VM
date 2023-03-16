@@ -124,6 +124,31 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
+  const parseModules = (modules) => {
+    let newCode;
+    modules.map((module) => {
+      const fetchModule = () => {
+        const moduleCode = cache.socialGet(
+          near,
+          module.src,
+          false,
+          undefined,
+          undefined,
+          fetchModule
+        );
+
+        if (moduleCode) {
+          newCode = `${code.slice(0, module.start)}${code.slice(module.end)}`;
+          newCode = `${moduleCode}${newCode}`;
+          setParsedCode({ parsedCode: parseCode(newCode) });
+        }
+      };
+      fetchModule();
+    });
+
+    return newCode || code;
+  };
+
   useEffect(() => {
     const newConfigs = propsConfig
       ? Array.isArray(propsConfig)
