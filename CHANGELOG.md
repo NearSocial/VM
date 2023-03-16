@@ -3,6 +3,14 @@
 ## Pending
 
 - Add `polygon` tag.
+- Support custom React tags. Here is an example of how to use it:
+```jsx
+const BgDiv = ({ children, color }) => (
+  <div style={{ background: color }}>{children}</div>
+);
+
+return <BgDiv color="red">Hello World</BgDiv>;
+```
 
 ## 1.0.0
 
