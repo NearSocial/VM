@@ -5,6 +5,7 @@ import React, {
   useState,
 } from "react";
 import { Parser } from "acorn";
+import { simple, base } from "acorn-walk";
 import jsx from "acorn-jsx";
 import { useNear } from "../data/near";
 import ConfirmTransactions from "./ConfirmTransactions";
@@ -45,6 +46,32 @@ const parseCode = (code) => {
     return ParsedCodeCache[code];
   }
   return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
+};
+
+const findModules = (parsedCode) => {
+  let modules = [];
+  try {
+    simple(
+      parsedCode,
+      {
+        VariableDeclaration: (node) =>
+          node.declarations[0].init.callee?.name === MODULES_IDENTIFIER &&
+          modules.push({
+            start: node.start,
+            end: node.end,
+            name: node.declarations[0].id.properties[0].key.name,
+            src: node.declarations[0].init.arguments[0].value,
+          }),
+      },
+      ACORN_WALK_VISITORS
+    );
+  } catch (error) {
+    // wystepuje ten jeden blad, `TypeError: baseVisitor[type] is not a function` sprawdzic to
+    //  - `ACORN_WALK_VISITORS` nie rozwiazuje problemu
+    console.log("error", error);
+  }
+
+  return modules;
 };
 
 const computeSrcOrCode = (src, code, configs) => {
