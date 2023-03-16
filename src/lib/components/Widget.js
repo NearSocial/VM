@@ -66,8 +66,6 @@ const findModules = (parsedCode) => {
       ACORN_WALK_VISITORS
     );
   } catch (error) {
-    // wystepuje ten jeden blad, `TypeError: baseVisitor[type] is not a function` sprawdzic to
-    //  - `ACORN_WALK_VISITORS` nie rozwiazuje problemu
     console.log("error", error);
   }
 
