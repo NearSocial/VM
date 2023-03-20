@@ -111,10 +111,11 @@ export function Widget(props) {
       return;
     }
     if (srcOrCode?.src) {
-      const [src, version] = srcOrCode.src.split("@");
+      const src = srcOrCode.src;
+      const [srcPath, version] = src.split("@");
       const code = cache.socialGet(
         near,
-        src.toString(),
+        srcPath.toString(),
         false,
         version, // may be undefined, meaning `latest`
         undefined,
