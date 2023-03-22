@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import * as Accordion from "@radix-ui/react-accordion";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
 const frozenNacl = Object.freeze({
@@ -151,6 +152,7 @@ const ApprovedTagsCustom = {
 // like Progress.Root
 const RadixTags = {
   Accordion,
+  DropdownMenu,
   Progress,
 };
 

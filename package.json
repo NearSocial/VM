@@ -9,6 +9,7 @@
   "dependencies": {
     "@braintree/sanitize-url": "6.0.0",
     "@radix-ui/react-accordion": "^1.1.1",
+    "@radix-ui/react-dropdown-menu": "^2.0.4",
     "@radix-ui/react-progress": "^1.0.2",
     "acorn": "^8.8.0",
     "acorn-jsx": "^5.3.2",
