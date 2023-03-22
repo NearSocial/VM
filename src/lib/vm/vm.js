@@ -146,10 +146,10 @@ const ApprovedTagsCustom = {
   iframe: false,
 };
 
-// TODO we may be able to structure this more effectively
+// will be dynamically indexed into for fetching specific elements
+// like Progress.Root
 const RadixTags = {
-  ["Progress.Root"]: Progress.Root,
-  ["Progress.Indicator"]: Progress.Indicator,
+  Progress,
 };
 
 const ApprovedTags = {
@@ -344,10 +344,11 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
+    let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
     const customComponent =
       withChildren === undefined &&
       this.executeExpression(code.openingElement.name);
-    if (withChildren === undefined) {
+    if (withChildren === undefined && !isRadixElement) {
       if (customComponent === undefined) {
         throw new Error("Unknown element: " + element);
       }
@@ -561,11 +562,18 @@ class VmStack {
       //   return (
       //     <Progress.Indicator {...attributes}>{children}</Progress.Indicator>
       //   );
-    } else if (element in RadixTags) {
+    } else if (element.split(".")[0] in RadixTags) {
+      // e.g. Progress.Root
+      const elementTokens = element.split(".");
+      const RadixComp = elementTokens.reduce((acc, curr) => {
+        return acc[curr];
+      }, RadixTags);
+
       // this variable must start with an uppercase letter, otherwise React will see
       // it as a plain html tag when used in JSX
-      const RadixComp = RadixTags[element];
-      return <RadixComp {...attributes}>{children}</RadixComp>;
+      // const RadixComp = RadixTags[element];
+      // return <RadixComp {...attributes}>{children}</RadixComp>;
+      return React.createElement(RadixComp, { ...attributes }, ...children);
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
