@@ -578,12 +578,6 @@ class VmStack {
       return <Files {...attributes}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
-      // } else if (element === "Progress.Root") {
-      //   return <Progress.Root {...attributes}>{children}</Progress.Root>;
-      // } else if (element === "Progress.Indicator") {
-      //   return (
-      //     <Progress.Indicator {...attributes}>{children}</Progress.Indicator>
-      //   );
     } else if (RadixComp) {
       return React.createElement(RadixComp, { ...attributes }, ...children);
     } else if (withChildren === true) {
@@ -1171,7 +1165,7 @@ class VmStack {
     } else if (type === "ArrowFunctionExpression") {
       return this.createFunction(code.params, code.body, code.expression);
     } else if (type === "TaggedTemplateExpression") {
-      // Currently on `styled` component is supported.
+      // Currently only `styled` component is supported.
 
       let styledTemplate, styledKey;
 
