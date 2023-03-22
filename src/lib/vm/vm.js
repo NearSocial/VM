@@ -239,6 +239,20 @@ const requireJSXIdentifier = (id) => {
   return id.name;
 };
 
+const requireJSXIdentifierOrMemberExpression = (id) => {
+  if (id.type === "JSXIdentifier") {
+    return id.name;
+  } else if (id.type === "JSXMemberExpression") {
+    return (
+      requireJSXIdentifierOrMemberExpression(id.object) +
+      "." +
+      requireJSXIdentifier(id.property)
+    );
+  } else {
+    throw new Error("Non JSXIdentifier or JSXMemberExpression: " + id.type);
+  }
+};
+
 const requirePattern = (id) => {
   if (id.type === "Identifier") {
     return requireIdentifier(id);
@@ -320,17 +334,20 @@ class VmStack {
     let element =
       code.type === "JSXFragment"
         ? "Fragment"
-        : requireJSXIdentifier(code.openingElement.name);
-
+        : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
-    const styledComponent =
-      withChildren === undefined && this.stack.get(element);
+    const customComponent =
+      withChildren === undefined &&
+      this.executeExpression(code.openingElement.name);
     if (withChildren === undefined) {
-      if (styledComponent === undefined) {
+      if (customComponent === undefined) {
         throw new Error("Unknown element: " + element);
       }
-      if (!isStyledComponent(styledComponent)) {
-        throw new Error("Not a styled component: " + element);
+      if (
+        !isStyledComponent(customComponent) &&
+        typeof customComponent !== "function"
+      ) {
+        throw new Error("Unsupported component: " + element);
       }
     }
 
@@ -430,7 +447,9 @@ class VmStack {
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
     delete attributes.dangerouslySetInnerHTML;
-    const basicElement = styledComponent?.target || element;
+    const basicElement =
+      (isStyledComponent(customComponent) && customComponent?.target) ||
+      element;
 
     if (attributes.as && !ApprovedTagsSimple[attributes.as]) {
       delete attributes.as;
@@ -463,7 +482,11 @@ class VmStack {
       return this.executeExpression(child);
     });
 
-    if (element === "Widget") {
+    if (customComponent) {
+      return isStyledComponent(customComponent)
+        ? React.createElement(customComponent, { ...attributes }, ...children)
+        : customComponent({ children, ...attributes });
+    } else if (element === "Widget") {
       return <Widget {...attributes} />;
     } else if (element === "CommitButton") {
       return (
@@ -524,12 +547,6 @@ class VmStack {
       return <Files {...attributes}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
-    } else if (styledComponent) {
-      return React.createElement(
-        styledComponent,
-        { ...attributes },
-        ...children
-      );
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
@@ -541,7 +558,7 @@ class VmStack {
 
   resolveKey(code, computed) {
     const key =
-      !computed && code.type === "Identifier"
+      !computed && (code.type === "Identifier" || code.type === "JSXIdentifier")
         ? code.name
         : this.executeExpression(code);
     assertNotReservedKey(key);
@@ -863,7 +880,7 @@ class VmStack {
   /// Options:
   /// - requireState requires the top object key be `state`
   resolveMemberExpression(code, options) {
-    if (code.type === "Identifier") {
+    if (code.type === "Identifier" || code.type === "JSXIdentifier") {
       const key = code.name;
       assertNotReservedKey(key);
       if (options?.requireState && key !== StakeKey) {
@@ -885,8 +902,14 @@ class VmStack {
         }
       }
       return { obj, key };
-    } else if (code.type === "MemberExpression") {
-      if (code.object?.type === "Identifier") {
+    } else if (
+      code.type === "MemberExpression" ||
+      code.type === "JSXMemberExpression"
+    ) {
+      if (
+        code.object?.type === "Identifier" ||
+        code.object?.type === "JSXIdentifier"
+      ) {
         const keyword = code.object.name;
         if (keyword in Keywords) {
           if (!options?.callee) {
@@ -954,10 +977,10 @@ class VmStack {
       }
     } else if (type === "ChainExpression") {
       return this.executeExpression(code.expression);
-    } else if (type === "MemberExpression") {
+    } else if (type === "MemberExpression" || type === "JSXMemberExpression") {
       const { obj, key } = this.resolveMemberExpression(code);
       return obj?.[key];
-    } else if (type === "Identifier") {
+    } else if (type === "Identifier" || type === "JSXIdentifier") {
       return this.stack.get(code.name);
     } else if (type === "JSXExpressionContainer") {
       return this.executeExpression(code.expression);
@@ -1186,6 +1209,7 @@ class VmStack {
         throw new Error("styled error");
       }
     } else {
+      console.log(code);
       throw new Error("Unknown expression type '" + type + "'");
     }
   }

@@ -4,6 +4,14 @@
 
 - Add `polygon` tag.
 - Allow specifying block height in the `src` string of `Widget` to lock a child component to a specific version i.e. `src="<path>@<block height>"`
+- Support custom React tags. Here is an example of how to use it:
+```jsx
+const BgDiv = ({ children, color }) => (
+  <div style={{ background: color }}>{children}</div>
+);
+
+return <BgDiv color="red">Hello World</BgDiv>;
+```
 
 ## 1.0.0
 
