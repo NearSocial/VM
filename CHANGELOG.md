@@ -3,6 +3,7 @@
 ## Pending
 
 - Add `polygon` tag.
+- Allow specifying block height in the `src` string of `Widget` to lock a child component to a specific version i.e. `src="<path>@<block height>"`
 - Support custom React tags. Here is an example of how to use it:
 ```jsx
 const BgDiv = ({ children, color }) => (
@@ -14,7 +15,7 @@ return <BgDiv color="red">Hello World</BgDiv>;
 
 ## 1.0.0
 
-- BREAKING: Removed Wallet Selector dependency. `selector` object is required to pass into `initNear` from `useInitNear` hook. 
+- BREAKING: Removed Wallet Selector dependency. `selector` object is required to pass into `initNear` from `useInitNear` hook.
 
 ## 0.3.0
 
@@ -30,4 +31,4 @@ return <BgDiv color="red">Hello World</BgDiv>;
 
 ## 0.2.0
 
-- Added `syntaxHighlighterProps` props to `Markdown` component. This allows to pass props to the syntax highlighter component for `code` sections of the markdown. Allowed properties are `wrapLines`, `lineProps`, `showLineNumbers` and `lineNumberStyle`. 
+- Added `syntaxHighlighterProps` props to `Markdown` component. This allows to pass props to the syntax highlighter component for `code` sections of the markdown. Allowed properties are `wrapLines`, `lineProps`, `showLineNumbers` and `lineNumberStyle`.
