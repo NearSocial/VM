@@ -27,6 +27,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import * as Accordion from "@radix-ui/react-accordion";
 import * as Progress from "@radix-ui/react-progress";
 
 const frozenNacl = Object.freeze({
@@ -149,6 +150,7 @@ const ApprovedTagsCustom = {
 // will be dynamically indexed into for fetching specific elements
 // like Progress.Root
 const RadixTags = {
+  Accordion,
   Progress,
 };
 
@@ -216,6 +218,23 @@ const assertValidObject = (o) => {
       assertValidObject(value);
     });
   }
+};
+
+const assertRadixComponent = (element) => {
+  let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
+
+  if (!isRadixElement) return;
+
+  const elementTokens = element.split(".");
+  const RadixComp = elementTokens.reduce((acc, curr) => {
+    return acc[curr];
+  }, RadixTags);
+
+  if (RadixComp === undefined) {
+    throw new Error(`"${element}" is not a valid Radix component`);
+  }
+
+  return RadixComp;
 };
 
 const maybeSubscribe = (subscribe, blockId) =>
@@ -344,11 +363,12 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
-    let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
+    const RadixComp = assertRadixComponent(element);
+
     const customComponent =
       withChildren === undefined &&
       this.executeExpression(code.openingElement.name);
-    if (withChildren === undefined && !isRadixElement) {
+    if (withChildren === undefined && !RadixComp) {
       if (customComponent === undefined) {
         throw new Error("Unknown element: " + element);
       }
@@ -562,17 +582,7 @@ class VmStack {
       //   return (
       //     <Progress.Indicator {...attributes}>{children}</Progress.Indicator>
       //   );
-    } else if (element.split(".")[0] in RadixTags) {
-      // e.g. Progress.Root
-      const elementTokens = element.split(".");
-      const RadixComp = elementTokens.reduce((acc, curr) => {
-        return acc[curr];
-      }, RadixTags);
-
-      // this variable must start with an uppercase letter, otherwise React will see
-      // it as a plain html tag when used in JSX
-      // const RadixComp = RadixTags[element];
-      // return <RadixComp {...attributes}>{children}</RadixComp>;
+    } else if (RadixComp) {
       return React.createElement(RadixComp, { ...attributes }, ...children);
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
@@ -1182,10 +1192,15 @@ class VmStack {
         if (code.tag.type === "CallExpression") {
           const args = this.getArray(code.tag.arguments);
           const arg = args?.[0];
-          if (!isStyledComponent(arg)) {
-            throw new Error("styled() can only take `styled` components");
+          const RadixComp = assertRadixComponent(arg);
+
+          if (!isStyledComponent(arg) && !RadixComp) {
+            throw new Error(
+              'styled() can only take `styled` components or valid Radix components (EG: "Accordion.Trigger")'
+            );
           }
-          styledTemplate = styled(arg);
+
+          styledTemplate = styled(RadixComp ?? arg);
         } else {
           if (key === "keyframes") {
             styledTemplate = keyframes;
