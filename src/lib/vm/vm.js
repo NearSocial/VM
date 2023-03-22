@@ -27,6 +27,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import * as Progress from "@radix-ui/react-progress";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -145,9 +146,16 @@ const ApprovedTagsCustom = {
   iframe: false,
 };
 
+// TODO we may be able to structure this more effectively
+const RadixTags = {
+  ["Progress.Root"]: Progress.Root,
+  ["Progress.Indicator"]: Progress.Indicator,
+};
+
 const ApprovedTags = {
   ...ApprovedTagsSimple,
   ...ApprovedTagsCustom,
+  ...RadixTags,
 };
 
 const Keywords = {
@@ -547,6 +555,17 @@ class VmStack {
       return <Files {...attributes}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
+      // } else if (element === "Progress.Root") {
+      //   return <Progress.Root {...attributes}>{children}</Progress.Root>;
+      // } else if (element === "Progress.Indicator") {
+      //   return (
+      //     <Progress.Indicator {...attributes}>{children}</Progress.Indicator>
+      //   );
+    } else if (element in RadixTags) {
+      // this variable must start with an uppercase letter, otherwise React will see
+      // it as a plain html tag when used in JSX
+      const RadixComp = RadixTags[element];
+      return <RadixComp {...attributes}>{children}</RadixComp>;
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
