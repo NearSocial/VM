@@ -27,7 +27,10 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+
+// Radix:
 import * as Accordion from "@radix-ui/react-accordion";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -152,6 +155,7 @@ const ApprovedTagsCustom = {
 // like Progress.Root
 const RadixTags = {
   Accordion,
+  AlertDialog,
   DropdownMenu,
   Progress,
 };
@@ -579,7 +583,7 @@ class VmStack {
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
     } else if (RadixComp) {
-      return React.createElement(RadixComp, { ...attributes }, ...children);
+      return <RadixComp {...attributes}>{children}</RadixComp>;
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
