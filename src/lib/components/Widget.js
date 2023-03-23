@@ -62,7 +62,7 @@ const computeSrcOrCode = (src, code, configs) => {
   return srcOrCode;
 };
 
-export function Widget(props) {
+export const Widget = React.forwardRef((props, forwardedRef) => {
   const propsSrc = props.src;
   const propsCode = props.code;
   const propsProps = props.props;
@@ -242,6 +242,7 @@ export function Widget(props) {
       state,
       cacheNonce,
       version: vm.version,
+      forwardedRef,
     };
     if (deepEqual(vmInput, prevVmInput)) {
       return;
@@ -259,38 +260,40 @@ export function Widget(props) {
       );
       console.error(e);
     }
-  }, [vm, propsProps, context, state, cacheNonce, prevVmInput]);
+  }, [vm, propsProps, context, state, cacheNonce, prevVmInput, forwardedRef]);
 
-  return element !== null && element !== undefined ? (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onReset={() => {
-        setElement(null);
-      }}
-      resetKeys={[element]}
-    >
-      <>
-        {element}
-        {transactions && (
-          <ConfirmTransactions
-            transactions={transactions}
-            onHide={() => setTransactions(null)}
-          />
-        )}
-        {commitRequest && (
-          <CommitModal
-            show={true}
-            widgetSrc={src}
-            data={commitRequest.data}
-            force={commitRequest.force}
-            onHide={() => setCommitRequest(null)}
-            onCommit={commitRequest.onCommit}
-            onCancel={commitRequest.onCancel}
-          />
-        )}
-      </>
-    </ErrorBoundary>
-  ) : (
-    Loading
-  );
-}
+  return element || "Loading";
+  // return element !== null && element !== undefined ? (
+  //   <ErrorBoundary
+  //     FallbackComponent={ErrorFallback}
+  //     onReset={() => {
+  //       setElement(null);
+  //     }}
+  //     resetKeys={[element]}
+  //     ref={forwardedRef}
+  //   >
+  //     <>
+  //       {element}
+  //       {transactions && (
+  //         <ConfirmTransactions
+  //           transactions={transactions}
+  //           onHide={() => setTransactions(null)}
+  //         />
+  //       )}
+  //       {commitRequest && (
+  //         <CommitModal
+  //           show={true}
+  //           widgetSrc={src}
+  //           data={commitRequest.data}
+  //           force={commitRequest.force}
+  //           onHide={() => setCommitRequest(null)}
+  //           onCommit={commitRequest.onCommit}
+  //           onCancel={commitRequest.onCancel}
+  //         />
+  //       )}
+  //     </>
+  //   </ErrorBoundary>
+  // ) : (
+  //   Loading
+  // );
+});
