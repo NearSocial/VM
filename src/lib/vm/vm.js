@@ -1,4 +1,5 @@
 import React from "react";
+import { Parser } from "acorn";
 import { Widget } from "../components/Widget";
 import {
   deepCopy,
@@ -57,6 +58,11 @@ import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
+
+const AcornOptions = {
+  ecmaVersion: 13,
+  allowReturnOutsideFunction: true,
+};
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -683,7 +689,9 @@ class VmStack {
   callFunction(keyword, callee, args, optional, isNew) {
     const keywordType = Keywords[keyword];
     if (keywordType === true || keywordType === undefined) {
-      if (
+      if (callee === "require") {
+        return this.vm.getModule(args[0]);
+      } else if (
         (keyword === "Social" && callee === "getr") ||
         callee === "socialGetr"
       ) {
@@ -1430,16 +1438,26 @@ class VmStack {
     } else if (token.type === "VariableDeclaration") {
       token.declarations.forEach((declaration) => {
         if (declaration.type === "VariableDeclarator") {
-          this.stackDeclare(
-            requirePattern(declaration.id),
-            this.executeExpression(declaration.init)
-          );
+          const pattern = requirePattern(declaration.id);
+          const value = this.executeExpression(declaration.init);
+          if (value?.type === "Module") {
+            return this.executeStatement(value);
+          }
+          this.stackDeclare(pattern, value);
         } else {
           throw new Error(
             "Unknown variable declaration type '" + declaration.type + "'"
           );
         }
       });
+    } else if (token.type === "Module") {
+      const body = token.body;
+      for (let i = 0; i < body.length; i++) {
+        const result = this.executeStatement(body[i]);
+        if (result) {
+          return result;
+        }
+      }
     } else if (token.type === "ReturnStatement") {
       return {
         result: this.executeExpression(token.argument),
@@ -1814,6 +1832,15 @@ export default class VM {
       onCommit: options?.onCommit,
       onCancel: options?.onCancel,
     });
+  }
+
+  getModule(src) {
+    const code = this.cachedSocialGet(src, false);
+    const parsedCode = Parser.parse(code, AcornOptions);
+    if (parsedCode.type === "Program") {
+      parsedCode.type = "Module";
+    }
+    return parsedCode;
   }
 
   renderCode({ props, context, state, forwardedProps }) {

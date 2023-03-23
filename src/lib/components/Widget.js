@@ -5,7 +5,6 @@ import React, {
   useState,
 } from "react";
 import { Parser } from "acorn";
-import { simple, base } from "acorn-walk";
 import jsx from "acorn-jsx";
 import { useNear } from "../data/near";
 import ConfirmTransactions from "./ConfirmTransactions";
@@ -27,12 +26,6 @@ import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
 
-const MODULES_IDENTIFIER = "require";
-const ACORN_WALK_VISITORS = {
-  ...base,
-  JSXElement: () => {},
-};
-
 const AcornOptions = {
   ecmaVersion: 13,
   allowReturnOutsideFunction: true,
@@ -46,33 +39,6 @@ const parseCode = (code) => {
     return ParsedCodeCache[code];
   }
   return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
-};
-
-// Search for modules in already parsed code using `acorn-walk`
-// TODO: there is an error that occurs for a few widgets `TypeError: baseVisitor[type] is not a function`
-//  - `ACORN_WALK_VISITORS` doesn't solve the problem
-const findModules = (parsedCode) => {
-  let modules = [];
-  try {
-    simple(
-      parsedCode,
-      {
-        VariableDeclaration: (node) =>
-          node.declarations[0].init.callee?.name === MODULES_IDENTIFIER &&
-          modules.push({
-            start: node.start,
-            end: node.end,
-            name: node.declarations[0].id.properties[0].key.name,
-            src: node.declarations[0].init.arguments[0].value,
-          }),
-      },
-      ACORN_WALK_VISITORS
-    );
-  } catch (error) {
-    console.log("error", error);
-  }
-
-  return modules;
 };
 
 const computeSrcOrCode = (src, code, configs) => {
@@ -124,34 +90,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const near = useNear();
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
-
-  // Based on the `modules` array, create a new code where every module require is replaced by module code
-  // It will set `parsedCode` state after the module's code is fetched, replaced and new code is parsed, which will result in code render
-  // TODO: `setParsedCode` should be done once after all modules code is fetched and `newCode` is final
-  const parseModules = (modules) => {
-    let newCode;
-    modules.map((module) => {
-      const fetchModule = () => {
-        const moduleCode = cache.socialGet(
-          near,
-          module.src,
-          false,
-          undefined,
-          undefined,
-          fetchModule
-        );
-
-        if (moduleCode) {
-          newCode = `${code.slice(0, module.start)}${code.slice(module.end)}`;
-          newCode = `${moduleCode}${newCode}`;
-          setParsedCode({ parsedCode: parseCode(newCode) });
-        }
-      };
-      fetchModule();
-    });
-
-    return newCode || code;
-  };
 
   useEffect(() => {
     const newConfigs = propsConfig
@@ -211,16 +149,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     }
     try {
       const parsedCode = parseCode(code);
-      const modules = findModules(parsedCode);
-
-      // if modules were found, we don't want to set `parsedCode` yet, because `parseModules` need to fetch the module's code first
-      // `parseModules` will set `parsedCode` state after the module's code is fetched, replaced and new code is parsed
-      if (modules.length) {
-        parseModules(modules);
-        return;
-      }
-
-      // if modules were not found, we can set `parsedCode` which will result in code render
       setParsedCode({ parsedCode });
     } catch (e) {
       setElement(
