@@ -27,6 +27,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import { nanoid, customAlphabet } from "nanoid";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -45,6 +46,13 @@ const frozenElliptic = Object.freeze({
   curves: deepFreeze(elliptic.curves),
   ec: Object.freeze(elliptic.ec),
   eddsa: Object.freeze(elliptic.eddsa),
+});
+
+// `nanoid.nanoid()` is a but odd, but it seems better to match the official
+// API than to create an alias
+const frozenNanoid = Object.freeze({
+  nanoid: deepFreeze(nanoid),
+  customAlphabet: deepFreeze(customAlphabet),
 });
 
 const LoopLimit = 1000000;
@@ -1707,6 +1715,7 @@ export default class VM {
       state: deepCopy(state),
       nacl: frozenNacl,
       elliptic: frozenElliptic,
+      nanoid: frozenNanoid,
     };
     this.loopLimit = LoopLimit;
     this.vmStack = new VmStack(this, undefined, this.state);
