@@ -589,7 +589,7 @@ class VmStack {
       let newChildren = children;
       if (Array.isArray(newChildren)) {
         newChildren = newChildren.filter(
-          (c) => c !== "\n          " && c !== "\n        "
+          (c) => typeof c !== "string" || c.indexOf("\n") === -1
         );
         if (newChildren.length === 1) {
           newChildren = newChildren[0];
