@@ -32,6 +32,7 @@ import SecureIframe from "../components/SecureIframe";
 import * as Accordion from "@radix-ui/react-accordion";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as AspectRatio from "@radix-ui/react-aspect-ratio";
+import * as Avatar from "@radix-ui/react-avatar";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -158,6 +159,7 @@ const RadixTags = {
   Accordion,
   AlertDialog,
   AspectRatio,
+  Avatar,
   DropdownMenu,
   Progress,
 };
@@ -596,10 +598,12 @@ class VmStack {
       let newChildren = children;
       if (Array.isArray(newChildren)) {
         newChildren = newChildren.filter(
-          (c) => typeof c !== "string" || c.indexOf("\n") === -1
+          (c) => typeof c !== "string" || c.trim() !== "\n"
         );
         if (newChildren.length === 1) {
           newChildren = newChildren[0];
+        } else if (newChildren.length === 0) {
+          newChildren = undefined;
         }
       }
       return <RadixComp {...attributes}>{newChildren}</RadixComp>;
