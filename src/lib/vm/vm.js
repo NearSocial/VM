@@ -31,6 +31,7 @@ import SecureIframe from "../components/SecureIframe";
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import * as AspectRatio from "@radix-ui/react-aspect-ratio";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -156,6 +157,7 @@ const ApprovedTagsCustom = {
 const RadixTags = {
   Accordion,
   AlertDialog,
+  AspectRatio,
   DropdownMenu,
   Progress,
 };
