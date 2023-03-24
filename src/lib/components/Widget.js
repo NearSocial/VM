@@ -63,11 +63,14 @@ const computeSrcOrCode = (src, code, configs) => {
 };
 
 export const Widget = React.forwardRef((props, forwardedRef) => {
-  const propsSrc = props.src;
-  const propsCode = props.code;
-  const propsProps = props.props;
-  const depth = props.depth || 0;
-  const propsConfig = props.config;
+  const {
+    src: propsSrc,
+    code: propsCode,
+    depth,
+    config: propsConfig,
+    props: propsProps,
+    ...forwardedRootProps
+  } = props;
 
   const [nonce, setNonce] = useState(0);
   const [code, setCode] = useState(null);
@@ -243,6 +246,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       cacheNonce,
       version: vm.version,
       forwardedRef,
+      forwardedRootProps: forwardedRootProps || {},
     };
     if (deepEqual(vmInput, prevVmInput)) {
       return;
@@ -260,40 +264,47 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       );
       console.error(e);
     }
-  }, [vm, propsProps, context, state, cacheNonce, prevVmInput, forwardedRef]);
+  }, [
+    vm,
+    propsProps,
+    context,
+    state,
+    cacheNonce,
+    prevVmInput,
+    forwardedRef,
+    forwardedRootProps,
+  ]);
 
-  return element || "Loading";
-  // return element !== null && element !== undefined ? (
-  //   <ErrorBoundary
-  //     FallbackComponent={ErrorFallback}
-  //     onReset={() => {
-  //       setElement(null);
-  //     }}
-  //     resetKeys={[element]}
-  //     ref={forwardedRef}
-  //   >
-  //     <>
-  //       {element}
-  //       {transactions && (
-  //         <ConfirmTransactions
-  //           transactions={transactions}
-  //           onHide={() => setTransactions(null)}
-  //         />
-  //       )}
-  //       {commitRequest && (
-  //         <CommitModal
-  //           show={true}
-  //           widgetSrc={src}
-  //           data={commitRequest.data}
-  //           force={commitRequest.force}
-  //           onHide={() => setCommitRequest(null)}
-  //           onCommit={commitRequest.onCommit}
-  //           onCancel={commitRequest.onCancel}
-  //         />
-  //       )}
-  //     </>
-  //   </ErrorBoundary>
-  // ) : (
-  //   Loading
-  // );
+  return element !== null && element !== undefined ? (
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onReset={() => {
+        setElement(null);
+      }}
+      resetKeys={[element]}
+    >
+      <>
+        {element}
+        {transactions && (
+          <ConfirmTransactions
+            transactions={transactions}
+            onHide={() => setTransactions(null)}
+          />
+        )}
+        {commitRequest && (
+          <CommitModal
+            show={true}
+            widgetSrc={src}
+            data={commitRequest.data}
+            force={commitRequest.force}
+            onHide={() => setCommitRequest(null)}
+            onCommit={commitRequest.onCommit}
+            onCancel={commitRequest.onCancel}
+          />
+        )}
+      </>
+    </ErrorBoundary>
+  ) : (
+    Loading
+  );
 });

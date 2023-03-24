@@ -386,7 +386,10 @@ class VmStack {
       }
     }
 
-    const attributes = {};
+    const attributes = {
+      ...this.vm.state.forwardedRootProps,
+      ref: this.vm.state.forwardedRef,
+    };
     const status = {};
     if (element === "input") {
       attributes.className = "form-control";
@@ -517,14 +520,11 @@ class VmStack {
       return this.executeExpression(child);
     });
 
-    attributes.ref = this.vm.state.forwardedRef;
-
     if (customComponent) {
       return isStyledComponent(customComponent)
         ? React.createElement(customComponent, { ...attributes }, ...children)
         : customComponent({ children, ...attributes });
     } else if (element === "Widget") {
-      console.log(this.vm.state);
       return <Widget {...attributes} />;
     } else if (element === "CommitButton") {
       return (
@@ -597,7 +597,6 @@ class VmStack {
       }
       return <RadixComp {...attributes}>{newChildren}</RadixComp>;
     } else if (withChildren === true) {
-      console.log(attributes);
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
       return React.createElement(element, { ...attributes });
@@ -1751,8 +1750,7 @@ export default class VM {
     });
   }
 
-  renderCode({ props, context, state, forwardedRef }) {
-    console.log("Render code:", forwardedRef);
+  renderCode({ props, context, state, forwardedRef, forwardedRootProps }) {
     if (this.depth >= MaxDepth) {
       return "Too deep";
     }
@@ -1764,6 +1762,7 @@ export default class VM {
       nacl: frozenNacl,
       elliptic: frozenElliptic,
       forwardedRef,
+      forwardedRootProps,
     };
     this.loopLimit = LoopLimit;
     this.vmStack = new VmStack(this, undefined, this.state);
