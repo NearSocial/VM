@@ -34,6 +34,7 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import * as AspectRatio from "@radix-ui/react-aspect-ratio";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as Checkbox from "@radix-ui/react-checkbox";
+import * as Collapsible from "@radix-ui/react-collapsible";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -162,6 +163,7 @@ const RadixTags = {
   AspectRatio,
   Avatar,
   Checkbox,
+  Collapsible,
   DropdownMenu,
   Progress,
 };
@@ -600,7 +602,7 @@ class VmStack {
       let newChildren = children;
       if (Array.isArray(newChildren)) {
         newChildren = newChildren.filter(
-          (c) => typeof c !== "string" || c.trim() !== "\n"
+          (c) => typeof c !== "string" || c.trim() !== ""
         );
         if (newChildren.length === 1) {
           newChildren = newChildren[0];
