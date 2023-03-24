@@ -586,6 +586,11 @@ class VmStack {
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
     } else if (RadixComp) {
+      if (element.includes("Portal")) {
+        throw new Error(
+          `Radix's "${element}" component is not allowed. This portal element is an optional Radix feature and isn't necessary for most use cases.`
+        );
+      }
       let newChildren = children;
       if (Array.isArray(newChildren)) {
         newChildren = newChildren.filter(
