@@ -42,6 +42,7 @@ import * as HoverCard from "@radix-ui/react-hover-card";
 import * as Label from "@radix-ui/react-label";
 import * as Menubar from "@radix-ui/react-menubar";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import * as Popover from "@radix-ui/react-popover";
 import * as Progress from "@radix-ui/react-progress";
 
 const frozenNacl = Object.freeze({
@@ -178,6 +179,7 @@ const RadixTags = {
   Label,
   Menubar,
   NavigationMenu,
+  Popover,
   Progress,
 };
 
