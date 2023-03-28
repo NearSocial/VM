@@ -36,6 +36,7 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Collapsible from "@radix-ui/react-collapsible";
 import * as ContextMenu from "@radix-ui/react-context-menu";
+import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -91,6 +92,7 @@ const ApprovedTagsSimple = {
   p: true,
   input: true,
   button: true,
+  fieldset: true,
   ul: true,
   ol: true,
   li: true,
@@ -166,6 +168,7 @@ const RadixTags = {
   Checkbox,
   Collapsible,
   ContextMenu,
+  Dialog,
   DropdownMenu,
   Progress,
 };
