@@ -441,10 +441,7 @@ class VmStack {
       }
     }
 
-    const attributes = {
-      ...this.vm.state.forwardedRootProps,
-      ref: this.vm.state.forwardedRef,
-    };
+    let attributes = {};
     const status = {};
     if (element === "input") {
       attributes.className = "form-control";
@@ -478,6 +475,14 @@ class VmStack {
         throw new Error("Unknown attribute type: " + attribute.type);
       }
     });
+
+    if (attributes.ref === "forwardedRef") {
+      attributes = {
+        ...attributes,
+        ...this.vm.state.forwardedRootProps,
+        ref: this.vm.state.forwardedRef,
+      };
+    }
 
     Object.entries(rawAttributes).forEach(([name, value]) => {
       if (
