@@ -24,6 +24,7 @@
     "@radix-ui/react-popover": "^1.0.5",
     "@radix-ui/react-progress": "^1.0.2",
     "@radix-ui/react-radio-group": "^1.1.2",
+    "@radix-ui/react-scroll-area": "^1.0.3",
     "acorn": "^8.8.0",
     "acorn-jsx": "^5.3.2",
     "big.js": "^6.1.1",
