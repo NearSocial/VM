@@ -55,6 +55,7 @@ import * as Toast from "@radix-ui/react-toast";
 import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
+import * as RadixTooltip from "@radix-ui/react-tooltip";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -203,6 +204,7 @@ const RadixTags = {
   Toggle,
   ToggleGroup,
   Toolbar,
+  Tooltip: RadixTooltip,
 };
 
 const ApprovedTags = {
