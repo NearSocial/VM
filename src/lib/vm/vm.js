@@ -27,6 +27,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import { nanoid, customAlphabet } from "nanoid";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -74,6 +75,13 @@ const frozenElliptic = Object.freeze({
   curves: deepFreeze(elliptic.curves),
   ec: Object.freeze(elliptic.ec),
   eddsa: Object.freeze(elliptic.eddsa),
+});
+
+// `nanoid.nanoid()` is a but odd, but it seems better to match the official
+// API than to create an alias
+const frozenNanoid = Object.freeze({
+  nanoid: deepFreeze(nanoid),
+  customAlphabet: deepFreeze(customAlphabet),
 });
 
 const LoopLimit = 1000000;
@@ -1817,6 +1825,7 @@ export default class VM {
       elliptic: frozenElliptic,
       forwardedRef,
       forwardedRootProps,
+      nanoid: frozenNanoid,
     };
     this.loopLimit = LoopLimit;
     this.vmStack = new VmStack(this, undefined, this.state);

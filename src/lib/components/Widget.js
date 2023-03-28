@@ -115,11 +115,12 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     }
     if (srcOrCode?.src) {
       const src = srcOrCode.src;
+      const [srcPath, version] = src.split("@");
       const code = cache.socialGet(
         near,
-        src.toString(),
+        srcPath.toString(),
         false,
-        undefined,
+        version, // may be undefined, meaning `latest`
         undefined,
         () => {
           setNonce(nonce + 1);

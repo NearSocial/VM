@@ -47,6 +47,7 @@
     "idb": "^7.1.1",
     "local-storage": "^2.0.0",
     "mdast-util-find-and-replace": "^2.0.0",
+    "nanoid": "^4.0.1",
     "near-api-js": "^0.45.1",
     "prettier": "^2.7.1",
     "react-bootstrap": "^2.5.0",
