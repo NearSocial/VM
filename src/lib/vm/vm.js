@@ -44,6 +44,7 @@ import * as Menubar from "@radix-ui/react-menubar";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import * as Popover from "@radix-ui/react-popover";
 import * as Progress from "@radix-ui/react-progress";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -181,6 +182,7 @@ const RadixTags = {
   NavigationMenu,
   Popover,
   Progress,
+  RadioGroup,
 };
 
 const ApprovedTags = {
