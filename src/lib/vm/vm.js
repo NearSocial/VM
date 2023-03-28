@@ -218,7 +218,6 @@ const RadixTags = {
 const ApprovedTags = {
   ...ApprovedTagsSimple,
   ...ApprovedTagsCustom,
-  ...RadixTags,
 };
 
 const Keywords = {
@@ -429,6 +428,7 @@ class VmStack {
     const customComponent =
       withChildren === undefined &&
       this.executeExpression(code.openingElement.name);
+
     if (withChildren === undefined && !RadixComp) {
       if (customComponent === undefined) {
         throw new Error("Unknown element: " + element);
