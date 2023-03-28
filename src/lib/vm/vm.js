@@ -50,6 +50,7 @@ import * as Select from "@radix-ui/react-select";
 import * as Separator from "@radix-ui/react-separator";
 import * as Slider from "@radix-ui/react-slider";
 import * as Switch from "@radix-ui/react-switch";
+import * as Tabs from "@radix-ui/react-tabs";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -193,6 +194,7 @@ const RadixTags = {
   Separator,
   Slider,
   Switch,
+  Tabs,
 };
 
 const ApprovedTags = {
