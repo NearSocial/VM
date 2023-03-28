@@ -38,6 +38,7 @@ import * as Collapsible from "@radix-ui/react-collapsible";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as HoverCard from "@radix-ui/react-hover-card";
 import * as Progress from "@radix-ui/react-progress";
 
 const frozenNacl = Object.freeze({
@@ -170,6 +171,7 @@ const RadixTags = {
   ContextMenu,
   Dialog,
   DropdownMenu,
+  HoverCard,
   Progress,
 };
 
