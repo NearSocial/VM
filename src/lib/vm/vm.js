@@ -53,6 +53,7 @@ import * as Switch from "@radix-ui/react-switch";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Toast from "@radix-ui/react-toast";
 import * as Toggle from "@radix-ui/react-toggle";
+import * as ToggleGroup from "@radix-ui/react-toggle-group";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -199,6 +200,7 @@ const RadixTags = {
   Tabs,
   Toast,
   Toggle,
+  ToggleGroup,
 };
 
 const ApprovedTags = {
