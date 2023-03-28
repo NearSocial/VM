@@ -35,6 +35,7 @@ import * as AspectRatio from "@radix-ui/react-aspect-ratio";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Collapsible from "@radix-ui/react-collapsible";
+import * as ContextMenu from "@radix-ui/react-context-menu";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Progress from "@radix-ui/react-progress";
 
@@ -164,6 +165,7 @@ const RadixTags = {
   Avatar,
   Checkbox,
   Collapsible,
+  ContextMenu,
   DropdownMenu,
   Progress,
 };
