@@ -29,6 +29,35 @@ import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
 
+// Radix:
+import * as Accordion from "@radix-ui/react-accordion";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import * as AspectRatio from "@radix-ui/react-aspect-ratio";
+import * as Avatar from "@radix-ui/react-avatar";
+import * as Checkbox from "@radix-ui/react-checkbox";
+import * as Collapsible from "@radix-ui/react-collapsible";
+import * as ContextMenu from "@radix-ui/react-context-menu";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import * as HoverCard from "@radix-ui/react-hover-card";
+import * as Label from "@radix-ui/react-label";
+import * as Menubar from "@radix-ui/react-menubar";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import * as Popover from "@radix-ui/react-popover";
+import * as Progress from "@radix-ui/react-progress";
+import * as RadioGroup from "@radix-ui/react-radio-group";
+import * as ScrollArea from "@radix-ui/react-scroll-area";
+import * as Select from "@radix-ui/react-select";
+import * as Separator from "@radix-ui/react-separator";
+import * as Slider from "@radix-ui/react-slider";
+import * as Switch from "@radix-ui/react-switch";
+import * as Tabs from "@radix-ui/react-tabs";
+import * as Toast from "@radix-ui/react-toast";
+import * as Toggle from "@radix-ui/react-toggle";
+import * as ToggleGroup from "@radix-ui/react-toggle-group";
+import * as Toolbar from "@radix-ui/react-toolbar";
+import * as RadixTooltip from "@radix-ui/react-tooltip";
+
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
   secretbox: deepFreeze(nacl.secretbox),
@@ -88,6 +117,7 @@ const ApprovedTagsSimple = {
   p: true,
   input: true,
   button: true,
+  fieldset: true,
   ul: true,
   ol: true,
   li: true,
@@ -153,6 +183,38 @@ const ApprovedTagsCustom = {
   iframe: false,
 };
 
+// will be dynamically indexed into for fetching specific elements
+// like Progress.Root
+const RadixTags = {
+  Accordion,
+  AlertDialog,
+  AspectRatio,
+  Avatar,
+  Checkbox,
+  Collapsible,
+  ContextMenu,
+  Dialog,
+  DropdownMenu,
+  HoverCard,
+  Label,
+  Menubar,
+  NavigationMenu,
+  Popover,
+  Progress,
+  RadioGroup,
+  ScrollArea,
+  Select,
+  Separator,
+  Slider,
+  Switch,
+  Tabs,
+  Toast,
+  Toggle,
+  ToggleGroup,
+  Toolbar,
+  Tooltip: RadixTooltip,
+};
+
 const ApprovedTags = {
   ...ApprovedTagsSimple,
   ...ApprovedTagsCustom,
@@ -216,6 +278,23 @@ const assertValidObject = (o) => {
       assertValidObject(value);
     });
   }
+};
+
+const assertRadixComponent = (element) => {
+  let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
+
+  if (!isRadixElement) return;
+
+  const elementTokens = element.split(".");
+  const RadixComp = elementTokens.reduce((acc, curr) => {
+    return acc[curr];
+  }, RadixTags);
+
+  if (RadixComp === undefined) {
+    throw new Error(`"${element}" is not a valid Radix component`);
+  }
+
+  return RadixComp;
 };
 
 const maybeSubscribe = (subscribe, blockId) =>
@@ -344,10 +423,13 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
+    const RadixComp = assertRadixComponent(element);
+
     const customComponent =
       withChildren === undefined &&
       this.executeExpression(code.openingElement.name);
-    if (withChildren === undefined) {
+
+    if (withChildren === undefined && !RadixComp) {
       if (customComponent === undefined) {
         throw new Error("Unknown element: " + element);
       }
@@ -359,7 +441,7 @@ class VmStack {
       }
     }
 
-    const attributes = {};
+    let attributes = {};
     const status = {};
     if (element === "input") {
       attributes.className = "form-control";
@@ -393,6 +475,13 @@ class VmStack {
         throw new Error("Unknown attribute type: " + attribute.type);
       }
     });
+
+    if (attributes.ref === "forwardedRef") {
+      attributes = {
+        ...attributes,
+        ...this.vm.forwardedProps,
+      };
+    }
 
     Object.entries(rawAttributes).forEach(([name, value]) => {
       if (
@@ -555,6 +644,24 @@ class VmStack {
       return <Files {...attributes}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
+    } else if (RadixComp) {
+      if (element.includes("Portal")) {
+        throw new Error(
+          `Radix's "${element}" component is not allowed. This portal element is an optional Radix feature and isn't necessary for most use cases.`
+        );
+      }
+      let newChildren = children;
+      if (Array.isArray(newChildren)) {
+        newChildren = newChildren.filter(
+          (c) => typeof c !== "string" || c.trim() !== ""
+        );
+        if (newChildren.length === 1) {
+          newChildren = newChildren[0];
+        } else if (newChildren.length === 0) {
+          newChildren = undefined;
+        }
+      }
+      return <RadixComp {...attributes}>{newChildren}</RadixComp>;
     } else if (withChildren === true) {
       return React.createElement(element, { ...attributes }, ...children);
     } else if (withChildren === false) {
@@ -1140,7 +1247,7 @@ class VmStack {
     } else if (type === "ArrowFunctionExpression") {
       return this.createFunction(code.params, code.body, code.expression);
     } else if (type === "TaggedTemplateExpression") {
-      // Currently on `styled` component is supported.
+      // Currently only `styled` component is supported.
 
       let styledTemplate, styledKey;
 
@@ -1163,10 +1270,15 @@ class VmStack {
         if (code.tag.type === "CallExpression") {
           const args = this.getArray(code.tag.arguments);
           const arg = args?.[0];
-          if (!isStyledComponent(arg)) {
-            throw new Error("styled() can only take `styled` components");
+          const RadixComp = assertRadixComponent(arg);
+
+          if (!isStyledComponent(arg) && !RadixComp) {
+            throw new Error(
+              'styled() can only take `styled` components or valid Radix components (EG: "Accordion.Trigger")'
+            );
           }
-          styledTemplate = styled(arg);
+
+          styledTemplate = styled(RadixComp ?? arg);
         } else {
           if (key === "keyframes") {
             styledTemplate = keyframes;
@@ -1704,7 +1816,7 @@ export default class VM {
     });
   }
 
-  renderCode({ props, context, state }) {
+  renderCode({ props, context, state, forwardedProps }) {
     if (this.depth >= MaxDepth) {
       return "Too deep";
     }
@@ -1717,6 +1829,7 @@ export default class VM {
       elliptic: frozenElliptic,
       nanoid: frozenNanoid,
     };
+    this.forwardedProps = forwardedProps;
     this.loopLimit = LoopLimit;
     this.vmStack = new VmStack(this, undefined, this.state);
     const executionResult = this.vmStack.executeStatement(this.code);

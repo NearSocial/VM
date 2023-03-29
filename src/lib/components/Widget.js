@@ -62,12 +62,15 @@ const computeSrcOrCode = (src, code, configs) => {
   return srcOrCode;
 };
 
-export function Widget(props) {
-  const propsSrc = props.src;
-  const propsCode = props.code;
-  const propsProps = props.props;
-  const depth = props.depth || 0;
-  const propsConfig = props.config;
+export const Widget = React.forwardRef((props, forwardedRef) => {
+  const {
+    src: propsSrc,
+    code: propsCode,
+    depth,
+    config: propsConfig,
+    props: propsProps,
+    ...forwardedProps
+  } = props;
 
   const [nonce, setNonce] = useState(0);
   const [code, setCode] = useState(null);
@@ -244,6 +247,10 @@ export function Widget(props) {
       state,
       cacheNonce,
       version: vm.version,
+      forwardedProps: {
+        ...forwardedProps,
+        ref: forwardedRef,
+      },
     };
     if (deepEqual(vmInput, prevVmInput)) {
       return;
@@ -261,7 +268,16 @@ export function Widget(props) {
       );
       console.error(e);
     }
-  }, [vm, propsProps, context, state, cacheNonce, prevVmInput]);
+  }, [
+    vm,
+    propsProps,
+    context,
+    state,
+    cacheNonce,
+    prevVmInput,
+    forwardedRef,
+    forwardedProps,
+  ]);
 
   return element !== null && element !== undefined ? (
     <ErrorBoundary
@@ -295,4 +311,4 @@ export function Widget(props) {
   ) : (
     Loading
   );
-}
+});
