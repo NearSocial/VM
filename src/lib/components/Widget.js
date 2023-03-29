@@ -230,6 +230,7 @@ export function Widget(props) {
       loading: false,
       accountId: accountId ?? null,
       widgetSrc: src,
+      networkId: near.config.networkId,
     });
   }, [near, accountId, src]);
 
