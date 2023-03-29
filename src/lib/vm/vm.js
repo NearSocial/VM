@@ -479,8 +479,7 @@ class VmStack {
     if (attributes.ref === "forwardedRef") {
       attributes = {
         ...attributes,
-        ...this.vm.state.forwardedRootProps,
-        ref: this.vm.state.forwardedRef,
+        ...this.vm.forwardedProps,
       };
     }
 
@@ -1817,7 +1816,7 @@ export default class VM {
     });
   }
 
-  renderCode({ props, context, state, forwardedRef, forwardedRootProps }) {
+  renderCode({ props, context, state, forwardedProps }) {
     if (this.depth >= MaxDepth) {
       return "Too deep";
     }
@@ -1828,10 +1827,9 @@ export default class VM {
       state: deepCopy(state),
       nacl: frozenNacl,
       elliptic: frozenElliptic,
-      forwardedRef,
-      forwardedRootProps,
       nanoid: frozenNanoid,
     };
+    this.forwardedProps = forwardedProps;
     this.loopLimit = LoopLimit;
     this.vmStack = new VmStack(this, undefined, this.state);
     const executionResult = this.vmStack.executeStatement(this.code);

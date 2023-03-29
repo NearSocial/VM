@@ -69,7 +69,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     depth,
     config: propsConfig,
     props: propsProps,
-    ...forwardedRootProps
+    ...forwardedProps
   } = props;
 
   const [nonce, setNonce] = useState(0);
@@ -246,8 +246,10 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       state,
       cacheNonce,
       version: vm.version,
-      forwardedRef,
-      forwardedRootProps: forwardedRootProps || {},
+      forwardedProps: {
+        ...forwardedProps,
+        ref: forwardedRef,
+      },
     };
     if (deepEqual(vmInput, prevVmInput)) {
       return;
@@ -273,7 +275,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     cacheNonce,
     prevVmInput,
     forwardedRef,
-    forwardedRootProps,
+    forwardedProps,
   ]);
 
   return element !== null && element !== undefined ? (
