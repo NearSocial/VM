@@ -105,6 +105,22 @@ return (
 );
 ```
 
+- Access to context.networkId ("mainnet" or "testnet")
+
+```jsx
+const childSrc =
+  context.networkId === "mainnet"
+    ? "calebjacob.near/src/Foobar"
+    : "preview.testnet/src/Foobar";
+
+return (
+  <div>
+    <p>A child dependency:</p>
+    <Widget src={childSrc} />
+  </div>
+);
+```
+
 ## 1.0.0
 
 - BREAKING: Removed Wallet Selector dependency. `selector` object is required to pass into `initNear` from `useInitNear` hook.
