@@ -61,7 +61,7 @@ import * as RadixTooltip from "@radix-ui/react-tooltip";
 
 const AcornOptions = {
   ecmaVersion: 13,
-  allowReturnOutsideFunction: true,
+  allowReturnOutsideFunction: false,
 };
 
 const frozenNacl = Object.freeze({
@@ -689,9 +689,7 @@ class VmStack {
   callFunction(keyword, callee, args, optional, isNew) {
     const keywordType = Keywords[keyword];
     if (keywordType === true || keywordType === undefined) {
-      if (callee === "require") {
-        return this.vm.getModule(args[0]);
-      } else if (
+      if (
         (keyword === "Social" && callee === "getr") ||
         callee === "socialGetr"
       ) {
@@ -1431,6 +1429,15 @@ class VmStack {
     }
   }
 
+  handleRequire(src) {
+    const codeModule = this.vm.cachedSocialGet(src, false);
+    const requireParsed = Parser.parse(
+      `const require = () => { let module = { exports: () => {} }; function w() { ${codeModule} } w(); return module.exports; }`,
+      AcornOptions
+    );
+    this.executeStatement(requireParsed?.body[0]);
+  }
+
   executeStatement(token) {
     StatementDebug && console.log(token);
     if (!token || token.type === "EmptyStatement") {
@@ -1438,11 +1445,12 @@ class VmStack {
     } else if (token.type === "VariableDeclaration") {
       token.declarations.forEach((declaration) => {
         if (declaration.type === "VariableDeclarator") {
+          if (declaration?.init?.callee?.name === "require") {
+            const src = declaration?.init?.arguments[0].value;
+            this.handleRequire(src);
+          }
           const pattern = requirePattern(declaration.id);
           const value = this.executeExpression(declaration.init);
-          if (value?.type === "Module") {
-            return this.executeStatement(value);
-          }
           this.stackDeclare(pattern, value);
         } else {
           throw new Error(
@@ -1450,14 +1458,6 @@ class VmStack {
           );
         }
       });
-    } else if (token.type === "Module") {
-      const body = token.body;
-      for (let i = 0; i < body.length; i++) {
-        const result = this.executeStatement(body[i]);
-        if (result) {
-          return result;
-        }
-      }
     } else if (token.type === "ReturnStatement") {
       return {
         result: this.executeExpression(token.argument),
@@ -1832,15 +1832,6 @@ export default class VM {
       onCommit: options?.onCommit,
       onCancel: options?.onCancel,
     });
-  }
-
-  getModule(src) {
-    const code = this.cachedSocialGet(src, false);
-    const parsedCode = Parser.parse(code, AcornOptions);
-    if (parsedCode.type === "Program") {
-      parsedCode.type = "Module";
-    }
-    return parsedCode;
   }
 
   renderCode({ props, context, state, forwardedProps }) {
