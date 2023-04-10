@@ -8,6 +8,7 @@ import {
   TGas,
 } from "./utils";
 import Big from "big.js";
+import { recordEvent } from "../data/analytics";
 
 const MinStorageBalance = StorageCostPerByte.mul(2000);
 const InitialAccountStorageBalance = StorageCostPerByte.mul(500);
@@ -131,6 +132,8 @@ export const requestPermissionAndCommit = async (near, data, deposit) => {
       deposit: deposit.gt(0) ? deposit.toFixed(0) : "1",
     },
   });
+  
+  recordEvent('send-transaction');
   return await wallet.signAndSendTransaction({
     receiverId: near.config.contractName,
     actions,

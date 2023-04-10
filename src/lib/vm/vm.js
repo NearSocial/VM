@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
+import { recordComponentImpressions } from '../data/analytics'
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -443,6 +444,7 @@ class VmStack {
 
     let attributes = {};
     const status = {};
+
     if (element === "input") {
       attributes.className = "form-control";
     } else if (element === "CommitButton") {
@@ -578,6 +580,9 @@ class VmStack {
       this.vm.gIndex = i;
       return this.executeExpression(child);
     });
+
+    recordComponentImpressions(customComponent, attributes);
+
 
     if (customComponent) {
       return isStyledComponent(customComponent)

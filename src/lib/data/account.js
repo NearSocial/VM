@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNear } from "./near";
 import ls from "local-storage";
 import * as nearAPI from "near-api-js";
+import { recordEvent } from "../data/analytics";
 
 export const LsKey = "near-social-vm:v01:";
 const LsKeyAccountId = LsKey + ":accountId:";
@@ -63,6 +64,7 @@ const loadAccount = async (near, setAccount) => {
   const signedAccountId = near.accountId;
   if (signedAccountId) {
     ls.set(LsKeyAccountId, signedAccountId);
+    recordEvent('wallet-connected');
   } else {
     ls.remove(LsKeyAccountId);
   }
