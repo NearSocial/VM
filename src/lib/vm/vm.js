@@ -68,13 +68,15 @@ const frozenNacl = Object.freeze({
   verify: deepFreeze(nacl.verify),
 });
 
+const ellipticCopy = deepCopy(elliptic);
+
 const frozenElliptic = Object.freeze({
-  version: deepFreeze(elliptic.version),
-  utils: deepFreeze(elliptic.utils),
-  curve: deepFreeze(elliptic.curve),
-  curves: deepFreeze(elliptic.curves),
-  ec: Object.freeze(elliptic.ec),
-  eddsa: Object.freeze(elliptic.eddsa),
+  version: deepFreeze(ellipticCopy.version),
+  utils: deepFreeze(ellipticCopy.utils),
+  curve: deepFreeze(ellipticCopy.curve),
+  curves: deepFreeze(ellipticCopy.curves),
+  ec: Object.freeze(ellipticCopy.ec),
+  eddsa: Object.freeze(ellipticCopy.eddsa),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -1030,8 +1032,8 @@ class VmStack {
           if (!options?.callee) {
             throw new Error(
               "Cannot dereference keyword '" +
-                keyword +
-                "' in non-call expression"
+              keyword +
+              "' in non-call expression"
             );
           }
           return {
@@ -1586,10 +1588,10 @@ class VmStack {
             deepCopy(
               e instanceof Error
                 ? {
-                    name: e?.name,
-                    message: e?.message,
-                    toString: () => e.toString(),
-                  }
+                  name: e?.name,
+                  message: e?.message,
+                  toString: () => e.toString(),
+                }
                 : e
             )
           );
