@@ -1,5 +1,42 @@
 # Changelog
 
+## 1.2.0
+
+- Added support for using [Iframe Resizer](https://github.com/davidjbradshaw/iframe-resizer) for rendering responsive iframes. This library automatically resizes the iframe to match the child content size to avoid scrollbars on the iframe itself. You can use the library by adding an `iframeResizer` prop to an `<iframe>` tag:
+
+```jsx
+return (
+  <div>
+    <iframe
+      iframeResizer
+      src="https://davidjbradshaw.com/iframe-resizer/example/frame.content.html"
+    />
+  </div>
+);
+```
+
+You can pass in Iframe Resizer options as an object:
+
+```jsx
+return (
+  <div>
+    <iframe
+      iframeResizer={{ log: true }}
+      src="https://davidjbradshaw.com/iframe-resizer/example/frame.content.html"
+    />
+  </div>
+);
+```
+
+It's important to note that the child page rendered by the iframe must include this script in order for the resizing to work:
+
+```html
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.js"
+></script>
+```
+
 ## 1.1.0
 
 - Add `polygon` tag.
