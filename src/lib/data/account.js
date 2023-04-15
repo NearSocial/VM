@@ -12,8 +12,7 @@ const defaultAccount = {
   loading: true,
   signedAccountId: ls.get(LsKeyAccountId) ?? undefined,
   pretendAccountId: ls.get(LsKeyPretendAccountId) ?? undefined,
-  accountId:
-    ls.get(LsKeyPretendAccountId) ?? ls.get(LsKeyAccountId) ?? undefined,
+  accountId: ls.get(LsKeyPretendAccountId) ?? ls.get(LsKeyAccountId) ?? undefined,
   state: null,
   near: null,
 };
