@@ -3,9 +3,9 @@ import { isStyledComponent } from "styled-components";
 import { nanoid } from 'nanoid';
 import { debounce, get, split, truncate } from 'lodash'
 
-let segment
-let anonymousUserId
-let userIdCreatedAt
+let segment;
+let anonymousUserId;
+let userIdCreatedAt;
 
 function getAnonymousId() {
   if (anonymousUserId) {
