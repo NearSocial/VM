@@ -11,6 +11,7 @@ export default function SecureIframe(allProps) {
     srcDoc,
     title,
     message,
+    onLoad,
     onMessage,
     iframeResizer,
   } = allProps;
@@ -20,12 +21,12 @@ export default function SecureIframe(allProps) {
   const [loaded, setLoaded] = useState(false);
   const [prevMessage, setPrevMessage] = useState(undefined);
   const ref = React.useRef();
+  const sandbox = "allow-scripts allow-same-origin allow-forms";
 
   const returnIframeResizerProps = () => {
     const result = {
       ...usedProps,
       style: style ?? { width: "1px", minWidth: "100%" },
-      checkOrigin: false,
     };
 
     const allIframeResizerProps =
@@ -37,6 +38,7 @@ export default function SecureIframe(allProps) {
       "bodyBackground",
       "bodyMargin",
       "bodyPadding",
+      "checkOrigin",
       "inPageLinks",
       "heightCalculationMethod",
       "maxHeight",
@@ -58,6 +60,18 @@ export default function SecureIframe(allProps) {
       }
     });
 
+    if (allIframeResizerProps.onResized) {
+      result.onResized = ({ height, width }) => {
+        allIframeResizerProps.onResized({ height, width });
+      };
+    }
+
+    if (allIframeResizerProps.onScroll) {
+      result.onScroll = ({ x, y }) => {
+        return allIframeResizerProps.onScroll({ x, y });
+      };
+    }
+
     return result;
   };
 
@@ -70,6 +84,11 @@ export default function SecureIframe(allProps) {
     },
     [ref, onMessage]
   );
+
+  const onLoadHandler = () => {
+    setLoaded(true);
+    onLoad && onLoad();
+  };
 
   useEffect(() => {
     window.addEventListener("message", onMessageEvent, false);
@@ -94,18 +113,13 @@ export default function SecureIframe(allProps) {
       <IframeResizer
         {...returnIframeResizerProps()}
         forwardRef={ref}
-        sandbox="allow-scripts"
-        onLoad={() => setLoaded(true)}
+        sandbox={sandbox}
+        onLoad={onLoadHandler}
       />
     );
   }
 
   return (
-    <iframe
-      {...usedProps}
-      ref={ref}
-      sandbox="allow-scripts"
-      onLoad={() => setLoaded(true)}
-    />
+    <iframe {...usedProps} ref={ref} sandbox={sandbox} onLoad={onLoadHandler} />
   );
 }
