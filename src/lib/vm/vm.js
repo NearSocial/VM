@@ -68,15 +68,14 @@ const frozenNacl = Object.freeze({
   verify: deepFreeze(nacl.verify),
 });
 
-const ellipticCopy = deepCopy(elliptic);
 
 const frozenElliptic = Object.freeze({
-  version: deepFreeze(ellipticCopy.version),
-  utils: deepFreeze(ellipticCopy.utils),
-  curve: deepFreeze(ellipticCopy.curve),
-  curves: deepFreeze(ellipticCopy.curves),
-  ec: Object.freeze(ellipticCopy.ec),
-  eddsa: Object.freeze(ellipticCopy.eddsa),
+  version: deepFreeze(elliptic.version),
+  utils: deepFreeze(elliptic.utils),
+  curve: deepFreeze(elliptic.curve),
+  curves: deepFreeze(elliptic.curves),
+  ec: Object.freeze(elliptic.ec),
+  eddsa: Object.freeze(deepCopy(elliptic.eddsa)),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
