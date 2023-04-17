@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
+import { recordComponentImpressions } from '../data/analytics'
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -579,6 +580,7 @@ class VmStack {
       return this.executeExpression(child);
     });
 
+    recordComponentImpressions(customComponent, attributes);
     if (customComponent) {
       return isStyledComponent(customComponent)
         ? React.createElement(customComponent, { ...attributes }, ...children)
