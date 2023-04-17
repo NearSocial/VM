@@ -1,33 +1,5 @@
-import React from "react";
-import { Widget } from "../components/Widget";
-import {
-  deepCopy,
-  deepFreeze,
-  ipfsUpload,
-  ipfsUrl,
-  isArray,
-  isObject,
-  isReactObject,
-  isString,
-  Loading,
-  ReactKey,
-} from "../data/utils";
-import Files from "react-files";
-import { sanitizeUrl } from "@braintree/sanitize-url";
-import { Markdown } from "../components/Markdown";
-import InfiniteScroll from "react-infinite-scroller";
-import { CommitButton } from "../components/Commit";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
-import { Typeahead } from "react-bootstrap-typeahead";
-import styled, { isStyledComponent, keyframes } from "styled-components";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import Big from "big.js";
-import * as elliptic from "elliptic";
-import BN from "bn.js";
-import * as nacl from "tweetnacl";
-import SecureIframe from "../components/SecureIframe";
-import { nanoid, customAlphabet } from "nanoid";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -46,6 +18,7 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import * as Popover from "@radix-ui/react-popover";
 import * as Progress from "@radix-ui/react-progress";
 import * as RadioGroup from "@radix-ui/react-radio-group";
+import * as RadixTooltip from "@radix-ui/react-tooltip";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import * as Select from "@radix-ui/react-select";
 import * as Separator from "@radix-ui/react-separator";
@@ -56,7 +29,37 @@ import * as Toast from "@radix-ui/react-toast";
 import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
-import * as RadixTooltip from "@radix-ui/react-tooltip";
+import * as elliptic from "elliptic";
+import * as nacl from "tweetnacl";
+
+import {
+  Loading,
+  ReactKey,
+  deepCopy,
+  deepFreeze,
+  ipfsUpload,
+  ipfsUrl,
+  isArray,
+  isObject,
+  isReactObject,
+  isString,
+} from "../data/utils";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { customAlphabet, nanoid } from "nanoid";
+import styled, { isStyledComponent, keyframes } from "styled-components";
+
+import BN from "bn.js";
+import Big from "big.js";
+import { CommitButton } from "../components/Commit";
+import Files from "react-files";
+import InfiniteScroll from "react-infinite-scroller";
+import { Markdown } from "../components/Markdown";
+import React from "react";
+import SecureIframe from "../components/SecureIframe";
+import { Typeahead } from "react-bootstrap-typeahead";
+import { Widget } from "../components/Widget";
+import _ from "lodash";
+import { sanitizeUrl } from "@braintree/sanitize-url";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -70,12 +73,12 @@ const frozenNacl = Object.freeze({
 
 
 const frozenElliptic = Object.freeze({
-  version: deepFreeze(elliptic.version),
-  utils: deepFreeze(elliptic.utils),
-  curve: deepFreeze(elliptic.curve),
-  curves: deepFreeze(elliptic.curves),
-  ec: Object.freeze(elliptic.ec),
-  eddsa: Object.freeze(deepCopy(elliptic.eddsa)),
+  version: Object.freeze(_.cloneDeep(elliptic.version)),
+  utils: Object.freeze(_.cloneDeep(elliptic.utils)),
+  curve: Object.freeze(_.cloneDeep(elliptic.curve)),
+  curves: Object.freeze(_.cloneDeep(elliptic.curves)),
+  ec: Object.freeze(_.cloneDeep(elliptic.ec)),
+  eddsa: Object.freeze(_.cloneDeep(elliptic.eddsa)),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
