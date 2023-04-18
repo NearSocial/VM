@@ -10,8 +10,15 @@ The current implementation is a temporary solution. Our long-term goal is to imp
 - Wallet addresses are not recorded
 - User activity is anonymized and analyzed in aggregate
 
-## Opt Out
-- Any gateway which uses the Near Discovery VM can opt-out of sharing usage information by forking and removing `data/analytics.js`
+## Opt-In by Default
+- Gateway analytics are not collected by default. Any gateway which uses the Near Discovery VM must opt into sharing usage information by passing segmentId=diA7hiO28gGeb9fxn615Xs91uX3GyYhL into call to initNear
+```
+initNear({
+        segmentId: 'diA7hiO28gGeb9fxn615Xs91uX3GyYhL'
+        networkId: '...',
+        ...
+      });
+```
 
 ## Product Usage Events Recorded
 - Component Impressions

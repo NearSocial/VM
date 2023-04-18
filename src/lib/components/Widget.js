@@ -25,7 +25,6 @@ import { useAccountId } from "../data/account";
 import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
-import * as analytics from '../data/analytics';
 
 const AcornOptions = {
   ecmaVersion: 13,
@@ -92,7 +91,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
-  analytics.init();
 
   useEffect(() => {
     const newConfigs = propsConfig

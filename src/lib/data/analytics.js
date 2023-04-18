@@ -1,7 +1,7 @@
 import Analytics from 'analytics-node';
 import { isStyledComponent } from "styled-components";
 import { nanoid } from 'nanoid';
-import { debounce, get, split, truncate } from 'lodash'
+import { debounce, get, split, noop, truncate } from 'lodash'
 
 let segment;
 let anonymousUserId;
@@ -27,14 +27,17 @@ function getAnonymousId() {
   return anonymousUserId;
 }
 
-export function init() {
+export function init(segmentId) {
   if (segment) return; // already initialized
 
-  getAnonymousId();
-  try {
-    segment = new Analytics("diA7hiO28gGeb9fxn615Xs91uX3GyYhL", {});
-  } catch (e) {
-    console.error(e);
+  segment = {init: noop, page: noop, flush: noop, track: noop};
+  if(segmentId) {
+    getAnonymousId();
+    try {
+      segment = new Analytics(segmentId, {});
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
 
