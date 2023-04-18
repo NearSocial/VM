@@ -21,10 +21,7 @@ initNear({
 ```
 
 ## Product Usage Events Recorded
-- Component Impressions
-- Component Engagements  
-1. clicks
-1. hovers 
+- Component Clicks
 - Referrer page 
 - Wallect Connect & Disconnect
 

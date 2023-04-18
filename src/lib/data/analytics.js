@@ -71,15 +71,12 @@ const debounceRecord = (eventType, delay) => debounce(e => {
         const key = get(e.target, 'placeholder', get(e.target, 'innerText', get(e.target, 'href')));
         recordEventWithProps(eventType, { element: truncate(key, { length: 255 }) });
 }, delay);
-
-const debouceMouseOver = debounceRecord('mouseover', 800);
 const debounceClick = debounceRecord('click', 200);
 
 export function recordComponentImpressions(component, attributes) {
     if(isStyledComponent(component)){
       attributes.onPointerUp = debounceClick;
-      attributes.onMouseEnter = debouceMouseOver;
-    }
+    } 
 }
 
 export function reset() {
