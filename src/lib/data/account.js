@@ -7,7 +7,7 @@ import * as nearAPI from "near-api-js";
 export const LsKey = "near-social-vm:v01:";
 const LsKeyAccountId = LsKey + ":accountId:";
 const LsKeyPretendAccountId = LsKey + ":pretendAccountId:";
-import { recordEvent } from "../data/analytics";
+import { recordWalletConnect } from "../data/analytics";
 
 const defaultAccount = {
   loading: true,
@@ -63,7 +63,7 @@ async function updateAccount(near, walletState) {
 const loadAccount = async (near, setAccount) => {
   const signedAccountId = near.accountId;
   if (signedAccountId) {
-    recordEvent('wallet-connected');
+    recordWalletConnect(signedAccountId);
     ls.set(LsKeyAccountId, signedAccountId);
   } else {
     ls.remove(LsKeyAccountId);
