@@ -33,8 +33,8 @@ export const prepareCommit = async (
     alert("You're not logged in. Sign in to commit data.");
     return;
   }
-  const [storageBalance, permissionGranted] = await Promise.all([
-    near.viewCall(near.config.contractName, "storage_balance_of", {
+  const [accountStorage, permissionGranted] = await Promise.all([
+    near.viewCall(near.config.contractName, "get_account_storage", {
       account_id: signedAccountId,
     }),
     signedAccountId !== accountId
@@ -42,14 +42,9 @@ export const prepareCommit = async (
           predecessor_id: signedAccountId,
           key: accountId,
         })
-      : near.publicKey
-      ? near.viewCall(near.config.contractName, "is_write_permission_granted", {
-          public_key: near.publicKey.toString(),
-          key: accountId,
-        })
-      : Promise.resolve(false),
+      : Promise.resolve(true),
   ]);
-  const availableStorage = Big(storageBalance?.available || "0");
+  const availableBytes = Big(accountStorage?.available_bytes || "0");
   let data = {
     [accountId]: convertToStringLeaves(originalData),
   };
@@ -61,18 +56,18 @@ export const prepareCommit = async (
   const expectedDataBalance = StorageCostPerByte.mul(
     estimateDataSize(data, currentData)
   )
-    .add(storageBalance ? Big(0) : InitialAccountStorageBalance)
+    .add(accountStorage ? Big(0) : InitialAccountStorageBalance)
     .add(permissionGranted ? Big(0) : StorageForPermission)
     .add(ExtraStorageBalance);
   const deposit = bigMax(
-    expectedDataBalance.sub(availableStorage),
-    permissionGranted ? Big(0) : storageBalance ? Big(1) : MinStorageBalance
+    expectedDataBalance.sub(availableBytes.mul(StorageCostPerByte)),
+    permissionGranted ? Big(0) : accountStorage ? Big(1) : MinStorageBalance
   );
   return {
     originalData,
     accountId,
-    storageBalance,
-    availableStorage,
+    accountStorage,
+    availableBytes,
     currentData,
     data,
     expectedDataBalance,
