@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
+import _ from "lodash";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -66,32 +67,6 @@ const frozenNacl = Object.freeze({
   sign: deepFreeze(nacl.sign),
   hash: deepFreeze(nacl.hash),
   verify: deepFreeze(nacl.verify),
-});
-
-// Prepare elliptic
-{
-  const EC = elliptic.ec;
-  for (const name of [
-    "p192",
-    "p224",
-    "p256",
-    "p384",
-    "p521",
-    "curve25519",
-    "ed25519",
-    "secp256k1",
-  ]) {
-    new EC(name);
-  }
-}
-
-const frozenElliptic = Object.freeze({
-  version: deepFreeze(elliptic.version),
-  utils: deepFreeze(elliptic.utils),
-  curve: deepFreeze(elliptic.curve),
-  curves: deepFreeze(elliptic.curves),
-  ec: Object.freeze(elliptic.ec),
-  eddsa: Object.freeze(elliptic.eddsa),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -1843,7 +1818,11 @@ export default class VM {
       context,
       state: deepCopy(state),
       nacl: frozenNacl,
-      elliptic: frozenElliptic,
+      get elliptic() {
+        delete this.elliptic;
+        this.elliptic = _.cloneDeep(elliptic);
+        return this.elliptic;
+      },
       nanoid: frozenNanoid,
     };
     this.forwardedProps = forwardedProps;
