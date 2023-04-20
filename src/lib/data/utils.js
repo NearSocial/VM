@@ -336,7 +336,6 @@ function isGetter(obj, prop) {
 }
 
 export const deepFreeze = (obj) => {
-  Object.freeze(obj);
   Object.keys(obj).forEach((prop) => {
     if (
       !isGetter(obj, prop) &&
@@ -346,7 +345,7 @@ export const deepFreeze = (obj) => {
       deepFreeze(obj[prop]);
     }
   });
-  return obj;
+  return Object.freeze(obj);
 };
 
 export const ReactKey = "$$typeof";
