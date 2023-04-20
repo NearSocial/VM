@@ -49,7 +49,7 @@
     "local-storage": "^2.0.0",
     "mdast-util-find-and-replace": "^2.0.0",
     "nanoid": "^4.0.1",
-    "near-api-js": "^0.45.1",
+    "near-api-js": "^2.1.0",
     "prettier": "^2.7.1",
     "react-bootstrap": "^2.5.0",
     "react-bootstrap-typeahead": "^6.0.0",
