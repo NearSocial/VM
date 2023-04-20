@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
+import _ from "lodash";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -66,15 +67,6 @@ const frozenNacl = Object.freeze({
   sign: deepFreeze(nacl.sign),
   hash: deepFreeze(nacl.hash),
   verify: deepFreeze(nacl.verify),
-});
-
-const frozenElliptic = Object.freeze({
-  version: deepFreeze(elliptic.version),
-  utils: deepFreeze(elliptic.utils),
-  curve: deepFreeze(elliptic.curve),
-  curves: deepFreeze(elliptic.curves),
-  ec: Object.freeze(elliptic.ec),
-  eddsa: Object.freeze(elliptic.eddsa),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -1826,7 +1818,11 @@ export default class VM {
       context,
       state: deepCopy(state),
       nacl: frozenNacl,
-      elliptic: frozenElliptic,
+      get elliptic() {
+        delete this.elliptic;
+        this.elliptic = _.cloneDeep(elliptic);
+        return this.elliptic;
+      },
       nanoid: frozenNanoid,
     };
     this.forwardedProps = forwardedProps;
