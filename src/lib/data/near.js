@@ -202,7 +202,13 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
   }
 }
 
-async function _initNear({ networkId, config, keyStore, selector } = {}) {
+async function _initNear({
+  networkId,
+  config,
+  keyStore,
+  selector,
+  walletConnectCallback = () => {},
+}) {
   if (!config) {
     config = {};
     if (!networkId) {
@@ -217,8 +223,8 @@ async function _initNear({ networkId, config, keyStore, selector } = {}) {
   } else if (config.networkId === "testnet") {
     config = Object.assign({}, config, TestNearConfig);
   }
+  config.walletConnectCallback = walletConnectCallback;
   keyStore = keyStore ?? new nearAPI.keyStores.BrowserLocalStorageKeyStore();
-
 
   const nearConnection = await nearAPI.connect(
     Object.assign({ deps: { keyStore } }, config)
