@@ -3,7 +3,7 @@
 ## Pending
 
 - Update `near-api-js` dependency to ^2.1.0
-- Fix `elliptic` library freezing issue by pre-initializing the preset curves.
+- Fix `elliptic` library by doing a lazy `deepClone` when it's first requested a VM instance.
 - Update VM to reflect `0.10.0` SocialDB changes. https://github.com/NearSocial/social-db/pull/8
   - Assume the permission to write is granted by default when `set` is called on the current account.
   - Use `get_account_storage` to account for the shared storage.
