@@ -1674,8 +1674,6 @@ export default class VM {
 
     this.timeouts = new Set();
     this.intervals = new Set();
-
-    this.cachedLibs = {};
   }
 
   stop() {
@@ -1822,7 +1820,9 @@ export default class VM {
       state: deepCopy(state),
       nacl: frozenNacl,
       get elliptic() {
-        return vm.cachedLib("elliptic", elliptic);
+        delete this.elliptic;
+        this.elliptic = _.cloneDeep(elliptic);
+        return this.elliptic;
       },
       nanoid: frozenNanoid,
     };
@@ -1845,9 +1845,5 @@ export default class VM {
     ) : (
       <pre>{JSON.stringify(result, undefined, 2)}</pre>
     );
-  }
-
-  cachedLib(name, lib) {
-    return this.cachedLibs[name] || (this.cachedLibs[name] = _.cloneDeep(lib));
   }
 }
