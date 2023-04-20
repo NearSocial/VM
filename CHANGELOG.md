@@ -2,6 +2,10 @@
 
 ## Pending
 
+- Support `ethers.js` based on https://github.com/NearSocial/viewer/pull/130
+  - Expose `Ethers` and `ethers` in the global scope.
+  - Add custom `Web3Connect` component that renders Web3 connect/disconnect button. Currently, the API is heavily influenced by Web3Onboard API.
+  - VM now exports `EthersProviderContext` React context type. A gateway that wants to support Ethers.js should wrap the app with `EthersProviderContext.Provider` component with the object value `{provider}`. Provider is Web3 provider that can be used to create an Ethers.js provider.
 - Update `near-api-js` dependency to ^2.1.0
 - Fix `elliptic` library by doing a lazy `deepClone` when it's first requested a VM instance.
 - Update VM to reflect `0.10.0` SocialDB changes. https://github.com/NearSocial/social-db/pull/8
