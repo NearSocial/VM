@@ -1,6 +1,7 @@
 import Big from "big.js";
 import React from "react";
 import equal from "deep-equal";
+import { ethers } from "ethers";
 
 export const TGas = Big(10).pow(12);
 export const MaxGasPerTransaction = TGas.mul(250);
@@ -372,6 +373,8 @@ export const deepCopy = (o) => {
     return new Blob([o], { type: o.type });
   } else if (o instanceof Uint8Array || o instanceof ArrayBuffer) {
     return o.slice(0);
+  } else if (o instanceof ethers.BigNumber) {
+    return o;
   } else if (isObject(o)) {
     if (isReactObject(o)) {
       return o;

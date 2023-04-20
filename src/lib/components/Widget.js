@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useState,
@@ -25,6 +26,7 @@ import { useAccountId } from "../data/account";
 import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
+import { EthersProviderContext } from "./ethers";
 
 const AcornOptions = {
   ecmaVersion: 13,
@@ -85,6 +87,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [prevVmInput, setPrevVmInput] = useState(null);
   const [configs, setConfigs] = useState(null);
   const [srcOrCode, setSrcOrCode] = useState(null);
+  const ethersProviderContext = useContext(EthersProviderContext);
 
   const cache = useCache();
   const near = useNear();
@@ -210,6 +213,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       requestCommit,
       version: uuid(),
       widgetConfigs: configs,
+      ethersProviderContext,
     });
     setVm(vm);
     return () => {
@@ -223,6 +227,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     requestCommit,
     confirmTransactions,
     configs,
+    ethersProviderContext,
   ]);
 
   useEffect(() => {
