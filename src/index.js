@@ -5,6 +5,7 @@ import { Widget } from "./lib/components/Widget";
 import { useCache } from "./lib/data/cache";
 import * as utils from "./lib/data/utils";
 import { CommitButton } from "./lib/components/Commit";
+import { EthersProviderContext } from "./lib/components/ethers";
 
 export {
   Widget,
@@ -15,4 +16,5 @@ export {
   useAccount,
   useAccountId,
   utils,
+  EthersProviderContext,
 };
