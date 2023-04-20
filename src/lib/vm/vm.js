@@ -1813,7 +1813,6 @@ export default class VM {
       return "Too deep";
     }
     this.gIndex = 0;
-    const vm = this;
     this.state = {
       props: deepCopy(props),
       context,
