@@ -1,7 +1,6 @@
 import { findAndReplace } from "mdast-util-find-and-replace";
 
-const hashtagRegex =
-  /#(\w+)/gi;
+const hashtagRegex = /#(\w+)/gi;
 
 export default function hashtags() {
   function replace(value, hashtag, match) {

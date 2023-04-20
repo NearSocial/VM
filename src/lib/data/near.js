@@ -3,7 +3,6 @@ import Big from "big.js";
 import { useEffect, useMemo, useState } from "react";
 import { singletonHook } from "react-singleton-hook";
 import { MaxGasPerTransaction, TGas } from "./utils";
-import { init as initializeSegment } from '../data/analytics';
 
 const TestNearConfig = {
   networkId: "testnet",
@@ -203,7 +202,13 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
   }
 }
 
-async function _initNear({ networkId, config, keyStore, selector, segmentId } = {}) {
+async function _initNear({
+  networkId,
+  config,
+  keyStore,
+  selector,
+  walletConnectCallback,
+} = {}) {
   if (!config) {
     config = {};
     if (!networkId) {
@@ -218,8 +223,10 @@ async function _initNear({ networkId, config, keyStore, selector, segmentId } = 
   } else if (config.networkId === "testnet") {
     config = Object.assign({}, config, TestNearConfig);
   }
-  keyStore = keyStore ?? new nearAPI.keyStores.BrowserLocalStorageKeyStore();
 
+  config.walletConnectCallback = walletConnectCallback;
+
+  keyStore = keyStore ?? new nearAPI.keyStores.BrowserLocalStorageKeyStore();
 
   const nearConnection = await nearAPI.connect(
     Object.assign({ deps: { keyStore } }, config)
@@ -312,9 +319,6 @@ async function _initNear({ networkId, config, keyStore, selector, segmentId } = 
   });
 
   _near.accountState = (accountId) => accountState(_near, accountId);
-
-  initializeSegment(segmentId);
-
   return _near;
 }
 
