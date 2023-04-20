@@ -68,6 +68,23 @@ const frozenNacl = Object.freeze({
   verify: deepFreeze(nacl.verify),
 });
 
+// Prepare elliptic
+{
+  const EC = elliptic.ec;
+  for (const name of [
+    "p192",
+    "p224",
+    "p256",
+    "p384",
+    "p521",
+    "curve25519",
+    "ed25519",
+    "secp256k1",
+  ]) {
+    new EC(name);
+  }
+}
+
 const frozenElliptic = Object.freeze({
   version: deepFreeze(elliptic.version),
   utils: deepFreeze(elliptic.utils),
