@@ -2,6 +2,7 @@
 
 ## Pending
 
+- Fix `initNear` logic to assign provided `config` values on top of the default values, instead of reverse.
 - Update `near-api-js` dependency to ^2.1.0
 - Fix `elliptic` library by doing a lazy `deepClone` when it's first requested a VM instance.
 - Update VM to reflect `0.10.0` SocialDB changes. https://github.com/NearSocial/social-db/pull/8
