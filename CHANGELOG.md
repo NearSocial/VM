@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 1.3.0
 
 - Support `ethers.js` based on https://github.com/NearSocial/viewer/pull/130
   - Expose `Ethers` and `ethers` in the global scope.
