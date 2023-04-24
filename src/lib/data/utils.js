@@ -1,6 +1,7 @@
 import Big from "big.js";
 import React from "react";
 import equal from "deep-equal";
+import { ethers } from "ethers";
 
 export const TGas = Big(10).pow(12);
 export const MaxGasPerTransaction = TGas.mul(250);
@@ -336,6 +337,7 @@ function isGetter(obj, prop) {
 }
 
 export const deepFreeze = (obj) => {
+  Object.freeze(obj);
   Object.keys(obj).forEach((prop) => {
     if (
       !isGetter(obj, prop) &&
@@ -345,7 +347,7 @@ export const deepFreeze = (obj) => {
       deepFreeze(obj[prop]);
     }
   });
-  return Object.freeze(obj);
+  return obj;
 };
 
 export const ReactKey = "$$typeof";
@@ -371,6 +373,8 @@ export const deepCopy = (o) => {
     return new Blob([o], { type: o.type });
   } else if (o instanceof Uint8Array || o instanceof ArrayBuffer) {
     return o.slice(0);
+  } else if (o instanceof ethers.BigNumber) {
+    return o;
   } else if (isObject(o)) {
     if (isReactObject(o)) {
       return o;

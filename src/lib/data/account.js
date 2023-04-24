@@ -63,6 +63,7 @@ const loadAccount = async (near, setAccount) => {
   const signedAccountId = near.accountId;
   if (signedAccountId) {
     ls.set(LsKeyAccountId, signedAccountId);
+    near.config.walletConnectCallback(signedAccountId);
   } else {
     ls.remove(LsKeyAccountId);
   }

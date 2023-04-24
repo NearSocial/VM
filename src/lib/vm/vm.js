@@ -28,6 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
+import _ from "lodash";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -57,6 +58,8 @@ import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
+import { ethers } from "ethers";
+import { Web3ConnectButton } from "../components/ethers";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -68,13 +71,10 @@ const frozenNacl = Object.freeze({
   verify: deepFreeze(nacl.verify),
 });
 
-const frozenElliptic = Object.freeze({
-  version: deepFreeze(elliptic.version),
-  utils: deepFreeze(elliptic.utils),
-  curve: deepFreeze(elliptic.curve),
-  curves: deepFreeze(elliptic.curves),
-  ec: Object.freeze(elliptic.ec),
-  eddsa: Object.freeze(elliptic.eddsa),
+const frozenEthers = Object.freeze({
+  utils: deepFreeze(ethers.utils),
+  BigNumber: deepFreeze(ethers.BigNumber),
+  Contract: deepFreeze(ethers.Contract),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -181,6 +181,7 @@ const ApprovedTagsCustom = {
   OverlayTrigger: true,
   Files: true,
   iframe: false,
+  Web3Connect: false,
 };
 
 // will be dynamically indexed into for fetching specific elements
@@ -246,6 +247,7 @@ const Keywords = {
   Map,
   Set,
   clipboard: true,
+  Ethers: true,
 };
 
 const ReservedKeys = {
@@ -644,6 +646,8 @@ class VmStack {
       return <Files {...attributes}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
+    } else if (element === "Web3Connect") {
+      return <Web3ConnectButton {...attributes} />;
     } else if (RadixComp) {
       if (element.includes("Portal")) {
         throw new Error(
@@ -971,6 +975,11 @@ class VmStack {
         return this.isTrusted
           ? navigator.clipboard.writeText(...args)
           : Promise.reject(new Error("Not trusted (not a click)"));
+      } else if (keyword === "Ethers") {
+        if (callee === "provider") {
+          return this.vm.ethersProvider;
+        }
+        return this.vm.cachedEthersCall(callee, args);
       }
     } else {
       const f = callee === keyword ? keywordType : keywordType[callee];
@@ -1659,6 +1668,7 @@ export default class VM {
       requestCommit,
       version,
       widgetConfigs,
+      ethersProviderContext,
     } = options;
 
     if (!code) {
@@ -1679,6 +1689,11 @@ export default class VM {
     this.version = version;
     this.cachedStyledComponents = new Map();
     this.widgetConfigs = widgetConfigs;
+    this.ethersProviderContext = ethersProviderContext;
+
+    this.ethersProvider = ethersProviderContext?.provider
+      ? new ethers.providers.Web3Provider(ethersProviderContext.provider)
+      : null;
 
     this.timeouts = new Set();
     this.intervals = new Set();
@@ -1749,6 +1764,19 @@ export default class VM {
 
   asyncNearView(contractName, methodName, args, blockId) {
     return this.near.viewCall(contractName, methodName, args, blockId);
+  }
+
+  cachedEthersCall(callee, args, subscribe) {
+    return this.cachedPromise(
+      (invalidate) =>
+        this.cache.cachedEthersCall(
+          this.ethersProvider,
+          callee,
+          args,
+          invalidate
+        ),
+      subscribe
+    );
   }
 
   cachedNearView(contractName, methodName, args, blockId, subscribe) {
@@ -1826,7 +1854,12 @@ export default class VM {
       context,
       state: deepCopy(state),
       nacl: frozenNacl,
-      elliptic: frozenElliptic,
+      get elliptic() {
+        delete this.elliptic;
+        this.elliptic = _.cloneDeep(elliptic);
+        return this.elliptic;
+      },
+      ethers: frozenEthers,
       nanoid: frozenNanoid,
     };
     this.forwardedProps = forwardedProps;
