@@ -8,6 +8,7 @@ const Action = {
   Block: "Block",
   LocalStorage: "LocalStorage",
   CustomPromise: "CustomPromise",
+  EthersCall: "EthersCall",
 };
 
 const CacheStatus = {
@@ -385,6 +386,21 @@ class Cache {
       CacheDebug && console.log("Replacing value", key, value);
       this.invalidateCallbacks(cached, false);
     }
+  }
+
+  cachedEthersCall(ethersProvider, callee, args, invalidate) {
+    if (!ethersProvider) {
+      return null;
+    }
+    return this.cachedPromise(
+      {
+        action: Action.EthersCall,
+        callee,
+        args,
+      },
+      () => ethersProvider[callee](...args),
+      invalidate
+    );
   }
 }
 

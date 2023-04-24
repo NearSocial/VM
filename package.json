@@ -44,6 +44,7 @@
     "collections": "^5.1.12",
     "deep-equal": "^2.2.0",
     "elliptic": "^6.5.4",
+    "ethers": "^5.7.2",
     "idb": "^7.1.1",
     "iframe-resizer-react": "^1.1.0",
     "local-storage": "^2.0.0",
