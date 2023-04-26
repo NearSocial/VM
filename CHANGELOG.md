@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Fix the minimum storage deposit for a new account to be attached. This happened because the permission is granted by default, and the logic relied on it first.
+
 ## 1.3.0
 
 - Support `ethers.js` based on https://github.com/NearSocial/viewer/pull/130
