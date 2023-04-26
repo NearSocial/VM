@@ -61,7 +61,7 @@ export const prepareCommit = async (
     .add(ExtraStorageBalance);
   const deposit = bigMax(
     expectedDataBalance.sub(availableBytes.mul(StorageCostPerByte)),
-    permissionGranted ? Big(0) : accountStorage ? Big(1) : MinStorageBalance
+    !accountStorage ? MinStorageBalance : permissionGranted ? Big(0) : Big(1)
   );
   return {
     originalData,
