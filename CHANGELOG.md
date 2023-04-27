@@ -16,6 +16,8 @@
 }}>
 ```
 
+- Bump `near-api-js` dependency to `^2.1.2`
+
 ## 1.3.1
 
 - Fix the minimum storage deposit for a new account to be attached. This happened because the permission is granted by default, and the logic relied on it first.
