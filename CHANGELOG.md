@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:
 
