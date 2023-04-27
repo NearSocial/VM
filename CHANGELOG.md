@@ -1,5 +1,21 @@
 # Changelog
 
+## Pending
+
+- Added support for `onLoad` event for `<iframe>` tags:
+
+```jsx
+<iframe onLoad={() => { console.log('iframe loaded') }}>
+```
+
+- Added support for `onResized` Iframe Resizer event:
+
+```jsx
+<iframe iframeResizer={{
+  onResized: ({width, height}) => { console.log('iframe resized', width, height) },
+}}>
+```
+
 ## 1.3.1
 
 - Fix the minimum storage deposit for a new account to be attached. This happened because the permission is granted by default, and the logic relied on it first.
