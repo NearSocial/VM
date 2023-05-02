@@ -2,7 +2,24 @@
 
 ## Pending
 
-- Add `Link` element. This change requires adding "react-router-dom" to the peer dependencies for the VM. The gateway/viewer apps may need to update their setup to resolve this dependency correctly.
+- Introducing custom gateway elements. To define a custom element, a gateway can populate `customElements` argument in `initNear`. It's an optional object that can be used to register custom elements. The key is the name of the element, and the value is a function that returns a React component. For example:
+
+```js
+initNear({
+  customElements: {
+    Link: (props) => {
+      if (!props.to && props.href) {
+        props.to = props.href;
+        delete props.href;
+      }
+      if (props.to) {
+        props.to = sanitizeUrl(props.to);
+      }
+      return <Link {...props} />;
+    },
+  },
+});
+```
 
 ## 1.3.2
 

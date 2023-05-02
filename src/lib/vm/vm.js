@@ -29,7 +29,6 @@ import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
 import _ from "lodash";
-import { Link } from "react-router-dom";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -183,7 +182,6 @@ const ApprovedTagsCustom = {
   Files: true,
   iframe: false,
   Web3Connect: false,
-  Link: true,
 };
 
 // will be dynamically indexed into for fetching specific elements
@@ -427,6 +425,13 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
+    let customElement = null;
+    if (withChildren === undefined) {
+      if (this.vm.near.config.customElements.hasOwnProperty(element)) {
+        withChildren = true;
+        customElement = this.vm.near.config.customElements[element];
+      }
+    }
     const RadixComp = assertRadixComponent(element);
 
     const customComponent =
@@ -565,10 +570,6 @@ class VmStack {
       if ("href" in attributes) {
         attributes.href = sanitizeUrl(attributes.href);
       }
-    } else if (basicElement === "Link") {
-      if ("to" in attributes) {
-        attributes.to = sanitizeUrl(attributes.to);
-      }
     } else if (element === "Widget") {
       attributes.depth = this.vm.depth + 1;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
@@ -587,7 +588,9 @@ class VmStack {
       return this.executeExpression(child);
     });
 
-    if (customComponent) {
+    if (customElement) {
+      return customElement({ ...attributes, children });
+    } else if (customComponent) {
       return isStyledComponent(customComponent)
         ? React.createElement(customComponent, { ...attributes }, ...children)
         : customComponent({ children, ...attributes });
@@ -654,8 +657,6 @@ class VmStack {
       return <SecureIframe {...attributes} />;
     } else if (element === "Web3Connect") {
       return <Web3ConnectButton {...attributes} />;
-    } else if (element === "Link") {
-      return <Link {...attributes}>{children}</Link>;
     } else if (RadixComp) {
       if (element.includes("Portal")) {
         throw new Error(
