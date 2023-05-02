@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Remove `deepCopy` from `state` and `props`. The VM now only copies the top object, but doesn't do a deep copy. It allows to store and pass complex objects into the state.
+
 ## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:
