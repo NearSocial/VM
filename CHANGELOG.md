@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Add `Link` element. This change requires adding "react-router-dom" to the peer dependencies for the VM. The gateway/viewer apps may need to update their setup to resolve this dependency correctly.
+
 ## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:
