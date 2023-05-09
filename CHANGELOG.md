@@ -1,5 +1,14 @@
 # Changelog
 
+## Pending
+
+- BREAKING CHANGE: Removed all global CSS imports - please update your viewer to import these CSS files instead:
+
+```
+import "react-bootstrap-typeahead/css/Typeahead.css";
+import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
+```
+
 ## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:
