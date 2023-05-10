@@ -195,6 +195,7 @@ async function _initNear({
   keyStore,
   selector,
   walletConnectCallback = () => {},
+  customElements = {},
 }) {
   if (!config) {
     config = {};
@@ -211,6 +212,11 @@ async function _initNear({
     config = Object.assign({}, TestNearConfig, config);
   }
   config.walletConnectCallback = walletConnectCallback;
+  config.customElements = Object.assign(
+    {},
+    config.customElements,
+    customElements
+  );
   keyStore = keyStore ?? new nearAPI.keyStores.BrowserLocalStorageKeyStore();
 
   const nearConnection = await nearAPI.connect(

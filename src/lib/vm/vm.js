@@ -423,6 +423,13 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
+    let customElement = null;
+    if (withChildren === undefined) {
+      if (this.vm.near.config.customElements.hasOwnProperty(element)) {
+        withChildren = true;
+        customElement = this.vm.near.config.customElements[element];
+      }
+    }
     const RadixComp = assertRadixComponent(element);
 
     const customComponent =
@@ -579,7 +586,9 @@ class VmStack {
       return this.executeExpression(child);
     });
 
-    if (customComponent) {
+    if (customElement) {
+      return customElement({ ...attributes, children });
+    } else if (customComponent) {
       return isStyledComponent(customComponent)
         ? React.createElement(customComponent, { ...attributes }, ...children)
         : customComponent({ children, ...attributes });
