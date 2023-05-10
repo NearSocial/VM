@@ -1,5 +1,38 @@
 # Changelog
 
+## Pending
+
+- Introducing custom gateway elements. To define a custom element, a gateway can populate `customElements` argument in `initNear`. It's an optional object that can be used to register custom elements. The key is the name of the element, and the value is a function that returns a React component. For example:
+
+```js
+initNear({
+  customElements: {
+    Link: (props) => {
+      if (!props.to && props.href) {
+        props.to = props.href;
+        delete props.href;
+      }
+      if (props.to) {
+        props.to = sanitizeUrl(props.to);
+      }
+      return <Link {...props} />;
+    },
+  },
+});
+```
+- Remove `deepCopy` from `state` and `props`. The VM now only copies the top object, but doesn't do a deep copy. It allows to store and pass complex objects into the state.
+
+## 2.0.0
+
+- Uses NAJ action creators rather than POJOs, so they serialize correctly when passed directly to borsh
+- Updates near-api-js to be a peer dependency to avoid multiple copies of NAJ loading at once
+- Removed all global CSS imports. Please update your viewer by installing `react-bootstrap-typeahead` and importing these CSS files:
+
+```
+import "react-bootstrap-typeahead/css/Typeahead.css";
+import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
+```
+
 ## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:
