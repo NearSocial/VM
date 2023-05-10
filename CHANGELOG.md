@@ -1,8 +1,12 @@
 # Changelog
 
+## Pending
+
+- Remove `deepCopy` from `state` and `props`. The VM now only copies the top object, but doesn't do a deep copy. It allows to store and pass complex objects into the state.
+
 ## 2.0.0
 
-- Uses NAJ action creators rather than POJOs so they serialize correctlywhen passed directly to borsh
+- Uses NAJ action creators rather than POJOs, so they serialize correctly when passed directly to borsh
 - Updates near-api-js to be a peer dependency to avoid multiple copies of NAJ loading at once
 - Removed all global CSS imports. Please update your viewer by installing `react-bootstrap-typeahead` and importing these CSS files:
 
