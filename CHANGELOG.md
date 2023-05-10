@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.0
+
+- Uses NAJ action creators rather than POJOs so they serialize correctlywhen passed directly to borsh
+- Updates near-api-js to be a peer dependency to avoid multiple copies of NAJ loading at once
+- Removed all global CSS imports. Please update your viewer by installing `react-bootstrap-typeahead` and importing these CSS files:
+
+```
+import "react-bootstrap-typeahead/css/Typeahead.css";
+import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
+```
+
 ## 1.3.2
 
 - Added support for `onLoad` event for `<iframe>` tags:

@@ -17,8 +17,6 @@ import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
 import { CommitButton } from "../components/Commit";
-import "react-bootstrap-typeahead/css/Typeahead.css";
-import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
 import { Typeahead } from "react-bootstrap-typeahead";
 import styled, { isStyledComponent, keyframes } from "styled-components";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
