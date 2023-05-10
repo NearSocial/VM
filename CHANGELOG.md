@@ -2,6 +2,8 @@
 
 ## Pending
 
+- Uses NAJ action creators rather than POJOs so they serialize correctlywhen passed directly to borsh
+- Updates near-api-js to be a peer dependency to avoid multiple copies of NAJ loading at once
 - BREAKING CHANGE: Removed all global CSS imports - please update your viewer to import these CSS files instead:
 
 ```
