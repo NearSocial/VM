@@ -1,10 +1,10 @@
 # Changelog
 
-## Pending
+## 2.0.0
 
 - Uses NAJ action creators rather than POJOs so they serialize correctlywhen passed directly to borsh
 - Updates near-api-js to be a peer dependency to avoid multiple copies of NAJ loading at once
-- BREAKING CHANGE: Removed all global CSS imports - please update your viewer to import these CSS files instead:
+- Removed all global CSS imports. Please update your viewer by installing `react-bootstrap-typeahead` and importing these CSS files:
 
 ```
 import "react-bootstrap-typeahead/css/Typeahead.css";
