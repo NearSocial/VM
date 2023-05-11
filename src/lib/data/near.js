@@ -82,16 +82,6 @@ async function functionCall(
   try {
     const wallet = await (await near.selector).wallet();
 
-    console.log(
-      "sending args",
-      args,
-      functionCallCreator(
-        methodName,
-        args,
-        gas ?? TGas.mul(30).toFixed(0),
-        deposit ?? "0"
-      )
-    );
     return await wallet.signAndSendTransaction({
       receiverId: contractName,
       actions: [
