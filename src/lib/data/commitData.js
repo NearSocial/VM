@@ -5,13 +5,15 @@ import {
   extractKeys,
   removeDuplicates,
   StorageCostPerByte,
-  TGas
+  TGas,
 } from "./utils";
 import Big from "big.js";
 
 import * as nearAPI from "near-api-js";
 
-const { transactions: { functionCall: functionCallCreator } } = nearAPI;
+const {
+  transactions: { functionCall: functionCallCreator },
+} = nearAPI;
 
 const MinStorageBalance = StorageCostPerByte.mul(2000);
 const InitialAccountStorageBalance = StorageCostPerByte.mul(500);
@@ -21,7 +23,7 @@ const StorageForPermission = StorageCostPerByte.mul(500);
 const fetchCurrentData = async (near, data) => {
   const keys = extractKeys(data);
   return await near.contract.get({
-    keys
+    keys,
   });
 };
 
@@ -39,18 +41,18 @@ export const prepareCommit = async (
   }
   const [accountStorage, permissionGranted] = await Promise.all([
     near.viewCall(near.config.contractName, "get_account_storage", {
-      account_id: signedAccountId
+      account_id: signedAccountId,
     }),
     signedAccountId !== accountId
       ? near.viewCall(near.config.contractName, "is_write_permission_granted", {
-        predecessor_id: signedAccountId,
-        key: accountId
-      })
-      : Promise.resolve(true)
+          predecessor_id: signedAccountId,
+          key: accountId,
+        })
+      : Promise.resolve(true),
   ]);
   const availableBytes = Big(accountStorage?.available_bytes || "0");
   let data = {
-    [accountId]: convertToStringLeaves(originalData)
+    [accountId]: convertToStringLeaves(originalData),
   };
   let currentData = {};
   if (!forceRewrite) {
@@ -76,7 +78,7 @@ export const prepareCommit = async (
     data,
     expectedDataBalance,
     deposit,
-    permissionGranted
+    permissionGranted,
   };
 };
 
@@ -85,7 +87,7 @@ export const asyncCommit = async (near, data, deposit) => {
 
   return await near.contract.set(
     {
-      data
+      data,
     },
     TGas.mul(100).toFixed(0),
     deposit.toFixed(0)
@@ -107,9 +109,10 @@ export const requestPermissionAndCommit = async (near, data, deposit) => {
   if (near.publicKey) {
     actions.push(
       functionCallCreator(
-        "grant_write_permission", {
+        "grant_write_permission",
+        {
           public_key: near.publicKey.toString(),
-          keys: [near.accountId]
+          keys: [near.accountId],
         },
         TGas.mul(100).toFixed(0),
         deposit.gt(0) ? deposit.toFixed(0) : "1"
@@ -117,9 +120,16 @@ export const requestPermissionAndCommit = async (near, data, deposit) => {
     );
     deposit = Big(0);
   }
-  actions.push(functionCallCreator("set", { data }, TGas.mul(100).toFixed(0), deposit.gt(0) ? deposit.toFixed(0) : "1"));
+  actions.push(
+    functionCallCreator(
+      "set",
+      { data },
+      TGas.mul(100).toFixed(0),
+      deposit.gt(0) ? deposit.toFixed(0) : "1"
+    )
+  );
   return await wallet.signAndSendTransaction({
     receiverId: near.config.contractName,
-    actions
+    actions,
   });
 };
