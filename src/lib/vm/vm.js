@@ -248,6 +248,7 @@ const Keywords = {
   Set,
   clipboard: true,
   Ethers: true,
+  VM: true,
 };
 
 const ReservedKeys = {
@@ -1001,6 +1002,8 @@ class VmStack {
         return this.isTrusted
           ? navigator.clipboard.writeText(...args)
           : Promise.reject(new Error("Not trusted (not a click)"));
+      } else if (keyword === "VM" && callee === "require") {
+        return this.vm.vmRequire(...args);
       } else if (keyword === "Ethers") {
         if (callee === "provider") {
           return this.vm.ethersProvider;
@@ -1695,9 +1698,12 @@ export default class VM {
       version,
       widgetConfigs,
       ethersProviderContext,
+      isModule,
     } = options;
 
     this.alive = true;
+    this.isModule = isModule;
+    this.rawCode = rawCode;
 
     this.near = near;
     try {
@@ -1713,8 +1719,11 @@ export default class VM {
       throw new Error("Not a program");
     }
 
-    this.setReactState = (s) =>
-      setReactState(isObject(s) ? Object.assign({}, s) : s);
+    this.setReactState = setReactState
+      ? (s) => setReactState(isObject(s) ? Object.assign({}, s) : s)
+      : () => {
+          throw new Error("State is unavailable for modules");
+        };
     this.cache = cache;
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
@@ -1732,12 +1741,17 @@ export default class VM {
 
     this.timeouts = new Set();
     this.intervals = new Set();
+    this.vmInstances = new Map();
   }
 
   stop() {
+    if (!this.alive) {
+      return;
+    }
     this.alive = false;
     this.timeouts.forEach((timeout) => clearTimeout(timeout));
     this.intervals.forEach((interval) => clearInterval(interval));
+    this.vmInstances.forEach((vm) => vm.stop());
   }
 
   cachedPromise(promise, subscribe) {
@@ -1879,7 +1893,52 @@ export default class VM {
     });
   }
 
-  renderCode({ props, context, state, forwardedProps }) {
+  vmRequire(src) {
+    const [srcPath, version] = src.split("@");
+    const code = this.cachedSocialGet(
+      srcPath.toString(),
+      false,
+      version, // may be undefined, meaning `latest`
+      undefined
+    );
+    if (!code) {
+      return code;
+    }
+    const vm = this.getVmInstance(code, src);
+    return vm.execCode({
+      context: deepCopy(this.context),
+      forwardedProps: this.forwardedProps,
+    });
+  }
+
+  getVmInstance(code, src) {
+    if (this.vmInstances.has(src)) {
+      const vm = this.vmInstances[src];
+      if (vm.rawCode === code) {
+        return vm;
+      }
+      vm.stop();
+      this.vmInstances.delete(src);
+    }
+    const vm = new VM({
+      near: this.near,
+      rawCode: code,
+      cache: this.cache,
+      refreshCache: this.refreshCache,
+      confirmTransactions: this.confirmTransactions,
+      depth: this.depth + 1,
+      widgetSrc: src,
+      requestCommit: this.requestCommit,
+      version: this.version,
+      widgetConfigs: this.widgetConfigs,
+      ethersProviderContext: this.ethersProviderContext,
+      isModule: true,
+    });
+    this.vmInstances.set(src, vm);
+    return vm;
+  }
+
+  renderCode(args) {
     if (this.compileError) {
       return (
         <div className="alert alert-danger">
@@ -1888,6 +1947,21 @@ export default class VM {
           <pre>{this.compileError.stack}</pre>
         </div>
       );
+    }
+    const result = this.execCode(args);
+
+    return isReactObject(result) ||
+      typeof result === "string" ||
+      typeof result === "number" ? (
+      result
+    ) : (
+      <pre>{JSON.stringify(result, undefined, 2)}</pre>
+    );
+  }
+
+  execCode({ props, context, state, forwardedProps }) {
+    if (this.compileError) {
+      throw this.compileError;
     }
     if (this.depth >= MaxDepth) {
       return "Too deep";
@@ -1916,14 +1990,6 @@ export default class VM {
     if (executionResult?.continue) {
       throw new Error("ContinueStatement outside of a loop");
     }
-    const result = executionResult?.result;
-
-    return isReactObject(result) ||
-      typeof result === "string" ||
-      typeof result === "number" ? (
-      result
-    ) : (
-      <pre>{JSON.stringify(result, undefined, 2)}</pre>
-    );
+    return executionResult?.result;
   }
 }
