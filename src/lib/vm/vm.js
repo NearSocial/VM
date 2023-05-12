@@ -27,6 +27,8 @@ import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
 import _ from "lodash";
+import { Parser } from "acorn";
+import jsx from "acorn-jsx";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -257,6 +259,21 @@ const ReservedKeys = {
   __defineSetter__: true,
   __lookupGetter__: true,
   __lookupSetter__: true,
+};
+
+const AcornOptions = {
+  ecmaVersion: 13,
+  allowReturnOutsideFunction: true,
+};
+
+const ParsedCodeCache = {};
+const JsxParser = Parser.extend(jsx());
+
+const parseCode = (code) => {
+  if (code in ParsedCodeCache) {
+    return ParsedCodeCache[code];
+  }
+  return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
 };
 
 const assertNotReservedKey = (key) => {
@@ -1667,7 +1684,7 @@ export default class VM {
   constructor(options) {
     const {
       near,
-      code,
+      rawCode,
       setReactState,
       cache,
       refreshCache,
@@ -1680,14 +1697,22 @@ export default class VM {
       ethersProviderContext,
     } = options;
 
-    if (!code) {
-      throw new Error("Not a program");
-    }
-
     this.alive = true;
 
     this.near = near;
-    this.code = code;
+    try {
+      this.code = parseCode(rawCode);
+      this.compileError = null;
+    } catch (e) {
+      this.code = null;
+      this.compileError = e;
+      console.error(e);
+    }
+
+    if (!this.code) {
+      throw new Error("Not a program");
+    }
+
     this.setReactState = (s) =>
       setReactState(isObject(s) ? Object.assign({}, s) : s);
     this.cache = cache;
@@ -1855,6 +1880,15 @@ export default class VM {
   }
 
   renderCode({ props, context, state, forwardedProps }) {
+    if (this.compileError) {
+      return (
+        <div className="alert alert-danger">
+          Compilation error:
+          <pre>{this.compileError.message}</pre>
+          <pre>{this.compileError.stack}</pre>
+        </div>
+      );
+    }
     if (this.depth >= MaxDepth) {
       return "Too deep";
     }
