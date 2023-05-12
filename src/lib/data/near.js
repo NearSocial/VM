@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { singletonHook } from "react-singleton-hook";
 import { MaxGasPerTransaction, TGas } from "./utils";
 
-const { transactions: { functionCall: functionCallCreator }} = nearAPI;
-
 const TestNearConfig = {
   networkId: "testnet",
   nodeUrl: "https://rpc.testnet.near.org",
@@ -74,7 +72,15 @@ async function functionCall(
     console.log('sending args', args);
     return await wallet.signAndSendTransaction({
       receiverId: contractName,
-      actions: [functionCallCreator(methodName, args, gas ?? TGas.mul(30).toFixed(0), deposit ?? "0")],
+      actions: [{
+        type: "FunctionCall",
+        params: {
+            methodName: methodName,
+            args,
+            gas: gas ?? TGas.mul(30).toFixed(0),
+            deposit: deposit ?? "0"
+        }
+      }],
     });
   } catch (e) {
     // const msg = e.toString();
