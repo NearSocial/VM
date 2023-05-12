@@ -423,6 +423,13 @@ class VmStack {
         ? "Fragment"
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
+    let customElement = null;
+    if (withChildren === undefined) {
+      if (this.vm.near.config.customElements.hasOwnProperty(element)) {
+        withChildren = true;
+        customElement = this.vm.near.config.customElements[element];
+      }
+    }
     const RadixComp = assertRadixComponent(element);
 
     const customComponent =
@@ -579,7 +586,9 @@ class VmStack {
       return this.executeExpression(child);
     });
 
-    if (customComponent) {
+    if (customElement) {
+      return customElement({ ...attributes, children });
+    } else if (customComponent) {
       return isStyledComponent(customComponent)
         ? React.createElement(customComponent, { ...attributes }, ...children)
         : customComponent({ children, ...attributes });
@@ -909,7 +918,7 @@ class VmStack {
       } else if (keyword === "State" && callee === "update") {
         if (isObject(args[0])) {
           this.vm.state.state = this.vm.state.state ?? {};
-          Object.assign(this.vm.state.state, deepCopy(args[0]));
+          Object.assign(this.vm.state.state, args[0]);
         } else if (args[0] instanceof Function) {
           this.vm.state.state = this.vm.state.state ?? {};
           this.vm.state.state = args[0](this.vm.state.state);
@@ -918,6 +927,8 @@ class VmStack {
           throw new Error("The state was not initialized");
         }
         this.vm.setReactState(this.vm.state.state);
+        return this.vm.state.state;
+      } else if (keyword === "State" && callee === "get") {
         return this.vm.state.state;
       } else if (keyword === "Storage" && callee === "privateSet") {
         if (args.length < 2) {
@@ -1677,7 +1688,8 @@ export default class VM {
 
     this.near = near;
     this.code = code;
-    this.setReactState = (s) => setReactState(deepCopy(s));
+    this.setReactState = (s) =>
+      setReactState(isObject(s) ? Object.assign({}, s) : s);
     this.cache = cache;
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
@@ -1848,9 +1860,9 @@ export default class VM {
     }
     this.gIndex = 0;
     this.state = {
-      props: deepCopy(props),
+      props: isObject(props) ? Object.assign({}, props) : props,
       context,
-      state: deepCopy(state),
+      state,
       nacl: frozenNacl,
       get elliptic() {
         delete this.elliptic;
