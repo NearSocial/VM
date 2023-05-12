@@ -8,12 +8,7 @@ import {
   TGas,
 } from "./utils";
 import Big from "big.js";
-
-import * as nearAPI from "near-api-js";
-
-const {
-  transactions: { functionCall: functionCallCreator },
-} = nearAPI;
+import { functionCallCreator } from "./near";
 
 const MinStorageBalance = StorageCostPerByte.mul(2000);
 const InitialAccountStorageBalance = StorageCostPerByte.mul(500);
