@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.1.0
 
 - Revert functionCall action creator back to use JSON, since wallet selector automatically converts actions from JSON.
 - Introducing custom gateway elements. To define a custom element, a gateway can populate `customElements` argument in `initNear`. It's an optional object that can be used to register custom elements. The key is the name of the element, and the value is a function that returns a React component. For example:
