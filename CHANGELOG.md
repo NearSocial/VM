@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Add `WebSocket` object and support native events for function arguments (needed to get `data`). Websockets are automatically closed when a VM instance is stopped.
+
 ## 2.1.0
 
 - Revert functionCall action creator back to use JSON, since wallet selector automatically converts actions from JSON.

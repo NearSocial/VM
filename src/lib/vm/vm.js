@@ -246,6 +246,7 @@ const Keywords = {
   Set,
   clipboard: true,
   Ethers: true,
+  WebSocket: true,
 };
 
 const ReservedKeys = {
@@ -989,6 +990,14 @@ class VmStack {
           return this.vm.ethersProvider;
         }
         return this.vm.cachedEthersCall(callee, args);
+      } else if (keyword === "WebSocket") {
+        if (callee === "WebSocket") {
+          const websocket = new WebSocket(...args);
+          this.vm.websockets.push(websocket);
+          return websocket;
+        } else {
+          throw new Error("Unsupported WebSocket method");
+        }
       }
     } else {
       const f = callee === keyword ? keywordType : keywordType[callee];
@@ -1371,6 +1380,8 @@ class VmStack {
             if (arg?.nativeEvent instanceof Event) {
               arg.preventDefault();
               arg = arg.nativeEvent;
+            }
+            if (arg instanceof Event) {
               arg = {
                 target: {
                   value: arg?.target?.value,
@@ -1707,12 +1718,14 @@ export default class VM {
 
     this.timeouts = new Set();
     this.intervals = new Set();
+    this.websockets = [];
   }
 
   stop() {
     this.alive = false;
     this.timeouts.forEach((timeout) => clearTimeout(timeout));
     this.intervals.forEach((interval) => clearInterval(interval));
+    this.websockets.forEach((websocket) => websocket.close());
   }
 
   cachedPromise(promise, subscribe) {

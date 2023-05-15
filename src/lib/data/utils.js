@@ -375,6 +375,10 @@ export const deepCopy = (o) => {
     return o.slice(0);
   } else if (o instanceof ethers.BigNumber) {
     return o;
+  } else if (o instanceof Date) {
+    return new Date(o);
+  } else if (o instanceof WebSocket) {
+    return o;
   } else if (isObject(o)) {
     if (isReactObject(o)) {
       return o;
