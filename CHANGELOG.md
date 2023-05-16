@@ -3,6 +3,7 @@
 ## Pending
 
 - Add `WebSocket` object and support native events for function arguments (needed to get `data`). Websockets are automatically closed when a VM instance is stopped.
+- Switch the archival testnet and mainnet URLs to Pagoda's higher capacity public archival node
 
 ## 2.1.0
 
