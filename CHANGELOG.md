@@ -4,6 +4,8 @@
 
 - Add `WebSocket` object and support native events for function arguments (needed to get `data`). Websockets are automatically closed when a VM instance is stopped.
 
+- Switch the archival testnet and mainnet URLs to Pagoda's higher capcity public archival node
+
 ## 2.1.0
 
 - Revert functionCall action creator back to use JSON, since wallet selector automatically converts actions from JSON.
