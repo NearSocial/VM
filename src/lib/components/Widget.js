@@ -5,8 +5,6 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import { Parser } from "acorn";
-import jsx from "acorn-jsx";
 import { useNear } from "../data/near";
 import ConfirmTransactions from "./ConfirmTransactions";
 import VM from "../vm/vm";
@@ -27,21 +25,6 @@ import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
 import { EthersProviderContext } from "./ethers";
-
-const AcornOptions = {
-  ecmaVersion: 13,
-  allowReturnOutsideFunction: true,
-};
-
-const ParsedCodeCache = {};
-const JsxParser = Parser.extend(jsx());
-
-const parseCode = (code) => {
-  if (code in ParsedCodeCache) {
-    return ParsedCodeCache[code];
-  }
-  return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
-};
 
 const computeSrcOrCode = (src, code, configs) => {
   let srcOrCode = src ? { src } : code ? { code } : null;
@@ -79,7 +62,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [src, setSrc] = useState(null);
   const [state, setState] = useState(undefined);
   const [cacheNonce, setCacheNonce] = useState(0);
-  const [parsedCode, setParsedCode] = useState(null);
   const [context, setContext] = useState({});
   const [vm, setVm] = useState(null);
   const [transactions, setTransactions] = useState(null);
@@ -148,20 +130,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
           </div>
         );
       }
-      return;
-    }
-    try {
-      const parsedCode = parseCode(code);
-      setParsedCode({ parsedCode });
-    } catch (e) {
-      setElement(
-        <div className="alert alert-danger">
-          Compilation error:
-          <pre>{e.message}</pre>
-          <pre>{e.stack}</pre>
-        </div>
-      );
-      console.error(e);
     }
   }, [code, src]);
 
@@ -195,13 +163,13 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   );
 
   useEffect(() => {
-    if (!near || !parsedCode) {
+    if (!near || !code) {
       return;
     }
     setState(undefined);
     const vm = new VM({
       near,
-      code: parsedCode.parsedCode,
+      rawCode: code,
       setReactState: setState,
       cache,
       refreshCache: () => {
@@ -222,7 +190,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   }, [
     src,
     near,
-    parsedCode,
+    code,
     depth,
     requestCommit,
     confirmTransactions,
