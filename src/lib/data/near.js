@@ -20,7 +20,7 @@ export const functionCallCreator = UseLegacyFunctionCallCreator
 const TestNearConfig = {
   networkId: "testnet",
   nodeUrl: "https://rpc.testnet.near.org",
-  archivalNodeUrl: "https://archival-rpc.testnet.near.org",
+  archivalNodeUrl: "https://rpc.testnet.internal.near.org",
   contractName: "v1.social08.testnet",
   walletUrl: "https://wallet.testnet.near.org",
   wrapNearAccountId: "wrap.testnet",
@@ -31,7 +31,7 @@ const TestNearConfig = {
 export const MainNearConfig = {
   networkId: "mainnet",
   nodeUrl: "https://rpc.mainnet.near.org",
-  archivalNodeUrl: "https://archival-rpc.mainnet.near.org",
+  archivalNodeUrl: "https://rpc.mainnet.internal.near.org",
   contractName: "social.near",
   walletUrl: "https://wallet.near.org",
   wrapNearAccountId: "wrap.near",
