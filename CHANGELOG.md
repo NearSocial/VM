@@ -1,5 +1,32 @@
 # Changelog
 
+## 2.2.0
+
+- _BETA_: Introduce `VM.require`. This is a new API that allows to retrieve a module source from the Social DB, execute it and return the results.
+
+Note, this should be considered a beta feature and the API and the functionality might change.
+
+`VM.require(src)` takes a `src` the path for the source code of the module.
+The `src` argument may contain the source version by including the `blockHeight`. E.g. `VM.require("mob.near/widget/Module.Abc@91698491")` to get the source code at block height `91698491`.
+
+Module example:
+```jsx
+function Magic(props) {
+  return <div>Magic: {props.children}</div>;
+}
+
+return { Magic };
+```
+
+Widget example:
+```jsx
+const { Magic } = VM.require("mob.near/widget/Module.Magic");
+
+return <Magic>Hello World</Magic>;
+```
+
+- Add `WebSocket` object and support native events for function arguments (needed to get `data`). Websockets are automatically closed when a VM instance is stopped.
+
 ## 2.1.0
 
 - Revert functionCall action creator back to use JSON, since wallet selector automatically converts actions from JSON.
