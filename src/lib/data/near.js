@@ -356,3 +356,14 @@ export const useNear = singletonHook(defaultNear, () => {
 
   return near;
 });
+
+export const useMainnetNear = () => {
+  const [near, setNear] = useState(defaultNear);
+  const nearPromise = _initNear({networkId: 'mainnet'});
+
+  useEffect(() => {
+    nearPromise && nearPromise.then(setNear);
+  }, [nearPromise]);
+
+  return near;
+}
