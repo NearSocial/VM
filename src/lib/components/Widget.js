@@ -72,9 +72,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const ethersProviderContext = useContext(EthersProviderContext);
 
   const cache = useCache();
-  const propsNear = props.near
-  const singletonNear = useNear();
-  const near = propsNear || singletonNear;
+  const near = useNear();
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
@@ -170,7 +168,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     }
     setState(undefined);
     const vm = new VM({
-      near,
+      near: props.otherEnvNear || near,
       rawCode: code,
       setReactState: setState,
       cache,
