@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Add testnet URL to the config.
+
 ## 2.2.0
 
 - _BETA_: Introduce `VM.require`. This is a new API that allows to retrieve a module source from the Social DB, execute it and return the results.
