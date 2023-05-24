@@ -76,6 +76,10 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
+  if(props.otherEnvNear) {
+    console.log(props.otherEnvNear, '<<<< mainnetNear', near, '<<<< testnetNear')
+  }
+
   useEffect(() => {
     const newConfigs = propsConfig
       ? Array.isArray(propsConfig)
