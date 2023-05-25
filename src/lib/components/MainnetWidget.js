@@ -5,5 +5,5 @@ import { useMainnetNear } from "../data/near";
 export const MainnetWidget = (props) => {
   const near = useMainnetNear();
   console.log(near, '<<< mainnetNear')
-  return <Widget {...props} otherEnvNear={near} />
+  return <Widget {...props} overrideNear={near} />
 }
