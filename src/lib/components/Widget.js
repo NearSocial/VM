@@ -264,7 +264,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     >
       <>
         {element}
-        {transactions && (
+        {transactions && !overrideNear && (
           <ConfirmTransactions
             nearOverride={near}
             transactions={transactions}
