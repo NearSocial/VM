@@ -266,6 +266,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         {element}
         {transactions && (
           <ConfirmTransactions
+            nearOverride={near}
             transactions={transactions}
             onHide={() => setTransactions(null)}
           />
@@ -273,6 +274,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         {commitRequest && (
           <CommitModal
             show={true}
+            nearOverride={near}
             widgetSrc={src}
             data={commitRequest.data}
             force={commitRequest.force}

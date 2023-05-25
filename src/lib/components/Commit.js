@@ -33,7 +33,8 @@ const StorageType = {
 };
 
 export const CommitModal = (props) => {
-  const near = useNear();
+  const singletonNear = useNear();
+  const near = props.nearOverride || singletonNear;
   const accountId = useAccountId();
   const cache = useCache();
 
