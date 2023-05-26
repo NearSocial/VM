@@ -14,8 +14,7 @@ ${json}
 
 export default function ConfirmTransactions(props) {
   const gkey = useState(uuid());
-  const singletonNear = useNear()
-  const near = props.nearOverride || singletonNear;
+  const near = useNear();
   const [loading, setLoading] = useState(false);
 
   const onHide = props.onHide;

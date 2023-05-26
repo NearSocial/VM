@@ -76,7 +76,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const singletonNear = useNear();
   const overrideNear = useContext(NearOverrideContext)
   const near = overrideNear || singletonNear;
-  const accountId = useAccountId(near);
+  const accountId = useAccountId();
   const [element, setElement] = useState(null);
 
   useEffect(() => {
@@ -265,9 +265,8 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     >
       <>
         {element}
-        {transactions && !overrideNear && (
+        {transactions && (
           <ConfirmTransactions
-            nearOverride={near}
             transactions={transactions}
             onHide={() => setTransactions(null)}
           />
@@ -275,7 +274,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         {commitRequest && (
           <CommitModal
             show={true}
-            nearOverride={near}
             widgetSrc={src}
             data={commitRequest.data}
             force={commitRequest.force}
