@@ -25,6 +25,7 @@ import Big from "big.js";
 import uuid from "react-uuid";
 import { isFunction } from "react-bootstrap-typeahead/types/utils";
 import { EthersProviderContext } from "./ethers";
+import { NearOverrideContext } from "./MainnetWidget";
 
 const computeSrcOrCode = (src, code, configs) => {
   let srcOrCode = src ? { src } : code ? { code } : null;
@@ -54,7 +55,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     depth,
     config: propsConfig,
     props: propsProps,
-    overrideNear,
     ...forwardedProps
   } = props;
 
@@ -74,6 +74,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
 
   const cache = useCache();
   const singletonNear = useNear();
+  const overrideNear = useContext(NearOverrideContext)
   const near = overrideNear || singletonNear;
   const accountId = useAccountId(near);
   const [element, setElement] = useState(null);
