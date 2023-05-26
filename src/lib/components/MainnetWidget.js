@@ -1,12 +1,12 @@
 import { Widget } from "./Widget";
-import React, { useContext } from "react";
+import React, { createContext } from "react";
 import { useMainnetNear } from "../data/near";
 
-export const NearOverrideContext = useContext()
+export const NearOverrideContext = createContext()
 
 export const MainnetWidget = (props) => {
   const near = useMainnetNear();
-  console.log(near, '<<< mainnetNear context')
+  console.log(near, '<<< mainnetNear context1')
 
   return (
     <NearOverrideContext.Provider value={near}>
