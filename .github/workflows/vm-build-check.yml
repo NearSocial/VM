@@ -13,23 +13,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: actions/setup-node@v3
         with:
           node-version: "16.x"
+      
       - name: Copy dist/index.js
         run: |
           mkdir target
           cp dist/index.js target/index.js
+      
       - name: Install dependencies
         run: yarn
+      
       - name: Build VM
         run: yarn build
 
-      - name: Compare
+      - name: Check dist/index.js
         run: cmp dist/index.js target/index.js
-      # - name: Compare the build with target/index.js
-      #   if: cmp --silent dist/index.js target/index.js
-      #   uses: actions/github-script@v3
-      #   with:
-      #     script: |
-      #         core.setFailed('The dist/index.js seems to be stale. Please run 'yarn build' and commit the dist/index.js file.')
+
+      - name: Failure message
+        if: failure()
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('The dist/index.js seems to be stale. Please run *yarn build* and commit the dist/index.js file.')
