@@ -1,0 +1,37 @@
+name: Run build check
+
+on:  
+  pull_request:
+    branches: [dev, master]
+
+jobs:
+  build:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.x"
+      
+      - name: Copy dist/index.js
+        run: |
+          mkdir target
+          cp dist/index.js target/index.js
+      
+      - name: Install dependencies
+        run: yarn
+      
+      - name: Build
+        run: yarn build
+
+      - name: Check dist/index.js
+        run: cmp dist/index.js target/index.js
+
+      - name: Failure message
+        if: failure()
+        uses: actions/github-script@v3
+        with:
+          script: |
+              core.setFailed('The dist/index.js seems to be stale. Please run *yarn build* and commit the dist/index.js file.')
