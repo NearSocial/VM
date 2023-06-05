@@ -2,6 +2,7 @@
 
 ## Pending
 
+- Fix href sanitization for non-lowercase attribute names.
 - Add testnet URL to the config.
 - Fix SecureIframe bug which did not allow posting a message to iframe window if iframeResizer was used
   An example of a valid `srcDoc` for a SecureIframe using iframeResizer:
