@@ -479,7 +479,6 @@ class VmStack {
       attributes.className = "btn btn-outline-primary";
     }
 
-    const lowercaseAttributeNames = new Map();
     const rawAttributes = {};
 
     (code.type === "JSXFragment"
