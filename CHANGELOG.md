@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.2.1
 
 - Fix href sanitization for non-lowercase attribute names.
 - Add testnet URL to the config.
