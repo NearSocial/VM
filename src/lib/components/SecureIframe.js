@@ -94,6 +94,12 @@ export default function SecureIframe(allProps) {
   useEffect(() => {
     if (ref.current && loaded && !deepEqual(prevMessage, message)) {
       setPrevMessage(deepCopy(message));
+
+      if (iframeResizer) {
+        ref.current.sendMessage(message, "*");
+        return;
+      }
+
       ref.current.contentWindow.postMessage(message, "*");
     }
   }, [message, ref, loaded, prevMessage]);

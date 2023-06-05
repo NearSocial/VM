@@ -1,5 +1,44 @@
 # Changelog
 
+## 2.2.1
+
+- Fix href sanitization for non-lowercase attribute names.
+- Add testnet URL to the config.
+- Fix SecureIframe bug which did not allow posting a message to iframe window if iframeResizer was used
+  An example of a valid `srcDoc` for a SecureIframe using iframeResizer:
+
+```jsx
+const code = `
+<script>
+// ...your code...
+
+// define message handler
+const handleMessage = (m) => {
+  console.log('received message', m)
+  document.getElementById("messageText").innerHTML = m;
+};
+
+// finally, configure iframe resizer options before importing the script
+window.iFrameResizer = {
+    onMessage: handleMessage
+  }
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.js"></script>
+<p id="messageText">loading...</p>
+`;
+
+return (
+  <div>
+    <iframe
+      iframeResizer
+      className="w-100"
+      srcDoc={code}
+      message="my message"
+    />
+  </div>
+);
+```
+
 ## 2.2.0
 
 - _BETA_: Introduce `VM.require`. This is a new API that allows to retrieve a module source from the Social DB, execute it and return the results.
@@ -10,6 +49,7 @@ Note, this should be considered a beta feature and the API and the functionality
 The `src` argument may contain the source version by including the `blockHeight`. E.g. `VM.require("mob.near/widget/Module.Abc@91698491")` to get the source code at block height `91698491`.
 
 Module example:
+
 ```jsx
 function Magic(props) {
   return <div>Magic: {props.children}</div>;
@@ -19,6 +59,7 @@ return { Magic };
 ```
 
 Widget example:
+
 ```jsx
 const { Magic } = VM.require("mob.near/widget/Module.Magic");
 
@@ -48,6 +89,7 @@ initNear({
   },
 });
 ```
+
 - Remove `deepCopy` from `state` and `props`. The VM now only copies the top object, but doesn't do a deep copy. It allows to store and pass complex objects into the state.
 
 ## 2.0.0

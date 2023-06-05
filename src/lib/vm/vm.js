@@ -584,9 +584,11 @@ class VmStack {
     if (basicElement === "img") {
       attributes.alt = attributes.alt ?? "not defined";
     } else if (basicElement === "a") {
-      if ("href" in attributes) {
-        attributes.href = sanitizeUrl(attributes.href);
-      }
+      Object.entries(attributes).forEach(([name, value]) => {
+        if (name.toLowerCase() === "href") {
+          attributes[name] = sanitizeUrl(value);
+        }
+      });
     } else if (element === "Widget") {
       attributes.depth = this.vm.depth + 1;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
