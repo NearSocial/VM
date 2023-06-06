@@ -354,11 +354,10 @@ export const useInitNear = singletonHook({}, () => {
     };
 });
 
-const defaultNear = null;
-export const useNear = singletonHook(defaultNear, () => {
-  const [ nears, setNears ] = useState(defaultNear);
+const defaultNears = [];
+const useMultiNetworkNear = singletonHook(defaultNears, () => {
+  const [nears, setNears] = useState(defaultNears);
   const { nearPromise } = useInitNear();
-
   useEffect(() => {
     nearPromise && nearPromise.then(setNears);
   }, [nearPromise]);
@@ -368,8 +367,14 @@ export const useNear = singletonHook(defaultNear, () => {
   }
 
   return {
-    ...nears.find(n => n.default),
+    default: nears.find(n => n.default),
     testnet: nears.find(n => n.config.networkId === 'testnet'),
     mainnet: nears.find(n => n.config.networkId === 'mainnet')
   }
-});
+})
+
+export const useNear = (chainId) => {
+  const multiNetworkNear = useMultiNetworkNear();
+
+  return multiNetworkNear[chainId || 'default'] || null;
+}
