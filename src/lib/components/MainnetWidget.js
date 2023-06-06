@@ -5,10 +5,9 @@ import { useMainnetNear } from "../data/near";
 export const NearOverrideContext = createContext(null)
 
 export const MainnetWidget = (props) => {
-  const near = useMainnetNear();
 
   return (
-    <NearOverrideContext.Provider value={near}>
+    <NearOverrideContext.Provider value={'mainnet'}>
       <Widget {...props} />
     </NearOverrideContext.Provider>
   );
