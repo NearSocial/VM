@@ -1729,7 +1729,8 @@ export default class VM {
     }
 
     if (!this.code) {
-      throw new Error("Not a program");
+      this.alive = false;
+      return;
     }
 
     this.setReactState = setReactState
@@ -1963,6 +1964,10 @@ export default class VM {
         </div>
       );
     }
+    if (!this.alive) {
+      return <div className="alert alert-danger">VM is dead</div>;
+    }
+
     const result = this.execCode(args);
 
     return isReactObject(result) ||
