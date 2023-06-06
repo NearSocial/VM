@@ -344,8 +344,9 @@ export const useInitNear = singletonHook({}, () => {
         initNear: useMemo(
             () => (args) => {
                 const defaultNetworkId = args.networkId;
-                const testnetArgs = { networkId: "testnet", ...args };
-                const mainnetArgs = { networkId: "mainnet", ...args };
+                const argConfigs = args.config || {};
+                const testnetArgs = { ...args, config: { ...argConfigs, networkId: 'testnet' } };
+                const mainnetArgs = { ...args, config: { ...argConfigs, networkId: 'mainnet' } };
                 return setNearPromise(Promise.all([testnetArgs, mainnetArgs].map(_initNear)).then((nears) => nears.map((n) => ({ ...n, default: n.config.networkId === defaultNetworkId }))));
             },
             []
@@ -354,7 +355,7 @@ export const useInitNear = singletonHook({}, () => {
 });
 
 const defaultNear = null;
-export const useNear = (networkId) => {
+export const useNear = singletonHook(defaultNear, () => {
   const [ nears, setNears ] = useState(defaultNear);
   const { nearPromise } = useInitNear();
 
@@ -366,16 +367,9 @@ export const useNear = (networkId) => {
     return nears;
   }
 
-  return networkId ? nears.find(n => n.config.networkId === networkId) : nears.find(n => n.default);
-};
-
-export const useMainnetNear = () => {
-  const [near, setNear] = useState(defaultNear);
-  const nearPromise = useMemo(() => _initNear({networkId: 'mainnet'}), []);
-
-  useEffect(() => {
-    nearPromise && nearPromise.then(setNear);
-  }, [nearPromise]);
-
-  return near;
-}
+  return {
+    ...nears.find(n => n.default),
+    testnet: nears.find(n => n.config.networkId === 'testnet'),
+    mainnet: nears.find(n => n.config.networkId === 'mainnet')
+  }
+});
