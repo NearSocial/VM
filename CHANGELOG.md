@@ -5,6 +5,10 @@
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
 - Refactor native functions into an object, making it easier to add new functions.
 
+## 2.2.2
+
+- Gracefully handle compilation errors in `VM`. Previously, the VM would throw an error when the compilation failed, which resulted in a blank screen. Now, the VM will render the error message instead.
+
 ## 2.2.1
 
 - Fix href sanitization for non-lowercase attribute names.
