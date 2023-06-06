@@ -1,5 +1,10 @@
 # Changelog
 
+## Pending
+
+- Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
+- Refactor native functions into an object, making it easier to add new functions.
+
 ## 2.2.1
 
 - Fix href sanitization for non-lowercase attribute names.
