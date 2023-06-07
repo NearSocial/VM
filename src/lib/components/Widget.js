@@ -72,7 +72,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const ethersProviderContext = useContext(EthersProviderContext);
 
   const cache = useCache();
-  const chainId = configs && configs.findLast(config => config && config.chainId).chainId;
+  const chainId = configs && configs.findLast(config => config && config.chainId)?.chainId;
   let near = useNear(chainId);
   const accountId = useAccountId(chainId);
   const [element, setElement] = useState(null);
