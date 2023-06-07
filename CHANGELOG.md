@@ -2,7 +2,7 @@
 
 ## 2.2.3
 
-- Add `rehype-sanitize` plugin to `Markdown` and filter out rest of the args.
+- Filter out rest of the args in `Markdown`.
 
 ## 2.2.2
 

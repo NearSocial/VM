@@ -5,7 +5,6 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React from "react";
 import mentions from "./remark/mentions";
 import hashtags from "./remark/hashtags";
-import rehypeSanitize from "rehype-sanitize";
 
 export const Markdown = (props) => {
   const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps } =
@@ -13,7 +12,7 @@ export const Markdown = (props) => {
   return (
     <ReactMarkdown
       plugins={[]}
-      rehypePlugins={[rehypeSanitize]}
+      rehypePlugins={[]}
       remarkPlugins={[gfm, mentions, hashtags]}
       children={text}
       components={{
