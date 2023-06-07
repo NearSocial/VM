@@ -1,6 +1,6 @@
 {
   "name": "near-social-vm",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Near Social VM",
   "main": "dist/index.js",
   "files": [
@@ -61,6 +61,7 @@
     "react-singleton-hook": "^3.1.1",
     "react-syntax-highlighter": "^15.5.0",
     "react-uuid": "^1.0.2",
+    "rehype-sanitize": "^5.0.1",
     "remark-gfm": "^3.0.1",
     "styled-components": "^5.3.6",
     "tweetnacl": "^1.0.3"

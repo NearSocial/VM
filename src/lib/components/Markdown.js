@@ -5,14 +5,15 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React from "react";
 import mentions from "./remark/mentions";
 import hashtags from "./remark/hashtags";
+import rehypeSanitize from "rehype-sanitize";
 
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps, ...rest } = props;
+  const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps } =
+    props;
   return (
     <ReactMarkdown
-      {...rest}
       plugins={[]}
-      rehypePlugins={[]}
+      rehypePlugins={[rehypeSanitize]}
       remarkPlugins={[gfm, mentions, hashtags]}
       children={text}
       components={{
@@ -39,12 +40,8 @@ export const Markdown = (props) => {
         ),
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
-          const {
-            wrapLines,
-            lineProps,
-            showLineNumbers,
-            lineNumberStyle
-           } = syntaxHighlighterProps ?? {};
+          const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
+            syntaxHighlighterProps ?? {};
 
           return !inline && match ? (
             <SyntaxHighlighter
