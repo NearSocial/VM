@@ -74,7 +74,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const cache = useCache();
   const chainId = configs && configs.findLast(config => config && config.chainId).chainId;
   let near = useNear(chainId);
-  const accountId = useAccountId();
+  const accountId = useAccountId(chainId);
   const [element, setElement] = useState(null);
 
   useEffect(() => {
@@ -267,6 +267,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
           <ConfirmTransactions
             transactions={transactions}
             onHide={() => setTransactions(null)}
+            chainId={chainId}
           />
         )}
         {commitRequest && (
@@ -278,6 +279,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
             onHide={() => setCommitRequest(null)}
             onCommit={commitRequest.onCommit}
             onCancel={commitRequest.onCancel}
+            chainId={chainId}
           />
         )}
       </>
