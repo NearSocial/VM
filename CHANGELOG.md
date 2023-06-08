@@ -4,6 +4,10 @@
 
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
 - Refactor native functions into an object, making it easier to add new functions.
+- 
+## 2.2.3
+
+- Filter out rest of the args in `Markdown`.
 
 ## 2.2.2
 
