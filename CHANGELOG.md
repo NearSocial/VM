@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.3
+
+- Filter out rest of the args in `Markdown`.
+
 ## 2.2.2
 
 - Gracefully handle compilation errors in `VM`. Previously, the VM would throw an error when the compilation failed, which resulted in a blank screen. Now, the VM will render the error message instead.
