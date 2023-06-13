@@ -99,9 +99,9 @@ const loadAccount = async (near, setAccount) => {
   setAccount(account);
 };
 
-export const useAccount = (chainId) => {
+export const useAccount = singletonHook(defaultAccount, () => {
   const [account, setAccount] = useState(defaultAccount);
-  const near = useNear(chainId);
+  const near = useNear();
 
   useEffect(() => {
     if (!near) {
@@ -120,9 +120,9 @@ export const useAccount = (chainId) => {
   }, [near]);
 
   return account;
-};
+});
 
-export const useAccountId = (chainId) => {
-  const account = useAccount(chainId);
+export const useAccountId = () => {
+  const account = useAccount();
   return account.accountId;
 };

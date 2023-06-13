@@ -343,10 +343,9 @@ export const useInitNear = singletonHook({}, () => {
         nearPromise,
         initNear: useMemo(
             () => (args) => {
-                const defaultNetworkId = args.networkId;
-                const argConfigs = args.config || {};
-                const testnetArgs = { ...args, config: { ...argConfigs, networkId: 'testnet' } };
-                const mainnetArgs = { ...args, config: { ...argConfigs, networkId: 'mainnet' } };
+                const defaultNetworkId = args.config?.networkId || args.networkId;
+                const testnetArgs = defaultNetworkId === 'testnet' ? args : { ...args, networkId: 'testnet', config: undefined, keyStore: undefined, selector: undefined };
+                const mainnetArgs = defaultNetworkId === 'mainnet' ? args : { ...args, networkId: 'mainnet', config: undefined, keyStore: undefined, selector: undefined };
                 return setNearPromise(Promise.all([testnetArgs, mainnetArgs].map(_initNear)).then((nears) => nears.map((n) => ({ ...n, default: n.config.networkId === defaultNetworkId }))));
             },
             []
@@ -373,8 +372,8 @@ const useMultiNetworkNear = singletonHook(defaultNears, () => {
   }
 })
 
-export const useNear = (chainId) => {
+export const useNear = (networkId) => {
   const multiNetworkNear = useMultiNetworkNear();
 
-  return multiNetworkNear[chainId || 'default'] || null;
+  return multiNetworkNear[networkId || 'default'] || null;
 }
