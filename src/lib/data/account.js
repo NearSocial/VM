@@ -125,8 +125,8 @@ export const useAccount = singletonHook(defaultAccount, () => {
 export const useAccountId = (networkId) => {
   const defaultNear = useNear();
   
-  if (defaultNear.config.networkId !== networkId) {
-    return undefined;
+  if (!defaultNear || defaultNear.config.networkId !== networkId) {
+    return;
   }
 
   const account = useAccount();
