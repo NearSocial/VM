@@ -632,7 +632,7 @@ class VmStack {
       return <Widget {...attributes} />;
     } else if (element === "CommitButton") {
       return (
-        <CommitButton {...attributes} widgetSrc={this.vm.widgetSrc} chainId={this.vm.widgetConfigs.findLast(config => config && config.chainId)?.chainId}>
+        <CommitButton {...attributes} widgetSrc={this.vm.widgetSrc}>
           {children}
         </CommitButton>
       );
