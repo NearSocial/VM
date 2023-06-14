@@ -4,7 +4,8 @@
 
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
 - Refactor native functions into an object, making it easier to add new functions.
-- 
+- Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks.
+
 ## 2.2.3
 
 - Filter out rest of the args in `Markdown`.
