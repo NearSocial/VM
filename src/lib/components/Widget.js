@@ -71,8 +71,8 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [srcOrCode, setSrcOrCode] = useState(null);
   const ethersProviderContext = useContext(EthersProviderContext);
 
-  const cache = useCache();
   const networkId = configs && configs.findLast(config => config && config.networkId)?.networkId;
+  const cache = useCache(networkId);
   const near = useNear(networkId);
   const accountId = useAccountId(networkId);
   const [element, setElement] = useState(null);

@@ -295,8 +295,7 @@ export const CommitModal = (props) => {
 };
 
 export const CommitButton = (props) => {
-  const configs = props.config;
-  const accountId = useAccountId(configs && configs.findLast(config => config && config.networkId)?.networkId);
+  const accountId = useAccountId(props.networkId);
 
   const {
     data,
