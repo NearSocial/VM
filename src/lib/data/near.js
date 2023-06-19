@@ -344,9 +344,10 @@ export const useInitNear = singletonHook({}, () => {
         initNear: useMemo(
             () => (args) => {
                 const defaultNetworkId = args.config?.networkId || args.networkId;
+                const defaultNetworkIdIsNotMainnetOrTestnet = defaultNetworkId !== 'mainnet' && defaultNetworkId !== 'testnet';
                 const testnetArgs = defaultNetworkId === 'testnet' ? args : { ...args, networkId: 'testnet', config: undefined, keyStore: undefined, selector: undefined };
                 const mainnetArgs = defaultNetworkId === 'mainnet' ? args : { ...args, networkId: 'mainnet', config: undefined, keyStore: undefined, selector: undefined };
-                return setNearPromise(Promise.all([testnetArgs, mainnetArgs].map(_initNear)).then((nears) => nears.map((n) => ({ ...n, default: n.config.networkId === defaultNetworkId }))));
+                return setNearPromise(Promise.all([testnetArgs, mainnetArgs].concat(defaultNetworkIdIsNotMainnetOrTestnet ? args : []).map(_initNear)).then((nears) => nears.map((n) => ({ ...n, default: n.config.networkId === defaultNetworkId }))));
             },
             []
         ),
