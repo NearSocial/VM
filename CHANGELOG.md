@@ -4,7 +4,20 @@
 
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
 - Refactor native functions into an object, making it easier to add new functions.
-- Add a `networkId` prop to the `Widget` component config to allow using a `near` object outside the singleton state to allow testing Mainnet components on a Testnet initialized VM or vice versa
+- Add a `networkId` prop to the `Widget` component config to allow using a `near` object outside the singleton state to allow testing Mainnet components on a Testnet initialized VM or vice versa. Example usage of `networkId` prop in `Widget` config:
+
+```jsx
+// Import widget from testnet initialized VM
+
+<Widget 
+  config={{
+    networkId: 'mainnet'
+  }}
+  src="devgovgigs.near/widget/Ideas" // `src` prop here is a path in mainnet SocialDB
+/>
+
+// Also works with the `code` prop where `Social.get` and other [BOS API](https://docs.near.org/bos/api/near#) features and `Widget`s will reference mainnet in this case.
+```
 
 ## 2.2.3
 
