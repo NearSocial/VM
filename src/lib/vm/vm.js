@@ -830,6 +830,13 @@ class VmStack {
           );
         }
         return this.vm.useCache(...args);
+      } else if (callee === "afterConfirmTx") {
+        if (!(args[0] instanceof Function)) {
+          throw new Error(
+            "Method: afterConfirmTx. The first argument must be a function"
+          );
+        }
+        return this.vm.setTxCallback(args[0]);
       } else if (callee === "parseInt") {
         return parseInt(...args);
       } else if (callee === "parseFloat") {
@@ -2011,5 +2018,15 @@ export default class VM {
       throw new Error("ContinueStatement outside of a loop");
     }
     return executionResult?.result;
+  }
+
+  setTxCallback(cb) {
+    this.txCallback = cb;
+  }
+
+  afterConfirmTx(res) {
+    if (this.txCallback instanceof Function) {
+      this.txCallback(res);
+    }
   }
 }
