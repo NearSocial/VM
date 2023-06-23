@@ -265,7 +265,12 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         {transactions && (
           <ConfirmTransactions
             transactions={transactions}
-            onHide={() => setTransactions(null)}
+            onHide={(res) => {
+              setTransactions(null);
+              if (res) {
+                vm.afterConfirmTx(res);
+              }
+            }}
           />
         )}
         {commitRequest && (

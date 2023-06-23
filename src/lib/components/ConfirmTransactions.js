@@ -68,9 +68,9 @@ export default function ConfirmTransactions(props) {
           onClick={(e) => {
             e.preventDefault();
             setLoading(true);
-            near.sendTransactions(transactions).then(() => {
+            near.sendTransactions(transactions).then((res) => {
               setLoading(false);
-              onHide();
+              onHide(res);
             });
           }}
         >
