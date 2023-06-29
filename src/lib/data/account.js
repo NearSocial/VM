@@ -124,11 +124,11 @@ export const useAccount = singletonHook(defaultAccount, () => {
 
 export const useAccountId = (networkId) => {
   const defaultNear = useNear();
+  const account = useAccount();
   
-  if (!defaultNear || defaultNear.config.networkId !== networkId) {
-    return;
+  if (!defaultNear || (networkId && defaultNear.config.networkId !== networkId)) {
+      return;
   }
 
-  const account = useAccount();
   return account.accountId;
 };
