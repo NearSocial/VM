@@ -1,19 +1,27 @@
-import gfm from "remark-gfm";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
-import React from "react";
-import mentions from "./remark/mentions";
+import gfm from "remark-gfm";
 import hashtags from "./remark/hashtags";
+import mentions from "./remark/mentions";
+import paths from "./remark/paths";
 
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps } =
-    props;
+  const {
+    onLinkClick,
+    text,
+    onMention,
+    onHashtag,
+    onPath,
+    syntaxHighlighterProps,
+    ...rest
+  } = props;
   return (
     <ReactMarkdown
       plugins={[]}
       rehypePlugins={[]}
-      remarkPlugins={[gfm, mentions, hashtags]}
+      remarkPlugins={[gfm, mentions, hashtags, paths]}
       children={text}
       components={{
         strong({ node, children, ...props }) {
@@ -21,6 +29,8 @@ export const Markdown = (props) => {
             return onMention(node.properties?.accountId);
           } else if (onHashtag && node.properties?.hashtag) {
             return onHashtag(node.properties?.hashtag);
+          } else if (onPath && node.properties?.path) {
+            return onPath(node.properties);
           }
           return <strong {...props}>{children}</strong>;
         },
@@ -41,6 +51,8 @@ export const Markdown = (props) => {
           const match = /language-(\w+)/.exec(className || "");
           const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
             syntaxHighlighterProps ?? {};
+          const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
+            syntaxHighlighterProps ?? {};
 
           return !inline && match ? (
             <SyntaxHighlighter
@@ -56,6 +68,10 @@ export const Markdown = (props) => {
               {children}
             </code>
           );
+        },
+        thing: ({ node, ...props }) => {
+          console.log(JSON.stringify(node));
+          return <Widget src={node.value} props={props} />;
         },
       }}
     />
