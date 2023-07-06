@@ -60,6 +60,7 @@ import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import * as fcl from "fcl";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -250,6 +251,7 @@ const Keywords = {
   Ethers: true,
   WebSocket: true,
   VM: true,
+  fcl: true,
 };
 
 const ReservedKeys = {
@@ -1012,6 +1014,8 @@ class VmStack {
           return this.vm.ethersProvider;
         }
         return this.vm.cachedEthersCall(callee, args);
+      } else if (keyword === "fcl") {
+        return fcl;
       } else if (keyword === "WebSocket") {
         if (callee === "WebSocket") {
           const websocket = new WebSocket(...args);
