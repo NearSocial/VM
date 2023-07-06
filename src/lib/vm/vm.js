@@ -962,6 +962,12 @@ class VmStack {
       } else if (keyword === "Ethers") {
         if (callee === "provider") {
           return this.vm.ethersProvider;
+        } else if (callee === "setChain") {
+          const f = this.vm.ethersProviderContext?.setChain;
+          if (!f) {
+            throw new Error("The gateway doesn't support `setChain` operation");
+          }
+          return f(...args);
         }
         return this.vm.cachedEthersCall(callee, args);
       } else if (keyword === "WebSocket") {
