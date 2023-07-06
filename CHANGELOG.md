@@ -19,6 +19,7 @@
 // Also works with the `code` prop where `Social.get` and other [BOS API](https://docs.near.org/bos/api/near#) features and `Widget`s will reference mainnet in this case.
 ```
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
+- BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
 
 ## 2.2.3
 
