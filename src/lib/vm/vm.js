@@ -60,7 +60,7 @@ import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
-import * as fcl from "fcl";
+import * as fcl from "@onflow/fcl";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
