@@ -607,6 +607,8 @@ class VmStack {
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
       );
+    } else if (element === "CommitButton") {
+      attributes.networkId = this.vm.networkId;
     }
 
     if (withChildren === false && code.children.length) {
@@ -1776,6 +1778,7 @@ export default class VM {
     this.intervals = new Set();
     this.websockets = [];
     this.vmInstances = new Map();
+    this.networkId = widgetConfigs.findLast(config => config && config.networkId)?.networkId || near.config.networkId
   }
 
   stop() {
