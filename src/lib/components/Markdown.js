@@ -51,8 +51,6 @@ export const Markdown = (props) => {
           const match = /language-(\w+)/.exec(className || "");
           const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
             syntaxHighlighterProps ?? {};
-          const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
-            syntaxHighlighterProps ?? {};
 
           return !inline && match ? (
             <SyntaxHighlighter
@@ -68,10 +66,6 @@ export const Markdown = (props) => {
               {children}
             </code>
           );
-        },
-        thing: ({ node, ...props }) => {
-          console.log(JSON.stringify(node));
-          return <Widget src={node.value} props={props} />;
         },
       }}
     />
