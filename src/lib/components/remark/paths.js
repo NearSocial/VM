@@ -1,6 +1,6 @@
 import { findAndReplace } from "mdast-util-find-and-replace";
 
-const pathRegex = /{{([\w./~]+)}}/gi;
+const pathRegex = /{{([\w./?&=]+)}}/gi;
 
 export default function paths() {
   function replace(value, path, match) {
@@ -11,16 +11,27 @@ export default function paths() {
     ) {
       return false;
     }
+
+    const params = {};
+    const parts = path.split("?");
+    if (parts.length > 1) {
+      const queryParamString = parts[1];
+      const queryParams = queryParamString.split("&") || [];
+      for (const pair of queryParams) {
+        const [key, value] = pair.split("=");
+        params[key] = value;
+      }
+    }
+    
     let node = { type: "text", value };
-    const parts = path.split("~");
+
     node = {
       type: "strong",
       children: [node],
       data: {
         hProperties: {
           path: parts[0],
-          blockHeight:
-            parts.length > 1 && parts[1].trim().length ? parts[1] : "final",
+          params: params,
         },
       },
     };
