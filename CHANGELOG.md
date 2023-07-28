@@ -20,6 +20,10 @@
 ```
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
 
+## 2.2.4
+
+- Fix VM.require bug which was accessing a this.vmInstances map via bracket notion rather than correct .get()
+
 ## 2.2.3
 
 - Filter out rest of the args in `Markdown`.

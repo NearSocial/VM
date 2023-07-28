@@ -1951,7 +1951,7 @@ export default class VM {
 
   getVmInstance(code, src) {
     if (this.vmInstances.has(src)) {
-      const vm = this.vmInstances[src];
+      const vm = this.vmInstances.get(src);
       if (vm.rawCode === code) {
         return vm;
       }
