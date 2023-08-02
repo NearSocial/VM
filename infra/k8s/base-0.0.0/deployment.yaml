@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cali-bos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cali-bos
+  template:
+    metadata:
+      labels:
+        app: cali-bos
+    spec:
+      containers:
+        - name: cali-bos
+          image: cali-bos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          # TODO: implement liveness and readiness probes
+          # livenessProbe:
+          #   failureThreshold: 3
+          #   httpGet:
+          #     path: /health
+          #     port: 3000
+          #     scheme: HTTP
+          #   periodSeconds: 10
+          #   successThreshold: 1
+          #   timeoutSeconds: 1
+          # readinessProbe:
+          #   failureThreshold: 3
+          #   httpGet:
+          #     path: /health
+          #     port: 3000
+          #     scheme: HTTP
+          #   periodSeconds: 10
+          #   successThreshold: 1
+          #   timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi

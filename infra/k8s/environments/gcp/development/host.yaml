@@ -1,0 +1,9 @@
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: cali-bos
+spec:
+  hostname: cali-bos.euw3.dev.gcp.calimero.network
+  requestPolicy:
+    insecure:
+      action: Route
