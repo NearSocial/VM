@@ -7,5 +7,5 @@ resources:
 - mapping.yaml
 images:
 - name: cali-bos
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/cali-bos:{{ workflow.parameters.short_sha}
-    }
+  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/cali-bos
+  newTag: a8f946d
