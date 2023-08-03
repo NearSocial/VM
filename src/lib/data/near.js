@@ -17,6 +17,19 @@ export const functionCallCreator = UseLegacyFunctionCallCreator
     })
   : nearAPI.transactions.functionCall;
 
+  export const addKeyCreator = (newPublicKey, contractName, methodNames, allowance) => ({
+      type: "AddKey",
+      params: {
+        publicKey: newPublicKey,
+        accessKey: {
+        permission: {
+            allowance,
+            receiverId: contractName,
+            methodNames: methodNames,
+        }
+      }}
+    });
+  
 const TestNearConfig = {
   networkId: "testnet",
   nodeUrl: "https://rpc.testnet.near.org",
@@ -108,6 +121,99 @@ async function accountState(near, accountId) {
     accountId
   );
   return await account.state();
+}
+
+async function getCurrentAccount(near) {
+  const wallet = await near.selector;
+  const accounts = wallet.store.getState().accounts;
+  const accountId = accounts.filter((account) => !!account.active)[0].accountId;
+  if(!accountId) {
+    throw new Error("No active account");
+  }
+  return accountId;
+}
+
+async function requestFak(near, contractName, methodNames, publicKey) {
+  const walletSelector = await near.selector;
+  const accountId = await getCurrentAccount(near);
+  const wallet = await (walletSelector).wallet();
+  const allowance = nearAPI.utils.format.parseNearAmount("0.33");
+  const action = addKeyCreator(
+    publicKey,
+    contractName,
+    methodNames,
+    allowance
+  );
+  const transaction = {
+    receiverId: accountId,
+    actions: [
+      action
+    ],
+  };
+  return await wallet.signAndSendTransaction(transaction);
+}
+
+const checkFakKey = (rpcResponse, contract, methodNames) => {
+  const { receiver_id: receiverId = undefined, method_names: rpcMethodNames = [] } = 
+    rpcResponse?.permission?.FunctionCall || {};
+  if(!receiverId) {
+    throw new Error("No receiverId");
+    return false;
+  }
+  if(!contract) {
+    return true;
+  }
+  if(receiverId !== contract) {
+    throw new Error("Wrong contract");
+    return false;
+  }
+  if(methodNames && !methodNames.every(item => rpcMethodNames.includes(item))) {
+    throw new Error("Wrong method");
+    return false;
+  }
+  return true;
+}
+
+async function submitFakTransaction(near, contractName, methodName, args, key, gas, deposit) {
+  const accountId = await getCurrentAccount(near);
+  const provider = new nearAPI.providers.JsonRpcProvider({ url: near.config.nodeUrl });
+
+  const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
+  const keyPair = nearAPI.KeyPair.fromString(key);
+  keyStore.setKey(near.networkId, accountId, keyPair);
+
+  const account = new nearAPI.Account({
+    provider,
+    signer: new nearAPI.InMemorySigner(keyStore),
+    networkId: near.networkId,
+  }, accountId);
+  
+  const contract = new nearAPI.Contract(
+    account,
+    contractName,
+    { changeMethods: [methodName], viewMethods: []}
+  );
+  return await contract[methodName]({ ...args }, gas?.toFixed(0), deposit?.toFixed(0));
+}
+
+async function verifyFak(near, key, contractName, methods) {
+  const accountId = await getCurrentAccount(near);
+  const provider = new nearAPI.providers.JsonRpcProvider({ url: near.config.nodeUrl });
+  const keyPair = nearAPI.KeyPair.fromString(key);
+  const params = {
+    request_type: "view_access_key",
+    finality: "final",
+    account_id: accountId,
+    public_key: keyPair.publicKey.toString(),
+  };
+  try{
+    const result = await provider.query(params);
+    console.log(result);
+    return checkFakKey(result, contractName, methods);
+  } catch(e) {
+    console.error(e);
+    return false;
+  }
 }
 
 async function sendTransactions(near, functionCalls) {
@@ -302,6 +408,9 @@ async function _initNear({
       : fastRpcCall();
   };
 
+  _near.requestFak = (contractId, methodNames, publicKey) => requestFak(_near, contractId, methodNames, publicKey);
+  _near.submitFakTransaction = (contractName, methodName, args, key, gas, deposit, ) => submitFakTransaction(_near, contractName, methodName, args, key, gas, deposit);
+  _near.verifyFak = (key, contractName, methodNames) => verifyFak(_near, key, contractName, methodNames);
   _near.block = (blockHeightOrFinality) => {
     const blockQuery = transformBlockId(blockHeightOrFinality);
     const provider = blockQuery.blockId

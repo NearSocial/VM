@@ -29,6 +29,7 @@ import { nanoid, customAlphabet } from "nanoid";
 import _ from "lodash";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
+import * as nearAPI from "near-api-js";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -250,6 +251,7 @@ const Keywords = {
   Ethers: true,
   WebSocket: true,
   VM: true,
+  Calimero: true,
 };
 
 const ReservedKeys = {
@@ -315,6 +317,10 @@ const assertRadixComponent = (element) => {
 
   return RadixComp;
 };
+
+const getFakKey = (accountId, component, contract) => {
+  return "slackKey";
+}
 
 const maybeSubscribe = (subscribe, blockId) =>
   subscribe &&
@@ -804,6 +810,41 @@ class VmStack {
             },
           ]);
         }
+      } else if(keyword === "Near" && callee === "requestFak") {
+        const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
+        localStorage.setItem(
+          "slackKey",
+          keyPair.toString()
+        );
+        const newArgs = [...args, keyPair.publicKey.toString()];
+        return this.vm.near.requestFak(...newArgs);
+      } else if(keyword === "Near" && callee === "hasValidFak") {
+        const key = localStorage.getItem("slackKey");
+        if(!key) {
+          return false;
+        }
+        return this.vm.near.verifyFak(key, args[0], args[1]);
+      } else if(keyword === "Near" && callee === "fakCall") {
+        const key = localStorage.getItem("slackKey");
+        if(!key) {
+          throw new Error(
+            "Method: Near.fakCall. Requires requestAccessKey to be called first"
+          );
+        }
+
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+        return this.vm.near.submitFakTransaction(
+          args[0],
+          args[1],
+          args[2] ?? {},
+            key,
+          args[3],
+          args[4],
+        );
       } else if (callee === "fetch") {
         if (args.length < 1) {
           throw new Error(
