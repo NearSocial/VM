@@ -10,7 +10,7 @@ RUN yarn && yarn install && yarn run build
 
 COPY ../near-discovery /near-discovery
 WORKDIR /near-discovery
-RUN pnpm i && pnpm build && pnpm link ../VM
+RUN pnpm remove near-social-vm && pnpm add file:../VM && pnpm i && pnpm build
 
 EXPOSE 3000
 CMD [ "pnpm", "start" ]
