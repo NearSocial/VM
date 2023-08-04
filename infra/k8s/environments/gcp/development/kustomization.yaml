@@ -8,4 +8,4 @@ resources:
 images:
 - name: cali-bos
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/cali-bos
-  newTag: pnpm-dev
+  newTag: 64b07ad5f46e02c337008469ec283186471121e4
