@@ -133,13 +133,23 @@ async function getCurrentAccount(near) {
   return accountId;
 }
 
-async function requestFak(near, contractName, methodNames, publicKey) {
+const getFakKey = async(componentName, near, contract) => {
+  const accountId = await getCurrentAccount(near);
+  return `${accountId}:${componentName}:${contract}`;
+}
+
+async function requestFak(componentName, near, contractName, methodNames) {
+  const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
+  localStorage.setItem(
+    await getFakKey(componentName, near, contractName),
+    keyPair.toString()
+  );
   const walletSelector = await near.selector;
   const accountId = await getCurrentAccount(near);
   const wallet = await (walletSelector).wallet();
   const allowance = nearAPI.utils.format.parseNearAmount("0.33");
   const action = addKeyCreator(
-    publicKey,
+    keyPair.publicKey.toString(),
     contractName,
     methodNames,
     allowance
@@ -174,7 +184,15 @@ const checkFakKey = (rpcResponse, contract, methodNames) => {
   return true;
 }
 
-async function submitFakTransaction(near, contractName, methodName, args, key, gas, deposit) {
+async function submitFakTransaction(componentName, near, contractName, methodName, args, gas, deposit) {
+  const key = localStorage.getItem(
+    await getFakKey(componentName, near, contractName)
+  );
+  if(!key) {
+    throw new Error(
+      "Method: Near.fakCall. Requires requestAccessKey to be called first"
+    );
+  }
   const accountId = await getCurrentAccount(near);
   const provider = new nearAPI.providers.JsonRpcProvider({ url: near.config.nodeUrl });
 
@@ -196,7 +214,13 @@ async function submitFakTransaction(near, contractName, methodName, args, key, g
   return await contract[methodName]({ ...args }, gas?.toFixed(0), deposit?.toFixed(0));
 }
 
-async function verifyFak(near, key, contractName, methods) {
+async function verifyFak(componentName, near, contractName, methods) {
+  const key = localStorage.getItem(
+    await getFakKey(componentName, near, contractName)
+  );
+  if(!key) {
+    return false;
+  }
   const accountId = await getCurrentAccount(near);
   const provider = new nearAPI.providers.JsonRpcProvider({ url: near.config.nodeUrl });
   const keyPair = nearAPI.KeyPair.fromString(key);
@@ -208,7 +232,6 @@ async function verifyFak(near, key, contractName, methods) {
   };
   try{
     const result = await provider.query(params);
-    console.log(result);
     return checkFakKey(result, contractName, methods);
   } catch(e) {
     console.error(e);
@@ -408,9 +431,9 @@ async function _initNear({
       : fastRpcCall();
   };
 
-  _near.requestFak = (contractId, methodNames, publicKey) => requestFak(_near, contractId, methodNames, publicKey);
-  _near.submitFakTransaction = (contractName, methodName, args, key, gas, deposit, ) => submitFakTransaction(_near, contractName, methodName, args, key, gas, deposit);
-  _near.verifyFak = (key, contractName, methodNames) => verifyFak(_near, key, contractName, methodNames);
+  _near.requestFak = (contractName, methodNames) => requestFak("slackApp", _near, contractName, methodNames);
+  _near.submitFakTransaction = (contractName, methodName, args, gas, deposit) => submitFakTransaction("slackApp", _near, contractName, methodName, args, gas, deposit);
+  _near.verifyFak = (contractName, methodNames) => verifyFak("slackApp", _near, contractName, methodNames);
   _near.block = (blockHeightOrFinality) => {
     const blockQuery = transformBlockId(blockHeightOrFinality);
     const provider = blockQuery.blockId
