@@ -8,4 +8,4 @@ resources:
 images:
 - name: cali-bos
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/cali-bos
-  newTag: 35d3610
+  newTag: dc50b04
