@@ -273,7 +273,7 @@ async function _initNear({
           blockId: parseInt(blockId),
         }
       : {
-          finality: "optimistic",
+          finality: config.defaultFinality ?? "optimistic",
           blockId: undefined,
         };
 
@@ -337,21 +337,51 @@ async function _initNear({
 }
 
 export const useInitNear = singletonHook({}, () => {
-    const [nearPromise, setNearPromise] = useState(null);
+  const [nearPromise, setNearPromise] = useState(null);
 
-    return {
-        nearPromise,
-        initNear: useMemo(
-            () => (args) => {
-                const defaultNetworkId = args.config?.networkId || args.networkId;
-                const defaultNetworkIdIsNotMainnetOrTestnet = defaultNetworkId !== 'mainnet' && defaultNetworkId !== 'testnet';
-                const testnetArgs = defaultNetworkId === 'testnet' ? args : { ...args, networkId: 'testnet', config: undefined, keyStore: undefined, selector: undefined };
-                const mainnetArgs = defaultNetworkId === 'mainnet' ? args : { ...args, networkId: 'mainnet', config: undefined, keyStore: undefined, selector: undefined };
-                return setNearPromise(Promise.all([testnetArgs, mainnetArgs].concat(defaultNetworkIdIsNotMainnetOrTestnet ? args : []).map(_initNear)).then((nears) => nears.map((n) => ({ ...n, default: n.config.networkId === defaultNetworkId }))));
-            },
-            []
-        ),
-    };
+  return {
+    nearPromise,
+    initNear: useMemo(
+      () => (args) => {
+        const defaultNetworkId = args.config?.networkId || args.networkId;
+        const defaultNetworkIdIsNotMainnetOrTestnet =
+          defaultNetworkId !== "mainnet" && defaultNetworkId !== "testnet";
+        const testnetArgs =
+          defaultNetworkId === "testnet"
+            ? args
+            : {
+                ...args,
+                networkId: "testnet",
+                config: undefined,
+                keyStore: undefined,
+                selector: undefined,
+              };
+        const mainnetArgs =
+          defaultNetworkId === "mainnet"
+            ? args
+            : {
+                ...args,
+                networkId: "mainnet",
+                config: undefined,
+                keyStore: undefined,
+                selector: undefined,
+              };
+        return setNearPromise(
+          Promise.all(
+            [testnetArgs, mainnetArgs]
+              .concat(defaultNetworkIdIsNotMainnetOrTestnet ? args : [])
+              .map(_initNear)
+          ).then((nears) =>
+            nears.map((n) => ({
+              ...n,
+              default: n.config.networkId === defaultNetworkId,
+            }))
+          )
+        );
+      },
+      []
+    ),
+  };
 });
 
 const defaultNears = [];
@@ -362,19 +392,19 @@ const useMultiNetworkNear = singletonHook(defaultNears, () => {
     nearPromise && nearPromise.then(setNears);
   }, [nearPromise]);
 
-  if(!nears) {
+  if (!nears) {
     return nears;
   }
 
   return {
-    default: nears.find(n => n.default),
-    testnet: nears.find(n => n.config.networkId === 'testnet'),
-    mainnet: nears.find(n => n.config.networkId === 'mainnet')
-  }
-})
+    default: nears.find((n) => n.default),
+    testnet: nears.find((n) => n.config.networkId === "testnet"),
+    mainnet: nears.find((n) => n.config.networkId === "mainnet"),
+  };
+});
 
 export const useNear = (networkId) => {
   const multiNetworkNear = useMultiNetworkNear();
 
-  return multiNetworkNear[networkId || 'default'] || null;
-}
+  return multiNetworkNear[networkId || "default"] || null;
+};
