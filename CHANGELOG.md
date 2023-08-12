@@ -20,6 +20,13 @@
 ```
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
 - Add `config.defaultFinality` to be able to specify `final` instead of `optimistic` (default). It would route the majority of the view calls through the API server.
+- Add `loading` prop to a Widget. It would display the passed value instead of the default loading spinner. It can be used to display a custom loading indicator or a placeholder. Example:
+```jsx
+<Widget
+  loading={<div style={{width: "100%", height: "200px"}}>Loading...</div>}
+  src="mob.near/widget/ProfilePage"
+/>
+```
 
 ## 2.2.4
 
