@@ -75,6 +75,7 @@ const frozenEthers = Object.freeze({
   utils: deepFreeze(ethers.utils),
   BigNumber: deepFreeze(ethers.BigNumber),
   Contract: deepFreeze(ethers.Contract),
+  providers: deepFreeze(ethers.providers),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -1778,7 +1779,9 @@ export default class VM {
     this.intervals = new Set();
     this.websockets = [];
     this.vmInstances = new Map();
-    this.networkId = widgetConfigs.findLast(config => config && config.networkId)?.networkId || near.config.networkId
+    this.networkId =
+      widgetConfigs.findLast((config) => config && config.networkId)
+        ?.networkId || near.config.networkId;
   }
 
   stop() {
