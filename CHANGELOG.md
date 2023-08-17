@@ -20,6 +20,17 @@
 ```
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
 - Add `config.defaultFinality` to be able to specify `final` instead of `optimistic` (default). It would route the majority of the view calls through the API server.
+- Expose `ethers.providers`. You will be able to construct a custom JSON provider for read only data. Example usage:
+
+```jsx
+const opGoerliProvider = new ethers.providers.JsonRpcProvider(
+  "https://optimism-goerli.blockpi.network/v1/rpc/public"
+);
+
+console.log(opGoerliProvider);
+```
+
+```jsx
 
 ## 2.2.4
 
