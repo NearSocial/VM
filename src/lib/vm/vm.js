@@ -963,6 +963,8 @@ class VmStack {
       } else if (keyword === "Ethers") {
         if (callee === "provider") {
           return this.vm.ethersProvider;
+        } else if (callee === "send") {
+          return this.vm.ethersProvider.send(...args);
         } else if (callee === "setChain") {
           const f = this.vm.ethersProviderContext?.setChain;
           if (!f) {

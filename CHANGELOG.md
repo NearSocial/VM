@@ -29,8 +29,7 @@ const opGoerliProvider = new ethers.providers.JsonRpcProvider(
 
 console.log(opGoerliProvider);
 ```
-
-```jsx
+- BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
 
 ## 2.2.4
 
