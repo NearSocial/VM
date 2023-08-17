@@ -42,9 +42,9 @@ const TestNearConfig = {
 };
 
 const CalimeroConfig = {
-  networkId: `${process.env.NEXT_PUBLIC_SHARD_ID}`,
+  networkId: `${process.env.NEXT_PUBLIC_CHAIN_ID}`,
   calimeroUrl:`${process.env.NEXT_PUBLIC_RPC_ENDPOINT}`,
-  walletUrl: `${proccess.env.NEXT_PUBLIC_WALLET_URL}`,
+  walletUrl: `${process.env.NEXT_PUBLIC_WALLET_URL}`,
   calimeroToken: `${process.env.NEXT_PUBLIC_CALIMERO_TOKEN}`,
 }
 

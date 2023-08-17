@@ -12,7 +12,7 @@ module.exports = function (env) {
   const { mode = "production" } = env || {};
 
   // Load environment variables from .env file
-  const envVars = dotenv.config().parsed;
+  const envVars = dotenv.config({ path: `.env.${mode}`}).parsed;
 
   // Convert environment variables to an object of key-value pairs
   const envKeys = Object.keys(envVars).reduce((prev, next) => {
