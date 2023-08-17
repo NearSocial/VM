@@ -6,9 +6,20 @@ const { merge } = require("webpack-merge");
 const loadPreset = require("./config/presets/loadPreset");
 const loadConfig = (mode) => require(`./config/webpack.${mode}.js`)(mode);
 const nodeExternals = require("webpack-node-externals");
+const dotenv = require("dotenv");
 
 module.exports = function (env) {
   const { mode = "production" } = env || {};
+
+  // Load environment variables from .env file
+  const envVars = dotenv.config().parsed;
+
+  // Convert environment variables to an object of key-value pairs
+  const envKeys = Object.keys(envVars).reduce((prev, next) => {
+    prev[`process.env.${next}`] = JSON.stringify(envVars[next]);
+    return prev;
+  }, {});
+
   return merge(
     {
       mode,
@@ -65,10 +76,7 @@ module.exports = function (env) {
       },
       target: "node",
       plugins: [
-        // new webpack.EnvironmentPlugin({
-        //   // Configure environment variables here.
-        //   ENVIRONMENT: "browser",
-        // }),
+        new webpack.DefinePlugin(envKeys), // Define environment variables
         new CleanWebpackPlugin(),
         new webpack.ProgressPlugin(),
         new webpack.ProvidePlugin({

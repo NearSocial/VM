@@ -765,6 +765,21 @@ class VmStack {
           blockId,
           maybeSubscribe(subscribe, blockId)
         );
+      } else if (keyword === "Near" && callee === "calimeroView") {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
+          );
+        }
+        const [contractName, methodName, viewArg, blockId, subscribe] = args;
+
+        return this.vm.cachedCalimeroView(
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          maybeSubscribe(subscribe, blockId)
+        );
       } else if (keyword === "Near" && callee === "asyncView") {
         if (args.length < 2) {
           throw new Error(
@@ -772,6 +787,13 @@ class VmStack {
           );
         }
         return this.vm.asyncNearView(...args);
+      } else if (keyword === "Near" && callee === "asyncCalimeroView") {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
+          );
+        }
+        return this.vm.asyncCalimeroView(...args);
       } else if (keyword === "Near" && callee === "block") {
         const [blockId, subscribe] = args;
         return this.vm.cachedNearBlock(
@@ -806,11 +828,29 @@ class VmStack {
             },
           ]);
         }
-      } else if(keyword === "Near" && callee === "requestFak") {
+      } else if (keyword === "Near" && callee === "requestFak") {
         return this.vm.near.requestFak(...args);
-      } else if(keyword === "Near" && callee === "hasValidFak") {
+      } else if (keyword === "Near" && callee === "requestCalimeroFak") {
+        return this.vm.near.requestCalimeroFak(this.vm.widgetSrc, ...args);
+      } else if (keyword === "Near" && callee === "hasValidCalimeroFak") {
+        return this.vm.near.verifyCalimeroFak(this.vm.widgetSrc, ...args);
+      } else if (keyword === "Near" && callee === "hasValidFak") {
         return this.vm.near.verifyFak(...args);
-      } else if(keyword === "Near" && callee === "fakCall") {
+      } else if (keyword === "Near" && callee === "fakCalimeroCall") {
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+        return this.vm.near.submitCalimeroFakTransaction(
+          this.vm.widgetSrc,
+          args[0],
+          args[1],
+          args[2] ?? {},
+          args[3],
+          args[4]
+        );
+      } else if (keyword === "Near" && callee === "fakCall") {
         if (args.length < 2 || args.length > 5) {
           throw new Error(
             "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
@@ -821,7 +861,7 @@ class VmStack {
           args[1],
           args[2] ?? {},
           args[3],
-          args[4],
+          args[4]
         );
       } else if (callee === "fetch") {
         if (args.length < 1) {
@@ -1850,6 +1890,10 @@ export default class VM {
     return this.near.viewCall(contractName, methodName, args, blockId);
   }
 
+  asyncCalimeroView(contractName, methodName, args, blockId) {
+    return this.near.viewCalimero(contractName, methodName, args, blockId);
+  }
+
   cachedEthersCall(callee, args, subscribe) {
     return this.cachedPromise(
       (invalidate) =>
@@ -1867,6 +1911,20 @@ export default class VM {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedViewCall(
+          this.near,
+          contractName,
+          methodName,
+          args,
+          blockId,
+          invalidate
+        ),
+      subscribe
+    );
+  }
+  cachedCalimeroView(contractName, methodName, args, blockId, subscribe) {
+    return this.cachedPromise(
+      (invalidate) =>
+        this.cache.cachedCalimeroViewCall(
           this.near,
           contractName,
           methodName,
