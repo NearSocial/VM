@@ -75,6 +75,7 @@ const frozenEthers = Object.freeze({
   utils: deepFreeze(ethers.utils),
   BigNumber: deepFreeze(ethers.BigNumber),
   Contract: deepFreeze(ethers.Contract),
+  providers: deepFreeze(ethers.providers),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -1955,7 +1956,7 @@ export default class VM {
 
   getVmInstance(code, src) {
     if (this.vmInstances.has(src)) {
-      const vm = this.vmInstances[src];
+      const vm = this.vmInstances.get(src);
       if (vm.rawCode === code) {
         return vm;
       }

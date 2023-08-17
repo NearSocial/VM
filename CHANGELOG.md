@@ -19,7 +19,21 @@
 // Also works with the `code` prop where `Social.get` and other [BOS API](https://docs.near.org/bos/api/near#) features and `Widget`s will reference mainnet in this case.
 ```
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
+- Add `config.defaultFinality` to be able to specify `final` instead of `optimistic` (default). It would route the majority of the view calls through the API server.
+- Expose `ethers.providers`. You will be able to construct a custom JSON provider for read only data. Example usage:
+
+```jsx
+const opGoerliProvider = new ethers.providers.JsonRpcProvider(
+  "https://optimism-goerli.blockpi.network/v1/rpc/public"
+);
+
+console.log(opGoerliProvider);
+```
 - BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
+
+## 2.2.4
+
+- Fix VM.require bug which was accessing a this.vmInstances map via bracket notion rather than correct .get()
 
 ## 2.2.3
 
