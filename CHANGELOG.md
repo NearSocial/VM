@@ -30,6 +30,13 @@ const opGoerliProvider = new ethers.providers.JsonRpcProvider(
 console.log(opGoerliProvider);
 ```
 - BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
+- Add `loading` prop to a Widget. It would display the passed value instead of the default loading spinner. It can be used to display a custom loading indicator or a placeholder. Example:
+```jsx
+<Widget
+  loading={<div style={{width: "100%", height: "200px"}}>Loading...</div>}
+  src="mob.near/widget/ProfilePage"
+/>
+```
 
 ## 2.2.4
 
