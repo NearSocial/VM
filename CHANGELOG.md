@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.3.0
 
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
 - Refactor native functions into an object, making it easier to add new functions.
