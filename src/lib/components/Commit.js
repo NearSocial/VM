@@ -33,8 +33,8 @@ const StorageType = {
 };
 
 export const CommitModal = (props) => {
-  const near = useNear();
-  const accountId = useAccountId();
+  const near = useNear(props.networkId);
+  const accountId = useAccountId(props.networkId);
   const cache = useCache();
 
   const [asyncCommitStarted, setAsyncAsyncCommitStarted] = useState(false);
@@ -295,7 +295,7 @@ export const CommitModal = (props) => {
 };
 
 export const CommitButton = (props) => {
-  const accountId = useAccountId();
+  const accountId = useAccountId(props.networkId);
 
   const {
     data,

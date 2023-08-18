@@ -49,6 +49,7 @@ const computeSrcOrCode = (src, code, configs) => {
 
 export const Widget = React.forwardRef((props, forwardedRef) => {
   const {
+    loading,
     src: propsSrc,
     code: propsCode,
     depth,
@@ -71,9 +72,12 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [srcOrCode, setSrcOrCode] = useState(null);
   const ethersProviderContext = useContext(EthersProviderContext);
 
-  const cache = useCache();
-  const near = useNear();
-  const accountId = useAccountId();
+  const networkId =
+    configs &&
+    configs.findLast((config) => config && config.networkId)?.networkId;
+  const cache = useCache(networkId);
+  const near = useNear(networkId);
+  const accountId = useAccountId(networkId);
   const [element, setElement] = useState(null);
 
   useEffect(() => {
@@ -266,6 +270,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
           <ConfirmTransactions
             transactions={transactions}
             onHide={() => setTransactions(null)}
+            networkId={networkId}
           />
         )}
         {commitRequest && (
@@ -277,11 +282,12 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
             onHide={() => setCommitRequest(null)}
             onCommit={commitRequest.onCommit}
             onCancel={commitRequest.onCancel}
+            networkId={networkId}
           />
         )}
       </>
     </ErrorBoundary>
   ) : (
-    Loading
+    loading ?? Loading
   );
 });
