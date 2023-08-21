@@ -13,4 +13,4 @@ resources:
 images:
 - name: cali-bos
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/cali-bos
-  newTag: webpack-config.1
+  newTag: 881771a
