@@ -12,6 +12,7 @@ COPY VM/package.json /VM/package.json
 COPY VM/webpack.config.js /VM/webpack.config.js
 COPY VM/yarn.lock /VM/yarn.lock
 COPY VM/LICENSE /VM/LICENSE
+COPY VM/.env.production /VM/.env.production
 
 WORKDIR /VM
 RUN yarn && yarn install && yarn run build
