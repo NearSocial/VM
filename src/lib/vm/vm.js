@@ -964,7 +964,9 @@ class VmStack {
         if (callee === "provider") {
           return this.vm.ethersProvider;
         } else if (callee === "send") {
-          return this.vm.ethersProvider.send(...args);
+          return this.vm.ethersProvider
+            ? this.vm.ethersProvider.send(...args)
+            : Promise.resolve(undefined);
         } else if (callee === "setChain") {
           const f = this.vm.ethersProviderContext?.setChain;
           if (!f) {

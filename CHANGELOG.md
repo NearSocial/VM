@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.1
+
+- `Ethers.send` will return a resolved Promise to `undefined` object if the provider is not available. Previously, it would throw an error.
+
 ## 2.3.0
 
 - Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
