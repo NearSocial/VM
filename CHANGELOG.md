@@ -2,7 +2,7 @@
 
 ## 2.3.1
 
-- `Ethers.send` will return a resolved Promise to `undefined` object if the provider is not available. Previously, it would throw an error.
+- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy.  
 
 ## 2.3.0
 
