@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cali-bos
+  name: bos-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cali-bos
+      app: bos-gateway
   template:
     metadata:
       labels:
-        app: cali-bos
+        app: bos-gateway
     spec:
       containers:
-        - name: cali-bos
-          image: cali-bos:latest
+        - name: bos-gateway
+          image: bos-gateway:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
@@ -46,4 +46,6 @@ spec:
               memory: 512Mi
           envFrom:
             - configMapRef:
-                name: cali-bos
+                name: bos-gateway
+            - secretRef:
+                name: bos-gateway

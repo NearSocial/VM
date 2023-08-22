@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: frontend
+configMapGenerator:
+- literals:
+  - NEXT_PUBLIC_NETWORK_ID=testnet
+  - NEXT_PUBLIC_HOSTNAME=https://cali-bos.euw3.staging.gcp.calimero.network
+  - NEXT_PUBLIC_CHAIN_ID=testingshard-calimero-testnet
+  - NEXT_PUBLIC_RPC_ENDPOINT=https://api.staging.calimero.network/api/v1/shards/testingshard-calimero-testnet/neard-rpc/
+  - NEXT_PUBLIC_WALLET_URL=https://mnw-calimero-staging-testnet.netlify.app/
+  name: bos-gateway
+resources:
+- ../../../base-0.0.0
+- host.yaml
+- mapping.yaml
+images:
+- name: bos-gateway
+  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway
+  newTag: webpack-config.1

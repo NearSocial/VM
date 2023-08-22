@@ -1,0 +1,9 @@
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: bos-gateway
+spec:
+  hostname: cali-bos.euw3.staging.gcp.calimero.network
+  prefix: /
+  rewrite: /
+  service: bos-gateway:3000
