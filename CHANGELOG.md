@@ -2,7 +2,30 @@
 
 ## 2.3.1
 
-- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy.  
+- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
+Correct usage:
+```jsx
+// Use `Ethers.provider().send()` to get a promise without caching.
+if (state.sender === undefined) {
+  Ethers.provider().send("eth_requestAccounts", []).then((accounts) => {
+    if (accounts.length) {
+      State.update({ sender: accounts[0] });
+      console.log("set sender", accounts[0]);
+    }
+  });
+}
+```
+Legacy example:
+```jsx
+// Use `Ethers.send()` to get a cached version, but might run into stale cached data.
+if (state.sender === undefined) {
+  const accounts = Ethers.send("eth_requestAccounts", []);
+  if (accounts.length) {
+    State.update({ sender: accounts[0] });
+    console.log("set sender", accounts[0]);
+  }
+}
+```
 
 ## 2.3.0
 
