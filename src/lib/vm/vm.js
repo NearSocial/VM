@@ -20,6 +20,7 @@ import { CommitButton } from "../components/Commit";
 import { Typeahead } from "react-bootstrap-typeahead";
 import styled, { isStyledComponent, keyframes } from "styled-components";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { randomBytes, createCipheriv, createDecipheriv } from 'crypto-browserify';
 import Big from "big.js";
 import * as elliptic from "elliptic";
 import BN from "bn.js";
@@ -252,6 +253,7 @@ const Keywords = {
   WebSocket: true,
   VM: true,
   Calimero: true,
+  Crypto: true,
 };
 
 const ReservedKeys = {
@@ -975,6 +977,15 @@ class VmStack {
           assertValidObject(obj);
           return obj;
         }
+      } else if (keyword === "Crypto" && callee === "randomBytes") {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'n' for Crypto.randomBytes");
+        }
+        return randomBytes(args[0]);
+      } else if (keyword === "Crypto" && callee === "createCipheriv") {
+        return createCipheriv(...args);
+      } else if (keyword === "Crypto" && callee === "createDecipheriv") {
+        return createDecipheriv(...args);
       } else if (
         (keyword === "State" && callee === "init") ||
         callee === "initState"
