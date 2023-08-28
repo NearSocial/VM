@@ -16,4 +16,4 @@ resources:
 images:
 - name: bos-gateway
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway
-  newTag: c1fadd3
+  newTag: 2727a02
