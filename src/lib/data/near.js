@@ -253,6 +253,21 @@ const checkFakKey = (rpcResponse, contract, methodNames) => {
   return true;
 }
 
+async function signWithCalimeroFak(componentName, near, contractName, message) {
+  const key = localStorage.getItem(
+    await getCalimeroFakKey(componentName, near, contractName)
+  );
+
+  if(!key) {
+    throw new Error(
+      "Method: Calimero.sign. Requires requestAccessKey to be called first"
+    );
+  }
+
+  const keyPair = nearAPI.KeyPair.fromString(key);
+  return keyPair.sign(message);
+}
+
 async function submitFakCalimeroTransaction(componentName, near, contractName, methodName, args, gas, deposit) {
   const key = localStorage.getItem(
     await getCalimeroFakKey(componentName, near, contractName)
@@ -565,6 +580,7 @@ async function _initNear({
   _near.submitCalimeroFakTransaction = (componentName, contractName, methodName, args, gas, deposit) => submitFakCalimeroTransaction(componentName, _near, contractName, methodName, args, gas, deposit);
   _near.verifyFak = (contractName, methodNames) => verifyFak("slackApp", _near, contractName, methodNames);
   _near.verifyCalimeroFak = (componentName, contractName, methodNames) => verifyCalimeroFak(componentName, _near, contractName, methodNames);
+  _near.signWithCalimeroFak = (componentName, contractName, message) => signWithCalimeroFak(componentName, _near, contractName, message);
   _near.block = (blockHeightOrFinality) => {
     const blockQuery = transformBlockId(blockHeightOrFinality);
     const provider = blockQuery.blockId

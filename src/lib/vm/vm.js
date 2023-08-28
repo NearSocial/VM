@@ -865,6 +865,17 @@ class VmStack {
           args[3],
           args[4]
         );
+      } else if (keyword === "Calimero" && callee === "sign") {
+        if (args.length !== 2) {
+          throw new Error(
+            "Method: Calimero.sign. Required arguments: 'contractName' -> contract that will verify signature. 'message' -> message to be signed."
+          );
+        }
+        return this.vm.near.signWithCalimeroFak(
+          this.vm.widgetSrc,
+          args[0],
+          args[1],
+        );
       } else if (callee === "fetch") {
         if (args.length < 1) {
           throw new Error(
