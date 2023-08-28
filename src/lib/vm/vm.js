@@ -28,7 +28,7 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
-import _ from "lodash";
+import cloneDeep from "lodash.clonedeep";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
@@ -2155,7 +2155,7 @@ export default class VM {
       nacl: frozenNacl,
       get elliptic() {
         delete this.elliptic;
-        this.elliptic = _.cloneDeep(elliptic);
+        this.elliptic = cloneDeep(elliptic);
         return this.elliptic;
       },
       ethers: frozenEthers,
