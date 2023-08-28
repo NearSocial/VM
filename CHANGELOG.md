@@ -1,5 +1,32 @@
 # Changelog
 
+## Pending
+
+- Add `cacheOptions` optional argument to the following methods:
+  - `Social.get(keys, blockId|finality, options, cacheOptions)`
+  - `Social.getr(keys, blockId|finality, options, cacheOptions)`
+  - `Social.keys(keys, blockId|finality, options, cacheOptions)`
+  - `Social.index(action, key, options, cacheOptions)`
+  - `Near.view(contractName, methodName, args, blockId|finality, subscribe, cacheOptions)`
+  - `Near.block(blockId|finality, subscribe, cacheOptions)`
+    The `cacheOptions` object is optional and may contain the following property:
+  - `ignoreCache` - boolean, if true, the method will ignore the cached value in the local DB and fetch the data from the API server. This will only happen once per session. Default is false.
+
+This is useful to avoid loading stale objects that are likely to change often. For example, the index of posts for the main feed, or notifications.
+```jsx
+const index = Social.index(
+  "post",
+  "main",
+  {
+    limit: 10,
+    order: "desc",
+  },
+  {
+    ignoreCache: true,
+  }
+);
+```
+
 ## 2.3.2
 
 - Nothing. Missed the package.json bump in the previous release.
