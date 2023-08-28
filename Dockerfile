@@ -19,31 +19,31 @@ RUN yarn && yarn install && yarn run build
 
 ######################### End VM #########################
 
-######################### Start near-discovery #########################
-COPY near-discovery/public /near-discovery/public
-COPY near-discovery/src /near-discovery/src
-COPY near-discovery/types /near-discovery/types
-COPY near-discovery/.eslintrc.json /near-discovery/.eslintrc.json
-COPY near-discovery/.nvmrc /near-discovery/.nvmrc
-COPY near-discovery/.prettierrc /near-discovery/.prettierrc
-COPY near-discovery/LICENSE /near-discovery/LICENSE
-COPY near-discovery/next.config.js /near-discovery/next.config.js
-COPY near-discovery/package.json /near-discovery/package.json
-COPY near-discovery/pnpm-lock.yaml /near-discovery/pnpm-lock.yaml
-COPY near-discovery/sentry.client.config.ts /near-discovery/sentry.client.config.ts
-COPY near-discovery/sentry.edge.config.ts /near-discovery/sentry.edge.config.ts
-COPY near-discovery/sentry.server.config.ts /near-discovery/sentry.server.config.ts
-COPY near-discovery/tsconfig.json /near-discovery/tsconfig.json
+######################### Start calimero-portal #########################
+COPY calimero-portal/public /calimero-portal/public
+COPY calimero-portal/src /calimero-portal/src
+COPY calimero-portal/types /calimero-portal/types
+COPY calimero-portal/.eslintrc.json /calimero-portal/.eslintrc.json
+COPY calimero-portal/.nvmrc /calimero-portal/.nvmrc
+COPY calimero-portal/.prettierrc /calimero-portal/.prettierrc
+COPY calimero-portal/LICENSE /calimero-portal/LICENSE
+COPY calimero-portal/next.config.js /calimero-portal/next.config.js
+COPY calimero-portal/package.json /calimero-portal/package.json
+COPY calimero-portal/pnpm-lock.yaml /calimero-portal/pnpm-lock.yaml
+COPY calimero-portal/sentry.client.config.ts /calimero-portal/sentry.client.config.ts
+COPY calimero-portal/sentry.edge.config.ts /calimero-portal/sentry.edge.config.ts
+COPY calimero-portal/sentry.server.config.ts /calimero-portal/sentry.server.config.ts
+COPY calimero-portal/tsconfig.json /calimero-portal/tsconfig.json
 
-WORKDIR /near-discovery
+WORKDIR /calimero-portal
 RUN pnpm remove near-social-vm && pnpm add file:../VM && pnpm i && pnpm build
 
-COPY VM/.env.production /near-discovery/.env.production
-COPY VM/entrypoint.sh /near-discovery/entrypoint.sh
+COPY VM/.env.production /calimero-portal/.env.production
+COPY VM/entrypoint.sh /calimero-portal/entrypoint.sh
 
 EXPOSE 3000
 ENV PORT 3000
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["node_modules/.bin/next", "start"]
-######################### End near-discovery #########################
+######################### End calimero-portal #########################
