@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.2
+
+- Nothing. Missed the package.json bump in the previous release.
+
 ## 2.3.1
 
 - Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
