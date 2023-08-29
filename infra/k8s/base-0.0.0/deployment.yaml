@@ -4,13 +4,7 @@ metadata:
   name: bos-gateway
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: bos-gateway
   template:
-    metadata:
-      labels:
-        app: bos-gateway
     spec:
       containers:
         - name: bos-gateway

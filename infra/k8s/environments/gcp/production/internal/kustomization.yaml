@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+nameSuffix: -internal
+commonLabels:
+  app.kubernetes.io/name: bos-gateway
+  app.kubernetes.io/component: bos
+  app.kubernetes.io/instance: internal
+resources:
+  - ../../../../base-0.0.0
+  - certificate.yaml
+  - frontend-config.yaml
+  - ingress.yaml
+configMapGenerator:
+  - literals:
+      - NEXT_PUBLIC_NETWORK_ID=mainnet
+      - NEXT_PUBLIC_HOSTNAME=https://internal.calimero.network
+      - NEXT_PUBLIC_CHAIN_ID=internal-calimero
+      - NEXT_PUBLIC_RPC_ENDPOINT=https://api.calimero.network/api/v1/shards/internal-calimero/neard-rpc/
+      - NEXT_PUBLIC_WALLET_URL=https://www.mynearwallet.com/
+    name: bos-gateway
+patches:
+  - path: deployment-patch.yaml
+    target:
+      kind: Deployment
