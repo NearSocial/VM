@@ -605,6 +605,7 @@ class VmStack {
       });
     } else if (element === "Widget") {
       attributes.depth = this.vm.depth + 1;
+      attributes.overrides = this.vm.overrides;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
       );
@@ -1728,6 +1729,7 @@ export default class VM {
       refreshCache,
       confirmTransactions,
       depth,
+      overrides,
       widgetSrc,
       requestCommit,
       version,
@@ -1764,6 +1766,7 @@ export default class VM {
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
     this.depth = depth;
+    this.overrides = overrides;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
     this.version = version;
@@ -1968,6 +1971,7 @@ export default class VM {
       refreshCache: this.refreshCache,
       confirmTransactions: this.confirmTransactions,
       depth: this.depth + 1,
+      overrides: this.overrides,
       widgetSrc: src,
       requestCommit: this.requestCommit,
       version: this.version,
