@@ -17,10 +17,10 @@ configMapGenerator:
       - NEXT_PUBLIC_CHAIN_ID=community-portal-calimero
       - NEXT_PUBLIC_RPC_ENDPOINT=https://api.calimero.network/api/v1/shards/community-portal-calimero/neard-rpc/
       - NEXT_PUBLIC_WALLET_URL=https://www.mynearwallet.com/
-      - NEXT_PUBLIC_CURB_CONTRACT_ID="chat.community-portal-calimero"
-      - NEXT_PUBLIC_CURB_ENCRYPTION_URL="https://cali-encryption.euw3.gcp.calimero.network/key"
-      - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID="calimero.near"
-      - NEXT_PUBLIC_CURB_MAIN="calimero.near/widget/Calimero.Curb.Main"
+      - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.community-portal-calimero
+      - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.gcp.calimero.network/key
+      - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.near
+      - NEXT_PUBLIC_CURB_MAIN=calimero.near/widget/Calimero.Curb.Main
     name: bos-gateway
 patches:
   - path: deployment-patch.yaml
