@@ -37,10 +37,12 @@ COPY calimero-portal/tsconfig.json /calimero-portal/tsconfig.json
 
 WORKDIR /calimero-portal
 
-RUN pnpm remove near-social-vm && pnpm add file:../VM && pnpm i && pnpm build
+RUN pnpm remove near-social-vm && pnpm add file:../VM
 
 COPY VM/.env.production /calimero-portal/.env.production
 COPY VM/entrypoint.sh /calimero-portal/entrypoint.sh
+
+RUN pnpm i && pnpm build
 
 EXPOSE 3000
 ENV PORT 3000
