@@ -30,8 +30,8 @@ images:
   newTag: a06c102
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
-  newTag: a06c102
+  newTag: 6763e8c
 patches:
-  - path: deployment-patch.yaml
-    target:
-      kind: Deployment
+- path: deployment-patch.yaml
+  target:
+    kind: Deployment
