@@ -25,3 +25,6 @@ images:
 - name: bos-gateway
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway
   newTag: 8eb2f97
+- name: bos-gateway-testnet
+  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
+  newTag: fbozic-multicontainer-1
