@@ -35,6 +35,9 @@ COPY calimero-portal/sentry.edge.config.ts /calimero-portal/sentry.edge.config.t
 COPY calimero-portal/sentry.server.config.ts /calimero-portal/sentry.server.config.ts
 COPY calimero-portal/tsconfig.json /calimero-portal/tsconfig.json
 
+# .env is generated during CI/CD pipeline
+COPY calimero-portal/.env /calimero-portal/.env
+
 WORKDIR /calimero-portal
 
 RUN pnpm remove near-social-vm && pnpm add file:../VM
