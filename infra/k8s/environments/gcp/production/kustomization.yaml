@@ -10,7 +10,7 @@ images:
   newTag: 2727a02
 - name: bos-gateway-mainnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-mainnet
-  newTag: a06c102
+  newTag: network-id-dotenv.1
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: a06c102
