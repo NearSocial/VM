@@ -54,6 +54,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     code: propsCode,
     depth,
     overrides,
+    autoConfirm,
     config: propsConfig,
     props: propsProps,
     ...forwardedProps
@@ -157,7 +158,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         gas: t.gas ? Big(t.gas) : TGas.mul(30),
       }));
       console.log("confirm txs", transactions);
-      setTransactions(transactions);
+      if (autoConfirm) {
+        near.sendTransactions(transactions);
+      } else {
+        setTransactions(transactions);
+      }
     },
     [near]
   );
@@ -189,6 +194,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       confirmTransactions,
       depth,
       overrides,
+      autoConfirm,
       widgetSrc: src,
       requestCommit,
       version: uuid(),
@@ -205,6 +211,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     code,
     depth,
     overrides,
+    autoConfirm,
     requestCommit,
     confirmTransactions,
     configs,
