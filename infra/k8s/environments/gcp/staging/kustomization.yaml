@@ -9,10 +9,10 @@ configMapGenerator:
 - literals:
   - NEXT_PUBLIC_NETWORK_ID=testnet
   - NEXT_PUBLIC_HOSTNAME=https://cali-bos.euw3.staging.gcp.calimero.network
-  - NEXT_PUBLIC_CHAIN_ID=cali-portal-calimero-testnet
-  - NEXT_PUBLIC_RPC_ENDPOINT=https://api.staging.calimero.network/api/v1/shards/cali-portal-ws-calimero-testnet/neard-rpc/
+  - NEXT_PUBLIC_CHAIN_ID=portal-2-calimero-testnet
+  - NEXT_PUBLIC_RPC_ENDPOINT=https://api.staging.calimero.network/api/v1/shards/portal-2-cali-calimero-testnet/neard-rpc/
   - NEXT_PUBLIC_WALLET_URL=https://mnw-calimero-staging-testnet.netlify.app/
-  - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.cali-portal-ws
+  - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.portal-2-cali
   - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.staging.gcp.calimero.network/key
   - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.testnet
   - NEXT_PUBLIC_CURB_MAIN=calimero.testnet/widget/Calimero.Curb.Main
