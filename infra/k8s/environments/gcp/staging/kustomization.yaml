@@ -27,7 +27,7 @@ images:
   newTag: 8eb2f97
 - name: bos-gateway-mainnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-mainnet
-  newTag: 6763e8c
+  newTag: 441d54f
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: 441d54f
