@@ -12,7 +12,7 @@ configMapGenerator:
   - NEXT_PUBLIC_CHAIN_ID=pt-63-calimero-testnet
   - NEXT_PUBLIC_RPC_ENDPOINT=https://api.staging.calimero.network/api/v1/shards/ws-protocol-63-calimero-testnet/neard-rpc/
   - NEXT_PUBLIC_WALLET_URL=https://mnw-calimero-staging-testnet.netlify.app/
-  - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.portal-2-cali
+  - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.ws-protocol-63
   - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.staging.gcp.calimero.network/key
   - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.testnet
   - NEXT_PUBLIC_CURB_MAIN=calimero.testnet/widget/Calimero.Curb.Main
