@@ -130,7 +130,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       setCode(srcOrCode.code);
       setSrc(null);
     }
-  }, [near, srcOrCode, nonce]);
+  }, [near, srcOrCode, nonce, overrides]);
 
   useEffect(() => {
     setVm(null);
