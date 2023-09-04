@@ -30,7 +30,10 @@ images:
   newTag: fbozic-logs.1
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
-  newTag: fbozic-logs.1
+  newTag: 49459ee
+- name: bos-gateway-staging
+  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
+  newTag: v0.0.0-rc.1
 patches:
 - path: deployment-patch.yaml
   target:
