@@ -14,3 +14,6 @@ images:
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: network-id-dotenv.1
+- name: bos-gateway-internal-production
+  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
+  newTag: v0.0.0-rc.1
