@@ -21,6 +21,8 @@ configMapGenerator:
       - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.gcp.calimero.network/key
       - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.near
       - NEXT_PUBLIC_CURB_MAIN=calimero.near/widget/Calimero.Curb.Main
+      - NEXT_PUBLIC_SENTRY_DSN=https://efa0d51db0b2bda105d4639f98c34bd1@o4504623593291776.ingest.sentry.io/4505784365219840
+      - NEXT_PUBLIC_SENTRY_ENVIRONMENT=internal-production
     name: bos-gateway
 patches:
   - path: deployment-patch.yaml
