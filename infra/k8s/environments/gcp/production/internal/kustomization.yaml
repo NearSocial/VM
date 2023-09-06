@@ -18,7 +18,7 @@ configMapGenerator:
       - NEXT_PUBLIC_RPC_ENDPOINT=https://api.calimero.network/api/v1/shards/internal-calimero/neard-rpc/
       - NEXT_PUBLIC_WALLET_URL=https://www.mynearwallet.com/
       - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.internal-calimero
-      - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.gcp.calimero.network/key
+      - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https:/cali-encryption-internal.euw3.prod.gcp.calimero.network/key
       - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.near
       - NEXT_PUBLIC_CURB_MAIN=calimero.near/widget/Calimero.Curb.Main
       - NEXT_PUBLIC_SENTRY_DSN=https://efa0d51db0b2bda105d4639f98c34bd1@o4504623593291776.ingest.sentry.io/4505784365219840
