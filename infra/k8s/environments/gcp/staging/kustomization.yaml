@@ -41,7 +41,7 @@ images:
   newTag: 49459ee
 - name: bos-gateway-workshop-staging
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-workshop-staging
-  newTag: v0.0.0-rc.1
+  newTag: v0.0.0-rc.2
 patches:
 - path: deployment-patch.yaml
   target:
