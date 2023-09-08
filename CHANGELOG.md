@@ -26,6 +26,7 @@ const index = Social.index(
   }
 );
 ```
+- Replace `lodash` dependency with `lodash.clonedeep` to reduce bundle size.
 
 ## 2.3.2
 
