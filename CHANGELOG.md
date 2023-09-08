@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- Replace `lodash` dependency with `lodash.clonedeep` to reduce bundle size.
+
 ## 2.3.2
 
 - Nothing. Missed the package.json bump in the previous release.
