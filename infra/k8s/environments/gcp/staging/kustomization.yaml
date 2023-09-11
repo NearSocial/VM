@@ -32,7 +32,7 @@ images:
   newTag: v0.0.0-rc.7
 - name: bos-gateway-mainnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-mainnet
-  newTag: fbozic-logs.1
+  newTag: 6ef4504
 - name: bos-gateway-staging
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-staging
   newTag: v0.0.0-rc.3
