@@ -65,7 +65,7 @@ class Cache {
     return (await this.dbPromise).put(CacheDbObject, val, key);
   }
 
-  cachedPromise(key, promise, invalidate, forceCachedValue) {
+  cachedPromise(key, promise, invalidate, cacheOptions) {
     key = JSON.stringify(key);
     const cached = this.cache[key] || {
       status: CacheStatus.NotStarted,
@@ -106,10 +106,13 @@ class Cache {
     ) {
       return cached.result;
     }
-    if (cached.status === CacheStatus.NotStarted) {
+    if (
+      cached.status === CacheStatus.NotStarted &&
+      !cacheOptions?.ignoreCache
+    ) {
       this.innerGet(key).then((cachedResult) => {
         if (
-          (cachedResult || forceCachedValue) &&
+          (cachedResult || cacheOptions?.forceCachedValue) &&
           cached.status === CacheStatus.InProgress
         ) {
           CacheDebug && console.log("Cached value", key, cachedResult);
@@ -200,18 +203,27 @@ class Cache {
     });
   }
 
-  cachedBlock(near, blockId, invalidate) {
+  cachedBlock(near, blockId, invalidate, cacheOptions) {
     return this.cachedPromise(
       {
         action: Action.Block,
         blockId,
       },
       () => near.block(blockId),
-      invalidate
+      invalidate,
+      cacheOptions
     );
   }
 
-  cachedViewCall(near, contractId, methodName, args, blockId, invalidate) {
+  cachedViewCall(
+    near,
+    contractId,
+    methodName,
+    args,
+    blockId,
+    invalidate,
+    cacheOptions
+  ) {
     return this.cachedPromise(
       {
         action: Action.ViewCall,
@@ -221,7 +233,8 @@ class Cache {
         blockId,
       },
       () => near.viewCall(contractId, methodName, args, blockId),
-      invalidate
+      invalidate,
+      cacheOptions
     );
   }
 
@@ -266,7 +279,7 @@ class Cache {
     }
   }
 
-  cachedFetch(url, options, invalidate) {
+  cachedFetch(url, options, invalidate, cacheOptions) {
     return this.cachedPromise(
       {
         action: Action.Fetch,
@@ -274,22 +287,24 @@ class Cache {
         options,
       },
       () => this.asyncFetch(url, options),
-      invalidate
+      invalidate,
+      cacheOptions
     );
   }
 
-  cachedCustomPromise(key, promise, invalidate) {
+  cachedCustomPromise(key, promise, invalidate, cacheOptions) {
     return this.cachedPromise(
       {
         action: Action.CustomPromise,
         key,
       },
       () => promise(),
-      invalidate
+      invalidate,
+      cacheOptions
     );
   }
 
-  socialGet(near, keys, recursive, blockId, options, invalidate) {
+  socialGet(near, keys, recursive, blockId, options, invalidate, cacheOptions) {
     if (!near) {
       return null;
     }
@@ -305,7 +320,8 @@ class Cache {
       "get",
       args,
       blockId,
-      invalidate
+      invalidate,
+      cacheOptions
     );
     if (data === null) {
       return null;
@@ -325,7 +341,7 @@ class Cache {
     return data;
   }
 
-  socialIndex(near, action, key, options, invalidate) {
+  socialIndex(near, action, key, options, invalidate, cacheOptions) {
     const res = this.cachedFetch(
       `${near.config.apiUrl}/index`,
       {
@@ -339,7 +355,8 @@ class Cache {
           options,
         }),
       },
-      invalidate
+      invalidate,
+      cacheOptions
     );
 
     return res?.ok ? res.body : null;
@@ -354,7 +371,9 @@ class Cache {
       },
       undefined,
       invalidate,
-      true
+      {
+        forceCachedValue: true,
+      }
     );
   }
 
@@ -390,7 +409,7 @@ class Cache {
     }
   }
 
-  cachedEthersCall(ethersProvider, callee, args, invalidate) {
+  cachedEthersCall(ethersProvider, callee, args, invalidate, cacheOptions) {
     if (!ethersProvider) {
       return null;
     }
@@ -401,7 +420,8 @@ class Cache {
         args,
       },
       () => ethersProvider[callee](...args),
-      invalidate
+      invalidate,
+      cacheOptions
     );
   }
 }
@@ -417,14 +437,14 @@ const useSecondaryCache = singletonHook(secondaryCache, () => {
   return secondaryCache;
 });
 
-export const useCache = networkId => {
+export const useCache = (networkId) => {
   const near = useNear();
   const defaultCache = useDefaultCache();
   const secondaryCache = useSecondaryCache();
 
-  if(!networkId || networkId === near.config.networkId) {
+  if (!networkId || networkId === near.config.networkId) {
     return defaultCache;
   }
 
   return secondaryCache;
-}
+};
