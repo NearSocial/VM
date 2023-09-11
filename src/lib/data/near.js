@@ -188,7 +188,6 @@ async function requestCalimeroFak(componentName, near, contractName, methodNames
       newUrl.searchParams.set('contract_id', contractName);
       const accessKey = nearAPI.utils.KeyPairEd25519.fromRandom();
       newUrl.searchParams.set('public_key', accessKey.getPublicKey().toString());
-      await near.keyStore.setKey(CalimeroConfig.networkId, componentName+"-cali" + accessKey.getPublicKey(), accessKey);
       localStorage.setItem(
         await getCalimeroFakKey(componentName, near, contractName),
         accessKey
