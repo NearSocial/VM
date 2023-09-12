@@ -7,3 +7,4 @@ spec:
   prefix: /
   rewrite: /
   service: bos-gateway:3000
+  timeout_ms: 30000
