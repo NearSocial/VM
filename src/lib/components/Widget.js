@@ -61,7 +61,10 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [nonce, setNonce] = useState(0);
   const [code, setCode] = useState(null);
   const [src, setSrc] = useState(null);
-  const [state, setState] = useState(undefined);
+  const [reactState, setReactState] = useState({
+    hooks: [],
+    state: undefined,
+  });
   const [cacheNonce, setCacheNonce] = useState(0);
   const [context, setContext] = useState({});
   const [vm, setVm] = useState(null);
@@ -170,11 +173,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     if (!near || !code) {
       return;
     }
-    setState(undefined);
+    setReactState({ hooks: [], state: undefined });
     const vm = new VM({
       near,
       rawCode: code,
-      setReactState: setState,
+      setReactState,
       cache,
       refreshCache: () => {
         setCacheNonce((cacheNonce) => cacheNonce + 1);
@@ -221,7 +224,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     const vmInput = {
       props: propsProps || {},
       context,
-      state,
+      reactState,
       cacheNonce,
       version: vm.version,
       forwardedProps: {
@@ -249,7 +252,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     vm,
     propsProps,
     context,
-    state,
+    reactState,
     cacheNonce,
     prevVmInput,
     forwardedRef,
