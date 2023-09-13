@@ -1026,7 +1026,7 @@ class VmStack {
               "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
             );
           }
-          if (!(args[0] instanceof Function)) {
+          if (!isFunction(args[0])) {
             throw new Error(
               "Method: useCache. The first argument 'promiseGenerator' must be a function"
             );
@@ -1053,7 +1053,7 @@ class VmStack {
           const getState = () => this.vm.hooks[hookIndex]?.state;
 
           const setState = (newState) => {
-            if (newState instanceof Function) {
+            if (isFunction(newState)) {
               let currentState = getState();
               newState = newState(currentState);
             }
@@ -1074,7 +1074,7 @@ class VmStack {
             );
           }
           const setup = args[0];
-          if (!(setup instanceof Function)) {
+          if (!isFunction(setup)) {
             throw new Error(
               "Method: useEffect. The first argument 'setup' must be a function"
             );
