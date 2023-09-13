@@ -1054,8 +1054,7 @@ class VmStack {
 
           const setState = (newState) => {
             if (isFunction(newState)) {
-              let currentState = getState();
-              newState = newState(currentState);
+              newState = newState(getState());
             }
             this.vm.setReactHook(hookIndex, { state: newState, setState });
             return newState;
