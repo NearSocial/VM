@@ -1,5 +1,74 @@
 # Changelog
 
+## 2.3.2
+
+- Nothing. Missed the package.json bump in the previous release.
+
+## 2.3.1
+
+- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
+Correct usage:
+```jsx
+// Use `Ethers.provider().send()` to get a promise without caching.
+if (state.sender === undefined) {
+  Ethers.provider().send("eth_requestAccounts", []).then((accounts) => {
+    if (accounts.length) {
+      State.update({ sender: accounts[0] });
+      console.log("set sender", accounts[0]);
+    }
+  });
+}
+```
+Legacy example:
+```jsx
+// Use `Ethers.send()` to get a cached version, but might run into stale cached data.
+if (state.sender === undefined) {
+  const accounts = Ethers.send("eth_requestAccounts", []);
+  if (accounts.length) {
+    State.update({ sender: accounts[0] });
+    console.log("set sender", accounts[0]);
+  }
+}
+```
+
+## 2.3.0
+
+- Expose `encodeURIComponent`, `decodeURIComponent`, `btoa`, `atob`, `isFinite`, `decodeURI` and `encodeURI` in the global scope.
+- Refactor native functions into an object, making it easier to add new functions.
+- Add a `networkId` prop to the `Widget` component config to allow using a `near` object outside the singleton state to allow testing Mainnet components on a Testnet initialized VM or vice versa. Example usage of `networkId` prop in `Widget` config:
+
+```jsx
+// Import widget from testnet initialized VM
+
+<Widget 
+  config={{
+    networkId: 'mainnet'
+  }}
+  src="devgovgigs.near/widget/Ideas" // `src` prop here is a path in mainnet SocialDB
+/>
+
+// Also works with the `code` prop where `Social.get` and other [BOS API](https://docs.near.org/bos/api/near#) features and `Widget`s will reference mainnet in this case.
+```
+- Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
+- Add `config.defaultFinality` to be able to specify `final` instead of `optimistic` (default). It would route the majority of the view calls through the API server.
+- Expose `ethers.providers`. You will be able to construct a custom JSON provider for read only data. Example usage:
+
+```jsx
+const opGoerliProvider = new ethers.providers.JsonRpcProvider(
+  "https://optimism-goerli.blockpi.network/v1/rpc/public"
+);
+
+console.log(opGoerliProvider);
+```
+- BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
+- Add `loading` prop to a Widget. It would display the passed value instead of the default loading spinner. It can be used to display a custom loading indicator or a placeholder. Example:
+```jsx
+<Widget
+  loading={<div style={{width: "100%", height: "200px"}}>Loading...</div>}
+  src="mob.near/widget/ProfilePage"
+/>
+```
+
 ## 2.2.4
 
 - Fix VM.require bug which was accessing a this.vmInstances map via bracket notion rather than correct .get()

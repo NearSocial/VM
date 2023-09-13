@@ -1,6 +1,7 @@
 import { indexMatch, isObject, patternMatch } from "./utils";
 import { openDB } from "idb";
 import { singletonHook } from "react-singleton-hook";
+import { useNear } from "./near";
 
 const Action = {
   ViewCall: "ViewCall",
@@ -23,11 +24,12 @@ const CacheSubscriptionTimeoutMs = 5000;
 const CacheDebug = false;
 
 const CacheDb = "cacheDb";
+const SecondaryCacheDb = "secondaryCacheDb";
 const CacheDbObject = "cache-v1";
 
 class Cache {
-  constructor(finalSynchronizationDelayMs = 3000) {
-    this.dbPromise = openDB(CacheDb, 1, {
+  constructor(cacheName = CacheDb, finalSynchronizationDelayMs = 3000) {
+    this.dbPromise = openDB(cacheName, 1, {
       upgrade(db) {
         db.createObjectStore(CacheDbObject);
       },
@@ -418,6 +420,24 @@ class Cache {
 }
 
 const defaultCache = new Cache();
-export const useCache = singletonHook(defaultCache, () => {
+const secondaryCache = new Cache(SecondaryCacheDb);
+
+const useDefaultCache = singletonHook(defaultCache, () => {
   return defaultCache;
 });
+
+const useSecondaryCache = singletonHook(secondaryCache, () => {
+  return secondaryCache;
+});
+
+export const useCache = networkId => {
+  const near = useNear();
+  const defaultCache = useDefaultCache();
+  const secondaryCache = useSecondaryCache();
+
+  if(!networkId || networkId === near.config.networkId) {
+    return defaultCache;
+  }
+
+  return secondaryCache;
+}

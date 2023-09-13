@@ -77,6 +77,7 @@ const frozenEthers = Object.freeze({
   utils: deepFreeze(ethers.utils),
   BigNumber: deepFreeze(ethers.BigNumber),
   Contract: deepFreeze(ethers.Contract),
+  providers: deepFreeze(ethers.providers),
 });
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
@@ -255,6 +256,19 @@ const Keywords = {
   Calimero: true,
   Crypto: true,
   Promise,
+};
+
+const NativeFunctions = {
+  encodeURIComponent,
+  decodeURIComponent,
+  isNaN,
+  parseInt,
+  parseFloat,
+  isFinite,
+  btoa,
+  atob,
+  decodeURI,
+  encodeURI,
 };
 
 const ReservedKeys = {
@@ -599,6 +613,8 @@ class VmStack {
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
       );
+    } else if (element === "CommitButton") {
+      attributes.networkId = this.vm.networkId;
     }
 
     if (withChildren === false && code.children.length) {
@@ -877,69 +893,6 @@ class VmStack {
           args[0],
           args[1],
         );
-      } else if (callee === "fetch") {
-        if (args.length < 1) {
-          throw new Error(
-            "Method: fetch. Required arguments: 'url'. Optional: 'options'"
-          );
-        }
-        return this.vm.cachedFetch(...args);
-      } else if (callee === "asyncFetch") {
-        if (args.length < 1) {
-          throw new Error(
-            "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
-          );
-        }
-        return this.vm.asyncFetch(...args);
-      } else if (callee === "useCache") {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
-          );
-        }
-        if (!(args[0] instanceof Function)) {
-          throw new Error(
-            "Method: useCache. The first argument 'promiseGenerator' must be a function"
-          );
-        }
-        return this.vm.useCache(...args);
-      } else if (callee === "parseInt") {
-        return parseInt(...args);
-      } else if (callee === "parseFloat") {
-        return parseFloat(...args);
-      } else if (callee === "isNaN") {
-        return isNaN(...args);
-      } else if (callee === "setTimeout") {
-        const [callback, timeout] = args;
-        const timer = setTimeout(() => {
-          if (!this.vm.alive) {
-            return;
-          }
-          callback();
-        }, timeout);
-        this.vm.timeouts.add(timer);
-        return timer;
-      } else if (callee === "setInterval") {
-        if (this.vm.intervals.size >= MAX_INTERVALS) {
-          throw new Error(`Too many intervals. Max allowed: ${MAX_INTERVALS}`);
-        }
-        const [callback, timeout] = args;
-        const timer = setInterval(() => {
-          if (!this.vm.alive) {
-            return;
-          }
-          callback();
-        }, timeout);
-        this.vm.intervals.add(timer);
-        return timer;
-      } else if (callee === "clearTimeout") {
-        const timer = args[0];
-        this.vm.timeouts.delete(timer);
-        return clearTimeout(timer);
-      } else if (callee === "clearInterval") {
-        const timer = args[0];
-        this.vm.intervals.delete(timer);
-        return clearInterval(timer);
       } else if (
         (keyword === "JSON" && callee === "stringify") ||
         callee === "stringify"
@@ -1092,6 +1045,12 @@ class VmStack {
       } else if (keyword === "Ethers") {
         if (callee === "provider") {
           return this.vm.ethersProvider;
+        } else if (callee === "setChain") {
+          const f = this.vm.ethersProviderContext?.setChain;
+          if (!f) {
+            throw new Error("The gateway doesn't support `setChain` operation");
+          }
+          return f(...args);
         }
         return this.vm.cachedEthersCall(callee, args);
       } else if (keyword === "WebSocket") {
@@ -1101,6 +1060,69 @@ class VmStack {
           return websocket;
         } else {
           throw new Error("Unsupported WebSocket method");
+        }
+      } else if (keywordType === undefined) {
+        if (NativeFunctions.hasOwnProperty(callee)) {
+          return NativeFunctions[callee](...args);
+        } else if (callee === "fetch") {
+          if (args.length < 1) {
+            throw new Error(
+              "Method: fetch. Required arguments: 'url'. Optional: 'options'"
+            );
+          }
+          return this.vm.cachedFetch(...args);
+        } else if (callee === "asyncFetch") {
+          if (args.length < 1) {
+            throw new Error(
+              "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
+            );
+          }
+          return this.vm.asyncFetch(...args);
+        } else if (callee === "useCache") {
+          if (args.length < 2) {
+            throw new Error(
+              "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
+            );
+          }
+          if (!(args[0] instanceof Function)) {
+            throw new Error(
+              "Method: useCache. The first argument 'promiseGenerator' must be a function"
+            );
+          }
+          return this.vm.useCache(...args);
+        } else if (callee === "setTimeout") {
+          const [callback, timeout] = args;
+          const timer = setTimeout(() => {
+            if (!this.vm.alive) {
+              return;
+            }
+            callback();
+          }, timeout);
+          this.vm.timeouts.add(timer);
+          return timer;
+        } else if (callee === "setInterval") {
+          if (this.vm.intervals.size >= MAX_INTERVALS) {
+            throw new Error(
+              `Too many intervals. Max allowed: ${MAX_INTERVALS}`
+            );
+          }
+          const [callback, timeout] = args;
+          const timer = setInterval(() => {
+            if (!this.vm.alive) {
+              return;
+            }
+            callback();
+          }, timeout);
+          this.vm.intervals.add(timer);
+          return timer;
+        } else if (callee === "clearTimeout") {
+          const timer = args[0];
+          this.vm.timeouts.delete(timer);
+          return clearTimeout(timer);
+        } else if (callee === "clearInterval") {
+          const timer = args[0];
+          this.vm.intervals.delete(timer);
+          return clearInterval(timer);
         }
       }
     } else {
@@ -1846,6 +1868,9 @@ export default class VM {
     this.intervals = new Set();
     this.websockets = [];
     this.vmInstances = new Map();
+    this.networkId =
+      widgetConfigs.findLast((config) => config && config.networkId)
+        ?.networkId || near.config.networkId;
   }
 
   stop() {
