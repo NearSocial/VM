@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.4.0
 
 - Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
 ```jsx
