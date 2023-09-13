@@ -14,6 +14,7 @@ import {
   ErrorFallback,
   isObject,
   isString,
+  isFunction,
   Loading,
   TGas,
 } from "../data/utils";
@@ -23,7 +24,6 @@ import { CommitModal } from "./Commit";
 import { useAccountId } from "../data/account";
 import Big from "big.js";
 import uuid from "react-uuid";
-import { isFunction } from "react-bootstrap-typeahead/types/utils";
 import { EthersProviderContext } from "./ethers";
 
 const computeSrcOrCode = (src, code, configs) => {
