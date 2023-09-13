@@ -52,6 +52,8 @@ export const isObject = (o) =>
 
 export const isString = (s) => typeof s === "string";
 
+export const isFunction = (f) => typeof f === "function";
+
 export const keysToCamel = function (o) {
   if (isObject(o)) {
     const n = {};
