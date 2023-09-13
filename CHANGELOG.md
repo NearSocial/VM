@@ -4,7 +4,10 @@
 
 - Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
 ```jsx
-const [a, setA] = useState("Y");
+const [a, setA] = useState(() => {
+  console.log("Init 'a'");
+  return "Y";
+});
 
 const [b, setB] = useState("B");
 const [sum, setSum] = useState(0);
@@ -23,7 +26,7 @@ return (
     <br />
     Length sum = {sum}
     <div>
-      <button onClick={() => setA(a + "O")}>A</button>
+      <button onClick={() => setA((s) => s + "O")}>A</button>
       <button onClick={() => setB(b + "O")}>B</button>
     </div>
   </div>
