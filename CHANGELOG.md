@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.1
+
+- FIX: Resolve bug with `VM.require` affected by the introduction of `useState` and `useEffect` hooks.
+
 ## 2.4.0
 
 - Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
