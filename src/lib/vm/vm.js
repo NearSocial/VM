@@ -2,10 +2,12 @@ import React from "react";
 import { Widget } from "../components/Widget";
 import {
   deepCopy,
+  deepEqual,
   deepFreeze,
   ipfsUpload,
   ipfsUrl,
   isArray,
+  isFunction,
   isObject,
   isReactObject,
   isString,
@@ -30,7 +32,8 @@ import { nanoid, customAlphabet } from "nanoid";
 import _ from "lodash";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
-import * as nearAPI from "near-api-js";
+import { ethers } from "ethers";
+import { Web3ConnectButton } from "../components/ethers";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -60,8 +63,6 @@ import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import { ethers } from "ethers";
-import { Web3ConnectButton } from "../components/ethers";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -439,6 +440,7 @@ class Stack {
 class VmStack {
   constructor(vm, prevStack, state, isTrusted) {
     this.gIndex = 0;
+    this.hookIndex = 0;
     this.vm = vm;
     this.isTrusted = !!isTrusted;
     this.stack = new Stack(prevStack, state);
@@ -1085,13 +1087,123 @@ class VmStack {
               "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
             );
           }
-          if (!(args[0] instanceof Function)) {
+          if (!isFunction(args[0])) {
             throw new Error(
               "Method: useCache. The first argument 'promiseGenerator' must be a function"
             );
           }
           return this.vm.useCache(...args);
-        } else if (callee === "setTimeout") {
+        } else if (callee === "useState") {
+          if (this.prevStack) {
+            throw new Error(
+              "Method: useState. The hook can an only be called from the top of the stack"
+            );
+          }
+          if (args.length < 1) {
+            throw new Error(
+              "Method: useState. Required arguments: 'initialState'"
+            );
+          }
+          const initialState = args[0];
+          const hookIndex = this.hookIndex++;
+          const hook = this.vm.hooks[hookIndex];
+          if (hook) {
+            return [hook.state, hook.setState];
+          }
+
+          const getState = () => this.vm.hooks[hookIndex]?.state;
+
+          const setState = (newState) => {
+            if (isFunction(newState)) {
+              newState = newState(getState());
+            }
+            this.vm.setReactHook(hookIndex, { state: newState, setState });
+            return newState;
+          };
+
+          return [setState(initialState), setState];
+        } else if (callee === "useEffect") {
+          if (this.prevStack) {
+            throw new Error(
+              "Method: useEffect. The hook can an only be called from the top of the stack"
+            );
+          }
+          if (args.length < 1) {
+            throw new Error(
+              "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
+            );
+          }
+          const setup = args[0];
+          if (!isFunction(setup)) {
+            throw new Error(
+              "Method: useEffect. The first argument 'setup' must be a function"
+            );
+          }
+          const hookIndex = this.hookIndex++;
+          const dependencies = args[1];
+          const hook = this.vm.hooks[hookIndex];
+          if (hook) {
+            const oldDependencies = hook.dependencies;
+            if (
+              oldDependencies !== undefined &&
+              deepEqual(oldDependencies, dependencies)
+            ) {
+              return undefined;
+            }
+          }
+          const cleanup = hook?.cleanup;
+          if (isFunction(cleanup)) {
+            cleanup();
+          }
+          this.vm.setReactHook(hookIndex, {
+            cleanup: setup(),
+            dependencies,
+          });
+
+          return undefined;
+        } else if (callee === "useMemo" || callee === "useCallback") {
+          if (this.prevStack) {
+              throw new Error(
+                  `Method: ${callee}. The hook can only be called from the top of the stack`
+              );
+          }
+      
+          const isMemo = callee === "useMemo";
+          const fnArgName = isMemo ? 'factory' : 'callback';
+          if (args.length < 1) {
+              throw new Error(
+                  `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+              );
+          }
+      
+          const fn = args[0];
+          if (!(fn instanceof Function)) {
+              throw new Error(
+                  `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+              );
+          }
+      
+          const hookIndex = this.hookIndex++;
+          const dependencies = args[1];
+          const hook = this.vm.hooks[hookIndex];
+          
+          if (hook) {
+              const oldDependencies = hook.dependencies;
+              if (
+                  oldDependencies !== undefined &&
+                  deepEqual(oldDependencies, dependencies)
+              ) {
+                  return hook.memoized;
+              }
+          }
+          
+          const memoized = isMemo ? fn() : fn;
+          this.vm.setReactHook(hookIndex, {
+              memoized,
+              dependencies,
+          });
+          return memoized;
+      } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
             if (!this.vm.alive) {
@@ -1846,7 +1958,22 @@ export default class VM {
     }
 
     this.setReactState = setReactState
-      ? (s) => setReactState(isObject(s) ? Object.assign({}, s) : s)
+      ? (s) =>
+          setReactState({
+            hooks: this.hooks,
+            state: isObject(s) ? Object.assign({}, s) : s,
+          })
+      : () => {
+          throw new Error("State is unavailable for modules");
+        };
+    this.setReactHook = setReactState
+      ? (i, v) => {
+          this.hooks[i] = v;
+          setReactState({
+            hooks: this.hooks,
+            state: this.state.state,
+          });
+        }
       : () => {
           throw new Error("State is unavailable for modules");
         };
@@ -2112,7 +2239,7 @@ export default class VM {
     );
   }
 
-  execCode({ props, context, state, forwardedProps }) {
+  execCode({ props, context, reactState, forwardedProps }) {
     if (this.compileError) {
       throw this.compileError;
     }
@@ -2120,6 +2247,8 @@ export default class VM {
       return "Too deep";
     }
     this.gIndex = 0;
+    const { hooks, state } = reactState;
+    this.hooks = hooks;
     this.state = {
       props: isObject(props) ? Object.assign({}, props) : props,
       context,

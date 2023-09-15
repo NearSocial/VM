@@ -1,5 +1,64 @@
 # Changelog
 
+## Pending
+
+- Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
+```jsx
+const [a, setA] = useState(() => {
+  console.log("Init 'a'");
+  return "Y";
+});
+
+const [b, setB] = useState("B");
+const [sum, setSum] = useState(0);
+
+useEffect(() => {
+  setSum(a.length + b.length);
+  return () => {
+    console.log("cleanup");
+  };
+}, [a, b]);
+
+return (
+  <div>
+    A = {a}
+    <br />B = {b}
+    <br />
+    Length sum = {sum}
+    <div>
+      <button onClick={() => setA((s) => s + "O")}>A</button>
+      <button onClick={() => setB(b + "O")}>B</button>
+    </div>
+  </div>
+);
+```
+
+- Add `cacheOptions` optional argument to the following methods:
+  - `Social.get(keys, blockId|finality, options, cacheOptions)`
+  - `Social.getr(keys, blockId|finality, options, cacheOptions)`
+  - `Social.keys(keys, blockId|finality, options, cacheOptions)`
+  - `Social.index(action, key, options, cacheOptions)`
+  - `Near.view(contractName, methodName, args, blockId|finality, subscribe, cacheOptions)`
+  - `Near.block(blockId|finality, subscribe, cacheOptions)`
+    The `cacheOptions` object is optional and may contain the following property:
+  - `ignoreCache` - boolean, if true, the method will ignore the cached value in the local DB and fetch the data from the API server. This will only happen once per session. Default is false.
+
+This is useful to avoid loading stale objects that are likely to change often. For example, the index of posts for the main feed, or notifications.
+```jsx
+const index = Social.index(
+  "post",
+  "main",
+  {
+    limit: 10,
+    order: "desc",
+  },
+  {
+    ignoreCache: true,
+  }
+);
+```
+- Replace `lodash` dependency with `lodash.clonedeep` to reduce bundle size.
+
 ## 2.3.2
 
 - Nothing. Missed the package.json bump in the previous release.
