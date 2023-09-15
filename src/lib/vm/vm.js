@@ -784,10 +784,10 @@ class VmStack {
           blockId,
           maybeSubscribe(subscribe, blockId)
         );
-      } else if (keyword === "Near" && callee === "calimeroView") {
+      } else if (keyword === "Near" && callee === "calimeroView" || keyword === "Calimero" && callee === "view") {
         if (args.length < 2) {
           throw new Error(
-            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
+            "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
           );
         }
         const [contractName, methodName, viewArg, blockId, subscribe] = args;
@@ -806,10 +806,10 @@ class VmStack {
           );
         }
         return this.vm.asyncNearView(...args);
-      } else if (keyword === "Near" && callee === "asyncCalimeroView") {
+      } else if (keyword === "Near" && callee === "asyncCalimeroView" || keyword === "Calimero" && callee === "asyncView") {
         if (args.length < 2) {
           throw new Error(
-            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
+            "Method: Calimero.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
           );
         }
         return this.vm.asyncCalimeroView(...args);
@@ -848,21 +848,21 @@ class VmStack {
           ]);
         }
       } else if (keyword === "Near" && callee === "requestFak") {
-        return this.vm.near.requestFak(...args);
-      } else if (keyword === "Near" && callee === "requestCalimeroFak") {
-        return this.vm.near.requestCalimeroFak(this.vm.widgetSrc, ...args);
-      } else if (keyword === "Near" && callee === "hasValidCalimeroFak") {
-        return this.vm.near.verifyCalimeroFak(this.vm.widgetSrc, ...args);
+        return this.vm.near.requestFak(this.vm.widgetSrc, ...args);
+      } else if (keyword === "Near" && callee === "requestCalimeroFak" || keyword === "Calimero" && callee === "requestFak") {
+        return this.vm.near.requestCalimeroFak(this.vm.near.calimeroConnection.config.networkId, ...args);
+      } else if (keyword === "Near" && callee === "hasValidCalimeroFak" || keyword === "Calimero" && callee === "hasValidFak") {
+        return this.vm.near.verifyCalimeroFak(this.vm.near.calimeroConnection.config.networkId, ...args);
       } else if (keyword === "Near" && callee === "hasValidFak") {
-        return this.vm.near.verifyFak(...args);
-      } else if (keyword === "Near" && callee === "fakCalimeroCall") {
+        return this.vm.near.verifyFak(this.vm.widgetSrc, ...args);
+      } else if (keyword === "Near" && callee === "fakCalimeroCall" || keyword === "Calimero" && callee === "fakCall") {
         if (args.length < 2 || args.length > 5) {
           throw new Error(
-            "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+            "Method: Calimero.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
           );
         }
         return this.vm.near.submitCalimeroFakTransaction(
-          this.vm.widgetSrc,
+          this.vm.near.calimeroConnection.config.networkId,
           args[0],
           args[1],
           args[2] ?? {},
@@ -872,10 +872,11 @@ class VmStack {
       } else if (keyword === "Near" && callee === "fakCall") {
         if (args.length < 2 || args.length > 5) {
           throw new Error(
-            "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+            "Method: Near.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
           );
         }
         return this.vm.near.submitFakTransaction(
+          this.vm.widgetSrc,
           args[0],
           args[1],
           args[2] ?? {},
@@ -889,7 +890,7 @@ class VmStack {
           );
         }
         return this.vm.near.signWithCalimeroFak(
-          this.vm.widgetSrc,
+          this.vm.near.calimeroConnection.config.networkId,
           args[0],
           args[1],
         );

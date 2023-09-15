@@ -170,12 +170,12 @@ async function requestFak(componentName, near, contractName, methodNames) {
   return await wallet.signAndSendTransaction(transaction);
 }
 
-const getCalimeroFakKey = async(componentName, near, contract) => {
+const getCalimeroFakKey = async(storageKey, near, contract) => {
   const accountId = await getCurrentAccount(near);
-  return `cali:${accountId}:${componentName}:${contract}`;
+  return `cali:${accountId}:${storageKey}:${contract}`;
 }
 
-async function requestCalimeroFak(componentName, near, contractName, methodNames) {
+async function requestCalimeroFak(storageKey, near, contractName, methodNames) {
     const currentUrl = new URL(window.location.href);
     const newUrl = new URL(CalimeroConfig.walletUrl + "/login/");
     newUrl.searchParams.set('success_url', currentUrl.href);
@@ -189,7 +189,7 @@ async function requestCalimeroFak(componentName, near, contractName, methodNames
       const accessKey = nearAPI.utils.KeyPairEd25519.fromRandom();
       newUrl.searchParams.set('public_key', accessKey.getPublicKey().toString());
       localStorage.setItem(
-        await getCalimeroFakKey(componentName, near, contractName),
+        await getCalimeroFakKey(storageKey, near, contractName),
         accessKey
       );
     }
@@ -207,9 +207,9 @@ async function requestCalimeroFak(componentName, near, contractName, methodNames
     window.location.assign(newUrl.toString());
 }
 
-async function verifyCalimeroFak(componentName, near, contractName, methods) {
+async function verifyCalimeroFak(storageKey, near, contractName, methods) {
   const key = localStorage.getItem(
-    await getCalimeroFakKey(componentName, near, contractName)
+    await getCalimeroFakKey(storageKey, near, contractName)
   );
   if(!key) {
     return false;
@@ -218,7 +218,7 @@ async function verifyCalimeroFak(componentName, near, contractName, methods) {
   const keyPair = nearAPI.KeyPair.fromString(key);
   const params = {
     request_type: "view_access_key",
-    finality: "final",
+    finality: "optimistic",
     account_id: accountId,
     public_key: keyPair.publicKey.toString(),
   };
@@ -252,9 +252,9 @@ const checkFakKey = (rpcResponse, contract, methodNames) => {
   return true;
 }
 
-async function signWithCalimeroFak(componentName, near, contractName, message) {
+async function signWithCalimeroFak(storageKey, near, contractName, message) {
   const key = localStorage.getItem(
-    await getCalimeroFakKey(componentName, near, contractName)
+    await getCalimeroFakKey(storageKey, near, contractName)
   );
 
   if(!key) {
@@ -267,9 +267,9 @@ async function signWithCalimeroFak(componentName, near, contractName, message) {
   return keyPair.sign(message);
 }
 
-async function submitFakCalimeroTransaction(componentName, near, contractName, methodName, args, gas, deposit) {
+async function submitFakCalimeroTransaction(storageKey, near, contractName, methodName, args, gas, deposit) {
   const key = localStorage.getItem(
-    await getCalimeroFakKey(componentName, near, contractName)
+    await getCalimeroFakKey(storageKey, near, contractName)
   );
 
   if(!key) {
@@ -559,7 +559,8 @@ async function _initNear({
       : fastRpcCall();
   };
 
-  _near.viewCalimero = (contractId, methodName, args, blockId) => {
+  _near.viewCalimero = (contractId, methodName, args, blockHeightOrFinality) => {
+    const { blockId, finality } = transformBlockId(blockHeightOrFinality);
     const viewCalimeroCall = () =>
       viewCall(
         _near.calimeroConnection.connection.provider,
@@ -567,19 +568,19 @@ async function _initNear({
         contractId,
         methodName,
         args,
-        "final"
+        finality
       );
     return viewCalimeroCall();
   }
 
 
-  _near.requestFak = (contractName, methodNames) => requestFak("slackApp", _near, contractName, methodNames);
-  _near.requestCalimeroFak = (componentName, contractName, methodNames) => requestCalimeroFak(componentName, _near, contractName, methodNames);
-  _near.submitFakTransaction = (contractName, methodName, args, gas, deposit) => submitFakTransaction("slackApp", _near, contractName, methodName, args, gas, deposit);
-  _near.submitCalimeroFakTransaction = (componentName, contractName, methodName, args, gas, deposit) => submitFakCalimeroTransaction(componentName, _near, contractName, methodName, args, gas, deposit);
-  _near.verifyFak = (contractName, methodNames) => verifyFak("slackApp", _near, contractName, methodNames);
-  _near.verifyCalimeroFak = (componentName, contractName, methodNames) => verifyCalimeroFak(componentName, _near, contractName, methodNames);
-  _near.signWithCalimeroFak = (componentName, contractName, message) => signWithCalimeroFak(componentName, _near, contractName, message);
+  _near.requestFak = (componentName, contractName, methodNames) => requestFak(componentName, _near, contractName, methodNames);
+  _near.requestCalimeroFak = (storageKey, contractName, methodNames) => requestCalimeroFak(storageKey, _near, contractName, methodNames);
+  _near.submitFakTransaction = (componentName, contractName, methodName, args, gas, deposit) => submitFakTransaction(componentName, _near, contractName, methodName, args, gas, deposit);
+  _near.submitCalimeroFakTransaction = (storageKey, contractName, methodName, args, gas, deposit) => submitFakCalimeroTransaction(storageKey, _near, contractName, methodName, args, gas, deposit);
+  _near.verifyFak = (componentName, contractName, methodNames) => verifyFak(componentName, _near, contractName, methodNames);
+  _near.verifyCalimeroFak = (storageKey, contractName, methodNames) => verifyCalimeroFak(storageKey, _near, contractName, methodNames);
+  _near.signWithCalimeroFak = (storageKey, contractName, message) => signWithCalimeroFak(storageKey, _near, contractName, message);
   _near.block = (blockHeightOrFinality) => {
     const blockQuery = transformBlockId(blockHeightOrFinality);
     const provider = blockQuery.blockId
