@@ -1085,7 +1085,51 @@ class VmStack {
           });
 
           return undefined;
-        } else if (callee === "setTimeout") {
+        } else if (callee === "useMemo" || callee === "useCallback") {
+          if (this.prevStack) {
+              throw new Error(
+                  `Method: ${callee}. The hook can only be called from the top of the stack`
+              );
+          }
+          if (!this.vm.hooks) {
+            throw new Error("Hooks are unavailable for modules");
+          }
+          const isMemo = callee === "useMemo";
+          const fnArgName = isMemo ? 'factory' : 'callback';
+          if (args.length < 1) {
+              throw new Error(
+                  `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+              );
+          }
+      
+          const fn = args[0];
+          if (!isFunction(fn)) {
+              throw new Error(
+                  `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+              );
+          }
+      
+          const hookIndex = this.hookIndex++;
+          const dependencies = args[1];
+          const hook = this.vm.hooks[hookIndex];
+          
+          if (hook) {
+              const oldDependencies = hook.dependencies;
+              if (
+                  oldDependencies !== undefined &&
+                  deepEqual(oldDependencies, dependencies)
+              ) {
+                  return hook.memoized;
+              }
+          }
+          
+          const memoized = isMemo ? fn() : fn;
+          this.vm.setReactHook(hookIndex, {
+              memoized,
+              dependencies,
+          });
+          return memoized;
+      } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
             if (!this.vm.alive) {

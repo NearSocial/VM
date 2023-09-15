@@ -1,5 +1,43 @@
 # Changelog
 
+## Pending 
+ - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
+
+```jsx
+const data = [
+  //...some large array
+];
+
+const filteredData = useMemo(() => {
+  console.log("Filtering data");
+  return data.filter(/* some filtering criteria */);
+}, [data]);
+
+return (
+  <div>
+    {filteredData.map(item => (
+      <div key={item.id}>{item.name}</div>
+    ))}
+  </div>
+);
+```
+
+ - Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
+ ```jsx
+ const incrementCounter = useCallback(() => {
+  setCounter(counter + 1);
+}, [counter]);
+
+return (
+  <div>
+    Counter = {counter}
+    <div>
+      <button onClick={incrementCounter}>Increment</button>
+    </div>
+  </div>
+);
+```
+
 ## 2.4.1
 
 - FIX: Resolve bug with `VM.require` affected by the introduction of `useState` and `useEffect` hooks.
