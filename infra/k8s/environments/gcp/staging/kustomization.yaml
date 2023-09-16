@@ -29,13 +29,13 @@ images:
   newTag: 8eb2f97
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
-  newTag: v0.0.0-rc.8
+  newTag: v0.0.0-rc.9
 - name: bos-gateway-mainnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-mainnet
   newTag: 397992e
 - name: bos-gateway-staging
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-staging
-  newTag: v0.0.0-rc.5
+  newTag: v0.0.0-rc.6
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: 397992e
