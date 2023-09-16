@@ -35,7 +35,7 @@ images:
   newTag: f924e1c
 - name: bos-gateway-staging
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-staging
-  newTag: v0.0.0-rc.6
+  newTag: v0.0.0-rc.7
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: f924e1c
