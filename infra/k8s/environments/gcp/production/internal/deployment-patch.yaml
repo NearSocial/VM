@@ -1,6 +1,6 @@
-- op: replace
-  path: /spec/template/spec/containers/0/envFrom/1/secretRef/name
-  value: bos-gateway-internal
+# - op: replace
+#   path: /spec/template/spec/containers/0/envFrom/1/secretRef/name
+#   value: bos-gateway-internal
 - op: replace
   path: /spec/template/spec/containers/0/image
   value: bos-gateway-internal-production:latest
