@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: bos-gateway
+spec:
+  domains:
+    - bos.staging.calimero.network

@@ -7,8 +7,9 @@ commonLabels:
   app.kubernetes.io/name: bos-gateway
 resources:
 - ../../../base-0.0.0
-- host.yaml
-- mapping.yaml
+- certificate.yaml
+- frontend-config.yaml
+- ingress.yaml
 images:
 - name: bos-gateway
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway
