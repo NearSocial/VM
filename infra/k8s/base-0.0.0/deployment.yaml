@@ -38,8 +38,10 @@ spec:
               memory: 128Mi
             limits:
               memory: 512Mi
-          envFrom:
-            - configMapRef:
-                name: bos-gateway
-            - secretRef:
-                name: bos-gateway
+          # TODO: once configurable docker image is implemented
+          # comment out the following and import secret from AWS secretsmanager
+          # envFrom:
+          #   - configMapRef:
+          #       name: bos-gateway
+          #   - secretRef:
+          #       name: bos-gateway

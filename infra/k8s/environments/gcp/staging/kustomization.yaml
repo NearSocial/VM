@@ -5,20 +5,6 @@ commonLabels:
   app.kubernetes.io/component: bos
   app.kubernetes.io/instance: testing
   app.kubernetes.io/name: bos-gateway
-configMapGenerator:
-- literals:
-  - NEXT_PUBLIC_NETWORK_ID=testnet
-  - NEXT_PUBLIC_HOSTNAME=https://cali-bos.euw3.staging.gcp.calimero.network
-  - NEXT_PUBLIC_CHAIN_ID=pt-63-calimero-testnet
-  - NEXT_PUBLIC_RPC_ENDPOINT=https://api.staging.calimero.network/api/v1/shards/ws-protocol-63-calimero-testnet/neard-rpc/
-  - NEXT_PUBLIC_WALLET_URL=https://mnw-calimero-staging-testnet.netlify.app/
-  - NEXT_PUBLIC_CURB_CONTRACT_ID=chat.ws-protocol-63
-  - NEXT_PUBLIC_CURB_ENCRYPTION_URL=https://cali-encryption.euw3.staging.gcp.calimero.network/key
-  - NEXT_PUBLIC_CURB_COMPONENT_OWNER_ID=calimero.testnet
-  - NEXT_PUBLIC_CURB_MAIN=calimero.testnet/widget/Calimero.Curb.Main
-  - NEXT_PUBLIC_SENTRY_DSN=https://efa0d51db0b2bda105d4639f98c34bd1@o4504623593291776.ingest.sentry.io/4505784365219840
-  - NEXT_PUBLIC_SENTRY_ENVIRONMENT=staging
-  name: bos-gateway
 resources:
 - ../../../base-0.0.0
 - host.yaml
