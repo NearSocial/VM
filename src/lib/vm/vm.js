@@ -1203,7 +1203,21 @@ class VmStack {
               dependencies,
           });
           return memoized;
-      } else if (callee === "setTimeout") {
+        } else if (callee === "useRef") {
+          if (this.prevStack) {
+            throw new Error(
+              'useRef hook error: Hooks should only be called from the top level, not inside loops, conditions, or nested functions.'
+            );
+          }
+          const hookIndex = this.hookIndex++;
+          if (!this.vm.hooks[hookIndex]) {
+            const initialValue = args.length > 0 ? args[0] : null;
+            const newRef = { current: initialValue };
+            this.vm.setReactHook(hookIndex, { ref: newRef });
+            return newRef;
+          }
+          return this.vm.hooks[hookIndex].ref;
+        } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
             if (!this.vm.alive) {
