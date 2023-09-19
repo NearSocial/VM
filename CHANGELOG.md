@@ -1,7 +1,9 @@
 # Changelog
 
 ## Pending 
- - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
+
+- Fix `vm.depth` not being initialized.
+- Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
 
 ```jsx
 const data = [
@@ -22,7 +24,7 @@ return (
 );
 ```
 
- - Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
+- Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
  ```jsx
  const incrementCounter = useCallback(() => {
   setCounter(counter + 1);
