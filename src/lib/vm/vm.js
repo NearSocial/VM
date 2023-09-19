@@ -1899,7 +1899,7 @@ export default class VM {
     this.cache = cache;
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
-    this.depth = depth;
+    this.depth = depth ?? 0;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
     this.version = version;
