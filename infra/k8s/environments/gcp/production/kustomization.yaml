@@ -5,24 +5,9 @@ resources:
 - internal/
 - portal/
 images:
-- name: bos-gateway
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway
-  newTag: 2727a02
 - name: bos-gateway-community-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-community-production
   newTag: v0.0.0-buildtime.2
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
   newTag: v0.0.0-buildtime.2
-- name: bos-gateway-mainnet
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-mainnet
-  newTag: f924e1c
-- name: bos-gateway-staging
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-staging
-  newTag: v0.0.0-rc.8
-- name: bos-gateway-testnet
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
-  newTag: f924e1c
-- name: bos-gateway-workshop-staging
-  newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-workshop-staging
-  newTag: v0.0.0-rc.2
