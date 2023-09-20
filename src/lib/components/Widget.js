@@ -25,6 +25,7 @@ import { useAccountId } from "../data/account";
 import Big from "big.js";
 import uuid from "react-uuid";
 import { EthersProviderContext } from "./ethers";
+import { GlobalStateContext } from "./globalState";
 
 const computeSrcOrCode = (src, code, configs) => {
   let srcOrCode = src ? { src } : code ? { code } : null;
@@ -74,6 +75,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [configs, setConfigs] = useState(null);
   const [srcOrCode, setSrcOrCode] = useState(null);
   const ethersProviderContext = useContext(EthersProviderContext);
+  const globalStateContext = useContext(GlobalStateContext);
 
   const networkId =
     configs &&
@@ -189,6 +191,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       version: uuid(),
       widgetConfigs: configs,
       ethersProviderContext,
+      globalStateContext,
     });
     setVm(vm);
     return () => {
@@ -203,6 +206,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     confirmTransactions,
     configs,
     ethersProviderContext,
+    globalStateContext
   ]);
 
   useEffect(() => {
