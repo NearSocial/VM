@@ -3,6 +3,7 @@
 ## 2.4.2
 
 - Add missing code changes (`cacheOptions` and `lodash`) from 2.4.0.
+> This happened due to revert from master that later cleaned changes from dev at merge conflict.
 
 ## 2.4.1
 
