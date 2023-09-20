@@ -6,7 +6,7 @@ import { useCache } from "./lib/data/cache";
 import * as utils from "./lib/data/utils";
 import { CommitButton } from "./lib/components/Commit";
 import { EthersProviderContext } from "./lib/components/ethers";
-
+import { GlobalStateContext } from "./lib/components/globalState";
 export {
   Widget,
   CommitButton,
@@ -17,4 +17,5 @@ export {
   useAccountId,
   utils,
   EthersProviderContext,
+  GlobalStateContext,
 };
