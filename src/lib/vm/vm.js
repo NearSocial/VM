@@ -176,6 +176,7 @@ const ApprovedTagsSimple = {
 const ApprovedTagsCustom = {
   Widget: false,
   CommitButton: true,
+  GlobalStateProvider: true,
   IpfsImageUpload: false,
   Markdown: false,
   Fragment: true,
@@ -625,6 +626,16 @@ class VmStack {
       );
     }
 
+    if (element === "GlobalStateProvider") {
+      if(!attributes.value) {
+        throw new Error("GlobalStateProvider requires a value prop");
+      }
+      if(!isArray(attributes.value) || attributes.value.length !== 2) {
+        throw new Error("Invalid value prop for GlobalStateProvider");
+      }
+      this.vm.globalStateContext = attributes.value;
+    }
+
     const children = code.children.map((child, i) => {
       this.vm.gIndex = i;
       return this.executeExpression(child);
@@ -1056,6 +1067,18 @@ class VmStack {
           return f(...args);
         }
         return this.vm.cachedEthersCall(callee, args);
+      } else if (callee === "useGlobalState") {
+        if(args.length < 1 || !isString(args[0])) {
+          throw new Error("Method: useGlobalState. Requires string argument");
+        }
+        const [globalState, setGlobalState] = this.vm.globalStateContext
+        return [
+          globalState[args[0]], 
+          (value) => setGlobalState({
+            ...globalState,
+            [args[0]]: value,
+          })
+        ];
       } else if (keyword === "WebSocket") {
         if (callee === "WebSocket") {
           const websocket = new WebSocket(...args);
@@ -1949,6 +1972,7 @@ export default class VM {
       version,
       widgetConfigs,
       ethersProviderContext,
+      globalStateContext,
       isModule,
     } = options;
 
@@ -2005,7 +2029,7 @@ export default class VM {
     this.ethersProvider = ethersProviderContext?.provider
       ? new ethers.providers.Web3Provider(ethersProviderContext.provider)
       : null;
-
+    this.globalStateContext = globalStateContext;
     this.timeouts = new Set();
     this.intervals = new Set();
     this.websockets = [];
