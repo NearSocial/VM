@@ -976,8 +976,8 @@ class VmStack {
           },
           args[0]
         );
-      } else if (keyword === "console" && callee === "log") {
-        return console.log(this.vm.widgetSrc, ...args);
+      } else if (keyword === "console" && ["error", "info", "log", "warn"].includes(callee)) {
+        return console[callee](this.vm.widgetSrc, ...args);
       } else if (keyword === "clipboard" && callee === "writeText") {
         return this.isTrusted
           ? navigator.clipboard.writeText(...args)

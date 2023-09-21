@@ -40,6 +40,8 @@ return (
 );
 ```
 
+- Expose `console.info`, `console.warn` and `console.error` logging
+
 ## 2.4.2
 
 - Add missing code changes (`cacheOptions` and `lodash`) from 2.4.0.
