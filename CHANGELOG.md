@@ -3,9 +3,9 @@
 ## Pending 
 
 - Update the way events and errors are passed to the functions. 
-  - If it's a callback on a function call, then `preventDefault` and `stopPropagation` are available.
+  - For events, expose `preventDefault()` and `stopPropagation()` functions.
   NOTE: Previously, all React's `SyntheticEvent` was getting `preventDefault()` called by default.
-  - For errors, expose `message`, `name` and `type` are exposed.
+  - For errors, expose `message`, `name` and `type`.
 - Fix `vm.depth` not being initialized.
 - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
 
