@@ -395,4 +395,12 @@ export const deepCopy = (o) => {
   }
 };
 
+export const filterValues = (o) => {
+  return isObject(o)
+    ? Object.fromEntries(
+        Object.entries(o).filter(([key, value]) => value !== undefined)
+      )
+    : o;
+};
+
 export const deepEqual = equal;

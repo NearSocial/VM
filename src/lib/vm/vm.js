@@ -4,6 +4,7 @@ import {
   deepCopy,
   deepEqual,
   deepFreeze,
+  filterValues,
   ipfsUpload,
   ipfsUrl,
   isArray,
@@ -1108,49 +1109,49 @@ class VmStack {
           return undefined;
         } else if (callee === "useMemo" || callee === "useCallback") {
           if (this.prevStack) {
-              throw new Error(
-                  `Method: ${callee}. The hook can only be called from the top of the stack`
-              );
+            throw new Error(
+              `Method: ${callee}. The hook can only be called from the top of the stack`
+            );
           }
           if (!this.vm.hooks) {
             throw new Error("Hooks are unavailable for modules");
           }
           const isMemo = callee === "useMemo";
-          const fnArgName = isMemo ? 'factory' : 'callback';
+          const fnArgName = isMemo ? "factory" : "callback";
           if (args.length < 1) {
-              throw new Error(
-                  `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
-              );
+            throw new Error(
+              `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+            );
           }
-      
+
           const fn = args[0];
           if (!isFunction(fn)) {
-              throw new Error(
-                  `Method: ${callee}. The first argument '${fnArgName}' must be a function`
-              );
+            throw new Error(
+              `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+            );
           }
-      
+
           const hookIndex = this.hookIndex++;
           const dependencies = args[1];
           const hook = this.vm.hooks[hookIndex];
-          
+
           if (hook) {
-              const oldDependencies = hook.dependencies;
-              if (
-                  oldDependencies !== undefined &&
-                  deepEqual(oldDependencies, dependencies)
-              ) {
-                  return hook.memoized;
-              }
+            const oldDependencies = hook.dependencies;
+            if (
+              oldDependencies !== undefined &&
+              deepEqual(oldDependencies, dependencies)
+            ) {
+              return hook.memoized;
+            }
           }
-          
+
           const memoized = isMemo ? fn() : fn;
           this.vm.setReactHook(hookIndex, {
-              memoized,
-              dependencies,
+            memoized,
+            dependencies,
           });
           return memoized;
-      } else if (callee === "setTimeout") {
+        } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
             if (!this.vm.alive) {
@@ -1564,33 +1565,51 @@ class VmStack {
         if (arg !== undefined) {
           try {
             if (arg?.nativeEvent instanceof Event) {
-              arg.preventDefault();
+              const native = arg;
               arg = arg.nativeEvent;
+              arg._preventDefault = () => native.preventDefault();
+              arg._stopPropagation = () => native.stopPropagation();
+              arg._isDefaultPrevented = () => native.isDefaultPrevented();
+              arg._isPropagationStopped = () => native.isPropagationStopped();
             }
             if (arg instanceof Event) {
-              arg = {
-                target: {
-                  value: arg?.target?.value,
-                  id: arg?.target?.id,
-                  dataset: arg?.target?.dataset,
-                  href: arg?.target?.href,
-                  checked: arg?.target?.checked,
-                },
-                data: arg?.data,
-                code: arg?.code,
-                key: arg?.key,
-                ctrlKey: arg?.ctrlKey,
-                altKey: arg?.altKey,
-                shiftKey: arg?.shiftKey,
-                metaKey: arg?.metaKey,
-                button: arg?.button,
-                buttons: arg?.buttons,
-                clientX: arg?.clientX,
-                clientY: arg?.clientY,
-                screenX: arg?.screenX,
-                screenY: arg?.screenY,
-                touches: arg?.touches,
-              };
+              arg = filterValues({
+                target: arg.target
+                  ? filterValues({
+                      value: arg.target?.value,
+                      id: arg.target?.id,
+                      dataset: arg.target?.dataset,
+                      href: arg.target?.href,
+                      checked: arg.target?.checked,
+                    })
+                  : undefined,
+                data: arg.data,
+                code: arg.code,
+                key: arg.key,
+                ctrlKey: arg.ctrlKey,
+                altKey: arg.altKey,
+                shiftKey: arg.shiftKey,
+                metaKey: arg.metaKey,
+                button: arg.button,
+                buttons: arg.buttons,
+                clientX: arg.clientX,
+                clientY: arg.clientY,
+                screenX: arg.screenX,
+                screenY: arg.screenY,
+                touches: arg.touches,
+                preventDefault: arg._preventDefault ?? arg.preventDefault,
+                stopPropagation: arg._stopPropagation ?? arg.stopPropagation,
+                defaultPrevented: arg.defaultPrevented,
+                isDefaultPrevented:
+                  arg._isDefaultPrevented ?? (() => arg.defaultPrevented),
+                isPropagationStopped: arg._isPropagationStopped,
+              });
+            } else if (arg instanceof Error) {
+              arg = filterValues({
+                type: arg.type,
+                name: arg.name,
+                message: arg.message,
+              });
             }
             v = deepCopy(arg);
           } catch (e) {
