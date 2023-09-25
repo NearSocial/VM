@@ -2,6 +2,7 @@
 
 ## Pending 
 
+- Expose certain native objects directly into the state. It should improve access to the functions.
 - Update the way events and errors are passed to the functions. 
   - For events, expose `preventDefault()` and `stopPropagation()` functions.
   NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
