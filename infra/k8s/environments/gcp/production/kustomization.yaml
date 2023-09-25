@@ -10,4 +10,4 @@ images:
   newTag: v0.0.0-buildtime.8
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
-  newTag: v0.0.0-buildtime.8
+  newTag: 437630d
