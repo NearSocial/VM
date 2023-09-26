@@ -64,30 +64,6 @@ import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 
-const frozenNacl = Object.freeze({
-  randomBytes: deepFreeze(nacl.randomBytes),
-  secretbox: deepFreeze(nacl.secretbox),
-  scalarMult: deepFreeze(nacl.scalarMult),
-  box: deepFreeze(nacl.box),
-  sign: deepFreeze(nacl.sign),
-  hash: deepFreeze(nacl.hash),
-  verify: deepFreeze(nacl.verify),
-});
-
-const frozenEthers = Object.freeze({
-  utils: deepFreeze(ethers.utils),
-  BigNumber: deepFreeze(ethers.BigNumber),
-  Contract: deepFreeze(ethers.Contract),
-  providers: deepFreeze(ethers.providers),
-});
-
-// `nanoid.nanoid()` is a but odd, but it seems better to match the official
-// API than to create an alias
-const frozenNanoid = Object.freeze({
-  nanoid: deepFreeze(nanoid),
-  customAlphabet: deepFreeze(customAlphabet),
-});
-
 const LoopLimit = 1000000;
 const MaxDepth = 32;
 
@@ -234,40 +210,70 @@ const Keywords = {
   console: true,
   styled: true,
   Object: true,
-  Date,
-  Number,
-  Big,
-  Math,
-  Buffer,
-  Audio,
-  Image,
-  File,
-  Blob,
-  FileReader,
-  URL,
-  Array,
-  BN,
-  Uint8Array,
-  Map,
-  Set,
   clipboard: true,
   Ethers: true,
   WebSocket: true,
   VM: true,
 };
 
-const NativeFunctions = {
-  encodeURIComponent,
-  decodeURIComponent,
-  isNaN,
-  parseInt,
-  parseFloat,
-  isFinite,
-  btoa,
-  atob,
-  decodeURI,
-  encodeURI,
-};
+const GlobalInjected = deepFreeze(
+  cloneDeep({
+    // Functions
+    encodeURIComponent,
+    decodeURIComponent,
+    isNaN,
+    parseInt,
+    parseFloat,
+    isFinite,
+    btoa,
+    atob,
+    decodeURI,
+    encodeURI,
+
+    // Libs
+    nacl: {
+      randomBytes: nacl.randomBytes,
+      secretbox: nacl.secretbox,
+      scalarMult: nacl.scalarMult,
+      box: nacl.box,
+      sign: nacl.sign,
+      hash: nacl.hash,
+      verify: nacl.verify,
+    },
+    ethers: {
+      utils: ethers.utils,
+      BigNumber: ethers.BigNumber,
+      Contract: ethers.Contract,
+      providers: ethers.providers,
+    },
+    // `nanoid.nanoid()` is a bit odd, but it seems better to match the official
+    // API than to create an alias
+    nanoid: {
+      nanoid,
+      customAlphabet,
+    },
+
+    // Objects
+    Promise,
+    Date,
+    Number,
+    String,
+    Big,
+    Math,
+    Buffer,
+    Audio,
+    Image,
+    File,
+    Blob,
+    FileReader,
+    URL,
+    Array,
+    BN,
+    Uint8Array,
+    Map,
+    Set,
+  })
+);
 
 const ReservedKeys = {
   [ReactKey]: true,
@@ -1005,9 +1011,7 @@ class VmStack {
           throw new Error("Unsupported WebSocket method");
         }
       } else if (keywordType === undefined) {
-        if (NativeFunctions.hasOwnProperty(callee)) {
-          return NativeFunctions[callee](...args);
-        } else if (callee === "fetch") {
+        if (callee === "fetch") {
           if (args.length < 1) {
             throw new Error(
               "Method: fetch. Required arguments: 'url'. Optional: 'options'"
@@ -2212,17 +2216,15 @@ export default class VM {
     const { hooks, state } = reactState ?? {};
     this.hooks = hooks;
     this.state = {
+      ...GlobalInjected,
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
-      nacl: frozenNacl,
       get elliptic() {
         delete this.elliptic;
         this.elliptic = cloneDeep(elliptic);
         return this.elliptic;
       },
-      ethers: frozenEthers,
-      nanoid: frozenNanoid,
     };
     this.forwardedProps = forwardedProps;
     this.loopLimit = LoopLimit;
