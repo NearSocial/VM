@@ -2,7 +2,7 @@
 
 ## Pending 
 
-- Expose all VM functions into the state directly, it's simplifies VM readability and implementation.
+- Expose all VM functions into the state directly, it simplifies VM readability and implementation.
 - Expose certain native objects directly into the state. It should improve access to the functions.
 - Update the way events and errors are passed to the functions. 
   - For events, expose `preventDefault()` and `stopPropagation()` functions.
