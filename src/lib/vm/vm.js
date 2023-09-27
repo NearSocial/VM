@@ -607,6 +607,21 @@ class VmStack {
         }
       });
     } else if (element === "Widget") {
+      if (this.vm.analyticsCallback) {
+        const anlayticsContext = {
+          widgetSrc: this.vm.widgetSrc,
+          state: this.vm.state.state,
+          context: this.vm.state.context,
+          props: this.vm.state.props,
+          key: attributes.key,
+        };
+        try {
+          this.vm.analyticsCallback(anlayticsContext);
+        } catch (error) {
+          console.error("Error in analyticsCallback: ", error);
+        }
+        attributes.analyticsCallback = this.vm.analyticsCallback;
+      }
       attributes.depth = this.vm.depth + 1;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
@@ -1832,6 +1847,7 @@ export default class VM {
       widgetConfigs,
       ethersProviderContext,
       isModule,
+      analyticsCallback,
     } = options;
 
     this.alive = true;
@@ -1839,6 +1855,7 @@ export default class VM {
     this.rawCode = rawCode;
 
     this.near = near;
+    this.analyticsCallback = analyticsCallback;
     try {
       this.code = parseCode(rawCode);
       this.compileError = null;
@@ -2108,6 +2125,7 @@ export default class VM {
       widgetConfigs: this.widgetConfigs,
       ethersProviderContext: this.ethersProviderContext,
       isModule: true,
+      analyticsCallback: this.analyticsCallback,
     });
     this.vmInstances.set(src, vm);
     return vm;

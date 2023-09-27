@@ -55,9 +55,9 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     depth,
     config: propsConfig,
     props: propsProps,
+    analyticsCallback,
     ...forwardedProps
   } = props;
-
   const [nonce, setNonce] = useState(0);
   const [code, setCode] = useState(null);
   const [src, setSrc] = useState(null);
@@ -189,6 +189,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       version: uuid(),
       widgetConfigs: configs,
       ethersProviderContext,
+      analyticsCallback,
     });
     setVm(vm);
     return () => {
@@ -203,6 +204,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     confirmTransactions,
     configs,
     ethersProviderContext,
+    analyticsCallback,
   ]);
 
   useEffect(() => {
