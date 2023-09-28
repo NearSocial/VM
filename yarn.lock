@@ -8676,6 +8676,11 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
+virtualized-chat@0.0.0-alpha.1:
+  version "0.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.1.tgz#2bef21a8fa6314e66579561c4e0eb8f294fd24b3"
+  integrity sha512-3n6RcGj3SkNbPrvECIhtETovJGGAZqhIQXb01uSDrlei7PRJIyURmlvZCwJWK/RBit4k6Qo2WnPMbH57iYI7HA==
+
 warning@^4.0.0, warning@^4.0.1, warning@^4.0.2, warning@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/warning/-/warning-4.0.3.tgz#16e9e077eb8a86d6af7d64aa1e05fd85b4678ca3"
