@@ -12,7 +12,7 @@ COPY VM/package.json /VM/package.json
 COPY VM/webpack.config.js /VM/webpack.config.js
 COPY VM/yarn.lock /VM/yarn.lock
 COPY VM/LICENSE /VM/LICENSE
-COPY VM/.env.production /VM/.env.production
+COPY VM/.env /VM/.env
 
 WORKDIR /VM
 RUN yarn && yarn install && yarn run build
@@ -42,7 +42,7 @@ WORKDIR /calimero-portal
 
 RUN pnpm remove near-social-vm && pnpm add file:../VM
 
-COPY VM/.env.production /calimero-portal/.env.production
+COPY VM/.env /calimero-portal/.env.production
 COPY VM/entrypoint.sh /calimero-portal/entrypoint.sh
 
 RUN pnpm i && pnpm build

@@ -2,7 +2,7 @@ const path = require("path");
 const { HotModuleReplacementPlugin } = require("webpack");
 
 module.exports = () => ({
-  devtool: false,
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {

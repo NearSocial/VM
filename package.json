@@ -44,6 +44,7 @@
     "collections": "^5.1.12",
     "crypto-browserify": "^3.12.0",
     "deep-equal": "^2.2.0",
+    "dotenv-webpack": "^8.0.1",
     "elliptic": "^6.5.4",
     "ethers": "^5.7.2",
     "idb": "^7.1.1",
@@ -107,8 +108,10 @@
   },
   "scripts": {
     "webpack": "webpack",
-    "prod": "npm run webpack -- --env mode=production",
-    "build": "npm run prod"
+    "dev": "npm run webpack -- --env mode=development envfile=.env.staging.local",
+    "dev:internal": "npm run webpack -- --env mode=development envfile=.env.internal.local",
+    "dev:community": "npm run webpack -- --env mode=development envfile=.env.community.local",
+    "build": "npm run webpack -- --env mode=production"
   },
   "eslintConfig": {
     "extends": [

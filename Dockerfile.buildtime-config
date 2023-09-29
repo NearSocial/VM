@@ -14,7 +14,7 @@ COPY VM/yarn.lock /VM/yarn.lock
 COPY VM/LICENSE /VM/LICENSE
 
 # .env is generated during CI/CD pipeline
-COPY .env /VM/.env.production
+COPY .env /VM/.env
 
 WORKDIR /VM
 RUN yarn && yarn install && yarn run build
