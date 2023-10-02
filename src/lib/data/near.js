@@ -267,6 +267,43 @@ async function signWithCalimeroFak(storageKey, near, contractName, message) {
   return keyPair.sign(message);
 }
 
+async function signCalimeroFakTransaction(storageKey, near, contractName, methodName, args, gas, deposit) {
+  const key = localStorage.getItem(
+    await getCalimeroFakKey(storageKey, near, contractName)
+  );
+
+  if(!key) {
+    throw new Error(
+      "Method: Calimero.fakSignTx. Requires requestAccessKey to be called first"
+    );
+  }
+
+  const accountId = await getCurrentAccount(near);
+  const keyStore = new nearAPI.keyStores.InMemoryKeyStore();
+  const keyPair = nearAPI.KeyPair.fromString(key);
+  keyStore.setKey(CalimeroConfig.networkId, accountId, keyPair);
+  near.calimeroConnection.connection.keyStore = keyStore;
+  near.calimeroConnection.connection.signer = new nearAPI.InMemorySigner(keyStore);
+
+  const account = await near.calimeroConnection.account(accountId);
+
+  try {
+    let [txHash, signedTx] = await account.signTransaction(
+      contractName, [
+        nearAPI.transactions.functionCall(
+          methodName,
+          {...args},
+          gas?.toFixed(0),
+          deposit?.toFixed(0)
+        )
+      ]
+    );
+    return [nearAPI.utils.serialize.base_encode(txHash), Buffer.from(signedTx.encode()).toString("base64")];
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 async function submitFakCalimeroTransaction(storageKey, near, contractName, methodName, args, gas, deposit) {
   const key = localStorage.getItem(
     await getCalimeroFakKey(storageKey, near, contractName)
@@ -577,6 +614,7 @@ async function _initNear({
   _near.requestFak = (componentName, contractName, methodNames) => requestFak(componentName, _near, contractName, methodNames);
   _near.requestCalimeroFak = (storageKey, contractName, methodNames) => requestCalimeroFak(storageKey, _near, contractName, methodNames);
   _near.submitFakTransaction = (componentName, contractName, methodName, args, gas, deposit) => submitFakTransaction(componentName, _near, contractName, methodName, args, gas, deposit);
+  _near.signCalimeroFakTransaction = (storageKey, contractName, methodName, args, gas, deposit) => signCalimeroFakTransaction(storageKey, _near, contractName, methodName, args, gas, deposit);
   _near.submitCalimeroFakTransaction = (storageKey, contractName, methodName, args, gas, deposit) => submitFakCalimeroTransaction(storageKey, _near, contractName, methodName, args, gas, deposit);
   _near.verifyFak = (componentName, contractName, methodNames) => verifyFak(componentName, _near, contractName, methodNames);
   _near.verifyCalimeroFak = (storageKey, contractName, methodNames) => verifyCalimeroFak(storageKey, _near, contractName, methodNames);

@@ -901,6 +901,21 @@ class VmStack {
           args[3],
           args[4]
         );
+      } else if (keyword === "Calimero" && callee === "fakSignTx") {
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Calimero.fakSignTx. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+
+        return this.vm.near.signCalimeroFakTransaction(
+          this.vm.near.calimeroConnection.config.networkId,
+          args[0],
+          args[1],
+          args[2] ?? {},
+          args[3],
+          args[4]
+        );
       } else if (keyword === "Calimero" && callee === "sign") {
         if (args.length !== 2) {
           throw new Error(
