@@ -583,8 +583,11 @@ class VmStack {
     });
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
-    attributes["data-key"] =
-      attributes["data-key"] ?? this.vm.widgetSrc;
+
+    if (this.vm.near.features.enableWidgetSrcDataKey == true) {
+      attributes["data-key"] = attributes["data-key"] ?? this.vm.widgetSrc;
+    }
+
     delete attributes.dangerouslySetInnerHTML;
     const basicElement =
       (isStyledComponent(customComponent) && customComponent?.target) ||

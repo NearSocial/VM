@@ -218,6 +218,7 @@ async function _initNear({
   selector,
   walletConnectCallback = () => {},
   customElements = {},
+  features = {},
 }) {
   if (!config) {
     config = {};
@@ -250,6 +251,7 @@ async function _initNear({
     selector,
     keyStore,
     nearConnection,
+    features
   };
 
   _near.nearArchivalConnection = nearAPI.Connection.fromConfig({
