@@ -202,18 +202,7 @@ const ApprovedTags = {
 };
 
 const Keywords = {
-  JSON: true,
-  Social: true,
-  Storage: true,
-  Near: true,
-  State: true,
-  console: true,
   styled: true,
-  Object: true,
-  clipboard: true,
-  Ethers: true,
-  WebSocket: true,
-  VM: true,
 };
 
 const GlobalInjected = deepFreeze(
@@ -738,476 +727,6 @@ class VmStack {
     return key;
   }
 
-  callFunction(keyword, callee, args, optional, isNew) {
-    const keywordType = Keywords[keyword];
-    if (keywordType === true || keywordType === undefined) {
-      if (
-        (keyword === "Social" && callee === "getr") ||
-        callee === "socialGetr"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.getr");
-        }
-        return this.vm.cachedSocialGet(
-          args[0],
-          true,
-          args[1],
-          args[2],
-          args[3]
-        );
-      } else if (
-        (keyword === "Social" && callee === "get") ||
-        callee === "socialGet"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.get");
-        }
-        return this.vm.cachedSocialGet(
-          args[0],
-          false,
-          args[1],
-          args[2],
-          args[3]
-        );
-      } else if (keyword === "Social" && callee === "keys") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.keys");
-        }
-        return this.vm.cachedSocialKeys(...args);
-      } else if (keyword === "Social" && callee === "index") {
-        if (args.length < 2) {
-          throw new Error(
-            "Missing argument 'action' and 'key` for Social.index"
-          );
-        }
-        return this.vm.cachedIndex(...args);
-      } else if (keyword === "Social" && callee === "set") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'data' for Social.set");
-        }
-        return this.vm.socialSet(args[0], args[1]);
-      } else if (keyword === "Near" && callee === "view") {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
-          );
-        }
-        const [
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          subscribe,
-          cacheOptions,
-        ] = args;
-
-        return this.vm.cachedNearView(
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          maybeSubscribe(subscribe, blockId),
-          cacheOptions
-        );
-      } else if (keyword === "Near" && callee === "asyncView") {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
-          );
-        }
-        return this.vm.asyncNearView(...args);
-      } else if (keyword === "Near" && callee === "block") {
-        const [blockId, subscribe, cacheOptions] = args;
-        return this.vm.cachedNearBlock(
-          blockId,
-          maybeSubscribe(subscribe, blockId),
-          cacheOptions
-        );
-      } else if (keyword === "Near" && callee === "call") {
-        if (args.length === 1) {
-          if (isObject(args[0])) {
-            return this.vm.confirmTransactions([args[0]]);
-          } else if (isArray(args[0])) {
-            return this.vm.confirmTransactions(args[0]);
-          } else {
-            throw new Error(
-              "Method: Near.call. Required argument: 'tx/txs'. A single argument call requires an TX object or an array of TX objects."
-            );
-          }
-        } else {
-          if (args.length < 2 || args.length > 5) {
-            throw new Error(
-              "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
-            );
-          }
-
-          return this.vm.confirmTransactions([
-            {
-              contractName: args[0],
-              methodName: args[1],
-              args: args[2] ?? {},
-              gas: args[3],
-              deposit: args[4],
-            },
-          ]);
-        }
-      } else if (
-        (keyword === "JSON" && callee === "stringify") ||
-        callee === "stringify"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'obj' for JSON.stringify");
-        }
-        assertNotReactObject(args[0]);
-        return JSON.stringify(args[0], args[1], args[2]);
-      } else if (keyword === "JSON" && callee === "parse") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 's' for JSON.parse");
-        }
-        try {
-          const obj = JSON.parse(args[0]);
-          assertValidObject(obj);
-          return obj;
-        } catch (e) {
-          return null;
-        }
-      } else if (keyword === "Object") {
-        if (callee === "keys") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.keys");
-          }
-          assertNotReactObject(args[0]);
-          return Object.keys(args[0]);
-        } else if (callee === "values") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.values");
-          }
-          assertNotReactObject(args[0]);
-          return Object.values(args[0]);
-        } else if (callee === "entries") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.entries");
-          }
-          assertNotReactObject(args[0]);
-          return Object.entries(args[0]);
-        } else if (callee === "assign") {
-          args.forEach((arg) => assertNotReactObject(arg));
-          const obj = Object.assign(...args);
-          assertValidObject(obj);
-          return obj;
-        } else if (callee === "fromEntries") {
-          const obj = Object.fromEntries(args[0]);
-          assertValidObject(obj);
-          return obj;
-        }
-      } else if (
-        (keyword === "State" && callee === "init") ||
-        callee === "initState"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'initialState' for State.init");
-        }
-        if (
-          args[0] === null ||
-          typeof args[0] !== "object" ||
-          isReactObject(args[0])
-        ) {
-          throw new Error("'initialState' is not an object");
-        }
-        if (this.vm.state.state === undefined) {
-          const newState = args[0];
-          this.vm.state.state = newState;
-          this.vm.setReactState(newState);
-        }
-        return this.vm.state.state;
-      } else if (keyword === "State" && callee === "update") {
-        if (isObject(args[0])) {
-          this.vm.state.state = this.vm.state.state ?? {};
-          Object.assign(this.vm.state.state, args[0]);
-        } else if (args[0] instanceof Function) {
-          this.vm.state.state = this.vm.state.state ?? {};
-          this.vm.state.state = args[0](this.vm.state.state);
-        }
-        if (this.vm.state.state === undefined) {
-          throw new Error("The state was not initialized");
-        }
-        this.vm.setReactState(this.vm.state.state);
-        return this.vm.state.state;
-      } else if (keyword === "State" && callee === "get") {
-        return this.vm.state.state;
-      } else if (keyword === "Storage" && callee === "privateSet") {
-        if (args.length < 2) {
-          throw new Error(
-            "Missing argument 'key' or 'value' for Storage.privateSet"
-          );
-        }
-        return this.vm.storageSet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Private,
-          },
-          args[0],
-          args[1]
-        );
-      } else if (keyword === "Storage" && callee === "privateGet") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'key' for Storage.privateGet");
-        }
-        return this.vm.storageGet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Private,
-          },
-          args[0]
-        );
-      } else if (keyword === "Storage" && callee === "set") {
-        if (args.length < 2) {
-          throw new Error("Missing argument 'key' or 'value' for Storage.set");
-        }
-        return this.vm.storageSet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Public,
-          },
-          args[0],
-          args[1]
-        );
-      } else if (keyword === "Storage" && callee === "get") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'key' for Storage.get");
-        }
-        return this.vm.storageGet(
-          {
-            src: args[1] ?? this.vm.widgetSrc,
-            type: StorageType.Public,
-          },
-          args[0]
-        );
-      } else if (keyword === "console" && callee === "log") {
-        return console.log(this.vm.widgetSrc, ...args);
-      } else if (keyword === "clipboard" && callee === "writeText") {
-        return this.isTrusted
-          ? navigator.clipboard.writeText(...args)
-          : Promise.reject(new Error("Not trusted (not a click)"));
-      } else if (keyword === "VM" && callee === "require") {
-        return this.vm.vmRequire(...args);
-      } else if (keyword === "Ethers") {
-        if (callee === "provider") {
-          return this.vm.ethersProvider;
-        } else if (callee === "setChain") {
-          const f = this.vm.ethersProviderContext?.setChain;
-          if (!f) {
-            throw new Error("The gateway doesn't support `setChain` operation");
-          }
-          return f(...args);
-        }
-        return this.vm.cachedEthersCall(callee, args);
-      } else if (keyword === "WebSocket") {
-        if (callee === "WebSocket") {
-          const websocket = new WebSocket(...args);
-          this.vm.websockets.push(websocket);
-          return websocket;
-        } else {
-          throw new Error("Unsupported WebSocket method");
-        }
-      } else if (keywordType === undefined) {
-        if (callee === "fetch") {
-          if (args.length < 1) {
-            throw new Error(
-              "Method: fetch. Required arguments: 'url'. Optional: 'options'"
-            );
-          }
-          return this.vm.cachedFetch(...args);
-        } else if (callee === "asyncFetch") {
-          if (args.length < 1) {
-            throw new Error(
-              "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
-            );
-          }
-          return this.vm.asyncFetch(...args);
-        } else if (callee === "useCache") {
-          if (args.length < 2) {
-            throw new Error(
-              "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
-            );
-          }
-          if (!isFunction(args[0])) {
-            throw new Error(
-              "Method: useCache. The first argument 'promiseGenerator' must be a function"
-            );
-          }
-          return this.vm.useCache(...args);
-        } else if (callee === "useState") {
-          if (this.prevStack) {
-            throw new Error(
-              "Method: useState. The hook can an only be called from the top of the stack"
-            );
-          }
-          if (!this.vm.hooks) {
-            throw new Error("Hooks are unavailable for modules");
-          }
-          if (args.length < 1) {
-            throw new Error(
-              "Method: useState. Required arguments: 'initialState'"
-            );
-          }
-          const initialState = args[0];
-          const hookIndex = this.hookIndex++;
-          const hook = this.vm.hooks[hookIndex];
-          if (hook) {
-            return [hook.state, hook.setState];
-          }
-
-          const getState = () => this.vm.hooks[hookIndex]?.state;
-
-          const setState = (newState) => {
-            if (isFunction(newState)) {
-              newState = newState(getState());
-            }
-            this.vm.setReactHook(hookIndex, { state: newState, setState });
-            return newState;
-          };
-
-          return [setState(initialState), setState];
-        } else if (callee === "useEffect") {
-          if (this.prevStack) {
-            throw new Error(
-              "Method: useEffect. The hook can an only be called from the top of the stack"
-            );
-          }
-          if (!this.vm.hooks) {
-            throw new Error("Hooks are unavailable for modules");
-          }
-          if (args.length < 1) {
-            throw new Error(
-              "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
-            );
-          }
-          const setup = args[0];
-          if (!isFunction(setup)) {
-            throw new Error(
-              "Method: useEffect. The first argument 'setup' must be a function"
-            );
-          }
-          const hookIndex = this.hookIndex++;
-          const dependencies = args[1];
-          const hook = this.vm.hooks[hookIndex];
-          if (hook) {
-            const oldDependencies = hook.dependencies;
-            if (
-              oldDependencies !== undefined &&
-              deepEqual(oldDependencies, dependencies)
-            ) {
-              return undefined;
-            }
-          }
-          const cleanup = hook?.cleanup;
-          if (isFunction(cleanup)) {
-            cleanup();
-          }
-          this.vm.setReactHook(hookIndex, {
-            cleanup: setup(),
-            dependencies,
-          });
-
-          return undefined;
-        } else if (callee === "useMemo" || callee === "useCallback") {
-          if (this.prevStack) {
-            throw new Error(
-              `Method: ${callee}. The hook can only be called from the top of the stack`
-            );
-          }
-          if (!this.vm.hooks) {
-            throw new Error("Hooks are unavailable for modules");
-          }
-          const isMemo = callee === "useMemo";
-          const fnArgName = isMemo ? "factory" : "callback";
-          if (args.length < 1) {
-            throw new Error(
-              `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
-            );
-          }
-
-          const fn = args[0];
-          if (!isFunction(fn)) {
-            throw new Error(
-              `Method: ${callee}. The first argument '${fnArgName}' must be a function`
-            );
-          }
-
-          const hookIndex = this.hookIndex++;
-          const dependencies = args[1];
-          const hook = this.vm.hooks[hookIndex];
-
-          if (hook) {
-            const oldDependencies = hook.dependencies;
-            if (
-              oldDependencies !== undefined &&
-              deepEqual(oldDependencies, dependencies)
-            ) {
-              return hook.memoized;
-            }
-          }
-
-          const memoized = isMemo ? fn() : fn;
-          this.vm.setReactHook(hookIndex, {
-            memoized,
-            dependencies,
-          });
-          return memoized;
-        } else if (callee === "setTimeout") {
-          const [callback, timeout] = args;
-          const timer = setTimeout(() => {
-            if (!this.vm.alive) {
-              return;
-            }
-            callback();
-          }, timeout);
-          this.vm.timeouts.add(timer);
-          return timer;
-        } else if (callee === "setInterval") {
-          if (this.vm.intervals.size >= MAX_INTERVALS) {
-            throw new Error(
-              `Too many intervals. Max allowed: ${MAX_INTERVALS}`
-            );
-          }
-          const [callback, timeout] = args;
-          const timer = setInterval(() => {
-            if (!this.vm.alive) {
-              return;
-            }
-            callback();
-          }, timeout);
-          this.vm.intervals.add(timer);
-          return timer;
-        } else if (callee === "clearTimeout") {
-          const timer = args[0];
-          this.vm.timeouts.delete(timer);
-          return clearTimeout(timer);
-        } else if (callee === "clearInterval") {
-          const timer = args[0];
-          this.vm.intervals.delete(timer);
-          return clearInterval(timer);
-        }
-      }
-    } else {
-      const f = callee === keyword ? keywordType : keywordType[callee];
-      if (typeof f === "function") {
-        return isNew ? new f(...args) : f(...args);
-      }
-    }
-
-    if (optional) {
-      return undefined;
-    }
-
-    throw new Error(
-      keyword && keyword !== callee
-        ? `Unsupported callee method '${keyword}.${callee}'`
-        : `Unsupported callee method '${callee}'`
-    );
-  }
-
   /// Resolves the underlying object and the key to modify.
   /// Should only be used by left hand expressions for assignments.
   /// Options:
@@ -1337,20 +856,15 @@ class VmStack {
       });
       const args = this.getArray(code.arguments);
       if (!keyword && obj?.[key] instanceof Function) {
-        return isNew ? new obj[key](...args) : obj[key](...args);
-      } else if (keyword || obj === this.stack.state || obj === this.vm.state) {
-        return this.callFunction(
-          keyword ?? "",
-          key,
-          args,
-          code.optional,
-          isNew
-        );
+        this.vm.currentVmStack = this;
+        const result = isNew ? new obj[key](...args) : obj[key](...args);
+        this.vm.currentVmStack = undefined;
+        return result;
       } else {
         if (code.optional) {
           return undefined;
         }
-        throw new Error("Not a function call expression");
+        throw new Error(`"${key}" is not a function`);
       }
     } else if (type === "Literal" || type === "JSXText") {
       return code.value;
@@ -1962,6 +1476,8 @@ export default class VM {
     this.networkId =
       widgetConfigs.findLast((config) => config && config.networkId)
         ?.networkId || near.config.networkId;
+
+    this.globalFunctions = this.initGlobalFunctions();
   }
 
   stop() {
@@ -1973,6 +1489,503 @@ export default class VM {
     this.intervals.forEach((interval) => clearInterval(interval));
     this.websockets.forEach((websocket) => websocket.close());
     this.vmInstances.forEach((vm) => vm.stop());
+  }
+
+  initGlobalFunctions() {
+    const Social = {
+      getr: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.getr");
+        }
+        return this.cachedSocialGet(args[0], true, args[1], args[2], args[3]);
+      },
+      get: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.get");
+        }
+        return this.cachedSocialGet(args[0], false, args[1], args[2], args[3]);
+      },
+      keys: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.keys");
+        }
+        return this.cachedSocialKeys(...args);
+      },
+      index: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Missing argument 'action' and 'key` for Social.index"
+          );
+        }
+        return this.cachedIndex(...args);
+      },
+      set: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'data' for Social.set");
+        }
+        return this.socialSet(args[0], args[1]);
+      },
+    };
+
+    const Near = {
+      view: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
+          );
+        }
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
+
+        return this.cachedNearView(
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
+        );
+      },
+      asyncView: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
+          );
+        }
+        return this.asyncNearView(...args);
+      },
+      block: (...args) => {
+        const [blockId, subscribe, cacheOptions] = args;
+        return this.cachedNearBlock(
+          blockId,
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
+        );
+      },
+      call: (...args) => {
+        if (args.length === 1) {
+          if (isObject(args[0])) {
+            return this.confirmTransactions([args[0]]);
+          } else if (isArray(args[0])) {
+            return this.confirmTransactions(args[0]);
+          } else {
+            throw new Error(
+              "Method: Near.call. Required argument: 'tx/txs'. A single argument call requires an TX object or an array of TX objects."
+            );
+          }
+        } else {
+          if (args.length < 2 || args.length > 5) {
+            throw new Error(
+              "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+            );
+          }
+
+          return this.confirmTransactions([
+            {
+              contractName: args[0],
+              methodName: args[1],
+              args: args[2] ?? {},
+              gas: args[3],
+              deposit: args[4],
+            },
+          ]);
+        }
+      },
+    };
+
+    const vmJSON = {
+      stringify: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for JSON.stringify");
+        }
+        assertNotReactObject(args[0]);
+        return JSON.stringify(args[0], args[1], args[2]);
+      },
+      parse: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 's' for JSON.parse");
+        }
+        try {
+          const obj = JSON.parse(args[0]);
+          assertValidObject(obj);
+          return obj;
+        } catch (e) {
+          return null;
+        }
+      },
+    };
+
+    const vmObject = {
+      keys: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.keys");
+        }
+        assertNotReactObject(args[0]);
+        return Object.keys(args[0]);
+      },
+      values: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.values");
+        }
+        assertNotReactObject(args[0]);
+        return Object.values(args[0]);
+      },
+      entries: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.entries");
+        }
+        assertNotReactObject(args[0]);
+        return Object.entries(args[0]);
+      },
+      assign: (...args) => {
+        args.forEach((arg) => assertNotReactObject(arg));
+        const obj = Object.assign(...args);
+        assertValidObject(obj);
+        return obj;
+      },
+      fromEntries: (...args) => {
+        const obj = Object.fromEntries(args[0]);
+        assertValidObject(obj);
+        return obj;
+      },
+    };
+
+    const State = {
+      init: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'initialState' for State.init");
+        }
+        if (
+          args[0] === null ||
+          typeof args[0] !== "object" ||
+          isReactObject(args[0])
+        ) {
+          throw new Error("'initialState' is not an object");
+        }
+        if (this.state.state === undefined) {
+          const newState = args[0];
+          this.state.state = newState;
+          this.setReactState(newState);
+        }
+        return this.state.state;
+      },
+      update: (...args) => {
+        if (isObject(args[0])) {
+          this.state.state = this.state.state ?? {};
+          Object.assign(this.state.state, args[0]);
+        } else if (args[0] instanceof Function) {
+          this.state.state = this.state.state ?? {};
+          this.state.state = args[0](this.state.state);
+        }
+        if (this.state.state === undefined) {
+          throw new Error("The state was not initialized");
+        }
+        this.setReactState(this.state.state);
+        return this.state.state;
+      },
+      get: (...args) => {
+        return this.state.state;
+      },
+    };
+
+    const Storage = {
+      privateSet: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Missing argument 'key' or 'value' for Storage.privateSet"
+          );
+        }
+        return this.storageSet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Private,
+          },
+          args[0],
+          args[1]
+        );
+      },
+      privateGet: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'key' for Storage.privateGet");
+        }
+        return this.storageGet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Private,
+          },
+          args[0]
+        );
+      },
+      set: (...args) => {
+        if (args.length < 2) {
+          throw new Error("Missing argument 'key' or 'value' for Storage.set");
+        }
+        return this.storageSet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0],
+          args[1]
+        );
+      },
+      get: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Missing argument 'key' for Storage.get. Optional argument: `widgetSrc`"
+          );
+        }
+        return this.storageGet(
+          {
+            src: args[1] ?? this.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0]
+        );
+      },
+    };
+
+    const vmConsole = {
+      log: (...args) => console.log(this.widgetSrc, ...args),
+      warn: (...args) => console.warn(this.widgetSrc, ...args),
+      error: (...args) => console.error(this.widgetSrc, ...args),
+      info: (...args) => console.info(this.widgetSrc, ...args),
+    };
+
+    const Ethers = {
+      provider: () => this.ethersProvider,
+      setChain: (...args) => {
+        const f = this.ethersProviderContext?.setChain;
+        if (!f) {
+          throw new Error("The gateway doesn't support `setChain` operation");
+        }
+        return f(...args);
+      },
+    };
+
+    const vmUseMemoOrCallback = (callee, ...args) => {
+      if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+        throw new Error(
+          `Method: ${callee}. The hook can only be called from the top of the stack`
+        );
+      }
+      if (!this.hooks) {
+        throw new Error("Hooks are unavailable for modules");
+      }
+      const isMemo = callee === "useMemo";
+      const fnArgName = isMemo ? "factory" : "callback";
+      if (args.length < 1) {
+        throw new Error(
+          `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+        );
+      }
+
+      const fn = args[0];
+      if (!isFunction(fn)) {
+        throw new Error(
+          `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+        );
+      }
+
+      const hookIndex = this.currentVmStack.hookIndex++;
+      const dependencies = args[1];
+      const hook = this.hooks[hookIndex];
+
+      if (hook) {
+        const oldDependencies = hook.dependencies;
+        if (
+          oldDependencies !== undefined &&
+          deepEqual(oldDependencies, dependencies)
+        ) {
+          return hook.memoized;
+        }
+      }
+
+      const memoized = isMemo ? fn() : fn;
+      this.setReactHook(hookIndex, {
+        memoized,
+        dependencies,
+      });
+      return memoized;
+    };
+
+    return deepFreeze({
+      socialGetr: Social.getr,
+      socialGet: Social.get,
+      Social,
+      Near,
+      stringify: vmJSON.stringify,
+      JSON: vmJSON,
+      Object: vmObject,
+      initState: State.init,
+      State,
+      Storage,
+      console: vmConsole,
+      clipboard: {
+        writeText: (...args) => {
+          return this.currentVmStack?.isTrusted
+            ? navigator.clipboard.writeText(...args)
+            : Promise.reject(new Error("Not trusted (not a click)"));
+        },
+      },
+      VM: {
+        require: this.vmRequire,
+      },
+      Ethers,
+      WebSocket: (...args) => {
+        const websocket = new WebSocket(...args);
+        this.websockets.push(websocket);
+        return websocket;
+      },
+      fetch: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Method: fetch. Required arguments: 'url'. Optional: 'options'"
+          );
+        }
+        return this.cachedFetch(...args);
+      },
+      asyncFetch: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
+          );
+        }
+        return this.asyncFetch(...args);
+      },
+      useCache: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
+          );
+        }
+        if (!isFunction(args[0])) {
+          throw new Error(
+            "Method: useCache. The first argument 'promiseGenerator' must be a function"
+          );
+        }
+        return this.useCache(...args);
+      },
+      useState: (...args) => {
+        if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+          throw new Error(
+            "Method: useState. The hook can an only be called from the top of the stack"
+          );
+        }
+        if (!this.hooks) {
+          throw new Error("Hooks are unavailable for modules");
+        }
+        if (args.length < 1) {
+          throw new Error(
+            "Method: useState. Required arguments: 'initialState'"
+          );
+        }
+        const initialState = args[0];
+        const hookIndex = this.currentVmStack.hookIndex++;
+        const hook = this.hooks[hookIndex];
+        if (hook) {
+          return [hook.state, hook.setState];
+        }
+
+        const getState = () => this.hooks[hookIndex]?.state;
+
+        const setState = (newState) => {
+          if (isFunction(newState)) {
+            newState = newState(getState());
+          }
+          this.setReactHook(hookIndex, { state: newState, setState });
+          return newState;
+        };
+
+        return [setState(initialState), setState];
+      },
+      useEffect: (...args) => {
+        if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+          throw new Error(
+            "Method: useEffect. The hook can an only be called from the top of the stack"
+          );
+        }
+        if (!this.hooks) {
+          throw new Error("Hooks are unavailable for modules");
+        }
+        if (args.length < 1) {
+          throw new Error(
+            "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
+          );
+        }
+        const setup = args[0];
+        if (!isFunction(setup)) {
+          throw new Error(
+            "Method: useEffect. The first argument 'setup' must be a function"
+          );
+        }
+        const hookIndex = this.currentVmStack.hookIndex++;
+        const dependencies = args[1];
+        const hook = this.hooks[hookIndex];
+        if (hook) {
+          const oldDependencies = hook.dependencies;
+          if (
+            oldDependencies !== undefined &&
+            deepEqual(oldDependencies, dependencies)
+          ) {
+            return undefined;
+          }
+        }
+        const cleanup = hook?.cleanup;
+        if (isFunction(cleanup)) {
+          cleanup();
+        }
+        this.setReactHook(hookIndex, {
+          cleanup: setup(),
+          dependencies,
+        });
+
+        return undefined;
+      },
+      useMemo: (...args) => vmUseMemoOrCallback("useMemo", ...args),
+      useCallback: (...args) => vmUseMemoOrCallback("useCallback", ...args),
+      setTimeout: (...args) => {
+        const [callback, timeout] = args;
+        const timer = setTimeout(() => {
+          if (!this.alive) {
+            return;
+          }
+          callback();
+        }, timeout);
+        this.timeouts.add(timer);
+        return timer;
+      },
+      setInterval: (...args) => {
+        if (this.intervals.size >= MAX_INTERVALS) {
+          throw new Error(`Too many intervals. Max allowed: ${MAX_INTERVALS}`);
+        }
+        const [callback, timeout] = args;
+        const timer = setInterval(() => {
+          if (!this.alive) {
+            return;
+          }
+          callback();
+        }, timeout);
+        this.intervals.add(timer);
+        return timer;
+      },
+      clearTimeout: (...args) => {
+        const timer = args[0];
+        this.timeouts.delete(timer);
+        return clearTimeout(timer);
+      },
+      clearInterval: (...args) => {
+        const timer = args[0];
+        this.intervals.delete(timer);
+        return clearInterval(timer);
+      },
+    });
   }
 
   cachedPromise(promise, subscribe) {
@@ -2217,6 +2230,7 @@ export default class VM {
     this.hooks = hooks;
     this.state = {
       ...GlobalInjected,
+      ...this.globalFunctions,
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
