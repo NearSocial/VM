@@ -1,6 +1,139 @@
 # Changelog
 
-## Pending
+## Pending 
+
+- Fix `vm.depth` not being initialized.
+- Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
+
+```jsx
+const data = [
+  //...some large array
+];
+
+const filteredData = useMemo(() => {
+  console.log("Filtering data");
+  return data.filter(/* some filtering criteria */);
+}, [data]);
+
+return (
+  <div>
+    {filteredData.map(item => (
+      <div key={item.id}>{item.name}</div>
+    ))}
+  </div>
+);
+```
+
+- Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
+ ```jsx
+ const incrementCounter = useCallback(() => {
+  setCounter(counter + 1);
+}, [counter]);
+
+return (
+  <div>
+    Counter = {counter}
+    <div>
+      <button onClick={incrementCounter}>Increment</button>
+    </div>
+  </div>
+);
+```
+
+## 2.4.1
+
+- FIX: Resolve bug with `VM.require` affected by the introduction of `useState` and `useEffect` hooks.
+
+## 2.4.0
+
+- Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
+```jsx
+const [a, setA] = useState(() => {
+  console.log("Init 'a'");
+  return "Y";
+});
+
+const [b, setB] = useState("B");
+const [sum, setSum] = useState(0);
+
+useEffect(() => {
+  setSum(a.length + b.length);
+  return () => {
+    console.log("cleanup");
+  };
+}, [a, b]);
+
+return (
+  <div>
+    A = {a}
+    <br />B = {b}
+    <br />
+    Length sum = {sum}
+    <div>
+      <button onClick={() => setA((s) => s + "O")}>A</button>
+      <button onClick={() => setB(b + "O")}>B</button>
+    </div>
+  </div>
+);
+```
+
+- Add `cacheOptions` optional argument to the following methods:
+  - `Social.get(keys, blockId|finality, options, cacheOptions)`
+  - `Social.getr(keys, blockId|finality, options, cacheOptions)`
+  - `Social.keys(keys, blockId|finality, options, cacheOptions)`
+  - `Social.index(action, key, options, cacheOptions)`
+  - `Near.view(contractName, methodName, args, blockId|finality, subscribe, cacheOptions)`
+  - `Near.block(blockId|finality, subscribe, cacheOptions)`
+    The `cacheOptions` object is optional and may contain the following property:
+  - `ignoreCache` - boolean, if true, the method will ignore the cached value in the local DB and fetch the data from the API server. This will only happen once per session. Default is false.
+
+This is useful to avoid loading stale objects that are likely to change often. For example, the index of posts for the main feed, or notifications.
+```jsx
+const index = Social.index(
+  "post",
+  "main",
+  {
+    limit: 10,
+    order: "desc",
+  },
+  {
+    ignoreCache: true,
+  }
+);
+```
+
+## 2.3.2
+
+- Nothing. Missed the package.json bump in the previous release.
+
+## 2.3.1
+
+- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
+Correct usage:
+```jsx
+// Use `Ethers.provider().send()` to get a promise without caching.
+if (state.sender === undefined) {
+  Ethers.provider().send("eth_requestAccounts", []).then((accounts) => {
+    if (accounts.length) {
+      State.update({ sender: accounts[0] });
+      console.log("set sender", accounts[0]);
+    }
+  });
+}
+```
+Legacy example:
+```jsx
+// Use `Ethers.send()` to get a cached version, but might run into stale cached data.
+if (state.sender === undefined) {
+  const accounts = Ethers.send("eth_requestAccounts", []);
+  if (accounts.length) {
+    State.update({ sender: accounts[0] });
+    console.log("set sender", accounts[0]);
+  }
+}
+```
+
+## 2.3.0
 
 - Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
 ```jsx

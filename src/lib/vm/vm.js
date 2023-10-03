@@ -30,11 +30,12 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
-import _ from "lodash";
+import cloneDeep from "lodash.clonedeep";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import * as nearAPI from "near-api-js";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -237,30 +238,72 @@ const Keywords = {
   console: true,
   styled: true,
   Object: true,
-  Date,
-  Number,
-  Big,
-  Math,
-  Buffer,
-  Audio,
-  Image,
-  File,
-  Blob,
-  FileReader,
-  URL,
-  Array,
-  BN,
-  Uint8Array,
-  Map,
-  Set,
   clipboard: true,
   Ethers: true,
   WebSocket: true,
-  VM: true,
   Calimero: true,
+  VM: true,
   Crypto: true,
-  Promise,
 };
+
+const GlobalInjected = deepFreeze(
+  cloneDeep({
+    // Functions
+    encodeURIComponent,
+    decodeURIComponent,
+    isNaN,
+    parseInt,
+    parseFloat,
+    isFinite,
+    btoa,
+    atob,
+    decodeURI,
+    encodeURI,
+
+    // Libs
+    nacl: {
+      randomBytes: nacl.randomBytes,
+      secretbox: nacl.secretbox,
+      scalarMult: nacl.scalarMult,
+      box: nacl.box,
+      sign: nacl.sign,
+      hash: nacl.hash,
+      verify: nacl.verify,
+    },
+    ethers: {
+      utils: ethers.utils,
+      BigNumber: ethers.BigNumber,
+      Contract: ethers.Contract,
+      providers: ethers.providers,
+    },
+    // `nanoid.nanoid()` is a bit odd, but it seems better to match the official
+    // API than to create an alias
+    nanoid: {
+      nanoid,
+      customAlphabet,
+    },
+
+    // Objects
+    Promise,
+    Date,
+    Number,
+    String,
+    Big,
+    Math,
+    Buffer,
+    Audio,
+    Image,
+    File,
+    Blob,
+    FileReader,
+    URL,
+    Array,
+    BN,
+    Uint8Array,
+    Map,
+    Set,
+  })
+);
 
 const NativeFunctions = {
   encodeURIComponent,
@@ -761,7 +804,13 @@ class VmStack {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.getr");
         }
-        return this.vm.cachedSocialGet(args[0], true, args[1], args[2]);
+        return this.vm.cachedSocialGet(
+          args[0],
+          true,
+          args[1],
+          args[2],
+          args[3]
+        );
       } else if (
         (keyword === "Social" && callee === "get") ||
         callee === "socialGet"
@@ -769,19 +818,25 @@ class VmStack {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.get");
         }
-        return this.vm.cachedSocialGet(args[0], false, args[1], args[2]);
+        return this.vm.cachedSocialGet(
+          args[0],
+          false,
+          args[1],
+          args[2],
+          args[3]
+        );
       } else if (keyword === "Social" && callee === "keys") {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.keys");
         }
-        return this.vm.cachedSocialKeys(args[0], args[1], args[2]);
+        return this.vm.cachedSocialKeys(...args);
       } else if (keyword === "Social" && callee === "index") {
         if (args.length < 2) {
           throw new Error(
             "Missing argument 'action' and 'key` for Social.index"
           );
         }
-        return this.vm.cachedIndex(args[0], args[1], args[2]);
+        return this.vm.cachedIndex(...args);
       } else if (keyword === "Social" && callee === "set") {
         if (args.length < 1) {
           throw new Error("Missing argument 'data' for Social.set");
@@ -790,32 +845,48 @@ class VmStack {
       } else if (keyword === "Near" && callee === "view") {
         if (args.length < 2) {
           throw new Error(
-            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
+            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
           );
         }
-        const [contractName, methodName, viewArg, blockId, subscribe] = args;
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
 
         return this.vm.cachedNearView(
           contractName,
           methodName,
           viewArg,
           blockId,
-          maybeSubscribe(subscribe, blockId)
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
         );
       } else if (keyword === "Near" && callee === "calimeroView" || keyword === "Calimero" && callee === "view") {
         if (args.length < 2) {
           throw new Error(
-            "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
+            "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
           );
         }
-        const [contractName, methodName, viewArg, blockId, subscribe] = args;
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
 
         return this.vm.cachedCalimeroView(
           contractName,
           methodName,
           viewArg,
           blockId,
-          maybeSubscribe(subscribe, blockId)
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
         );
       } else if (keyword === "Near" && callee === "asyncView") {
         if (args.length < 2) {
@@ -832,10 +903,11 @@ class VmStack {
         }
         return this.vm.asyncCalimeroView(...args);
       } else if (keyword === "Near" && callee === "block") {
-        const [blockId, subscribe] = args;
+        const [blockId, subscribe, cacheOptions] = args;
         return this.vm.cachedNearBlock(
           blockId,
-          maybeSubscribe(subscribe, blockId)
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
         );
       } else if (keyword === "Near" && callee === "call") {
         if (args.length === 1) {
@@ -907,7 +979,6 @@ class VmStack {
             "Method: Calimero.fakSignTx. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
           );
         }
-
         return this.vm.near.signCalimeroFakTransaction(
           this.vm.near.calimeroConnection.config.networkId,
           args[0],
@@ -1142,6 +1213,9 @@ class VmStack {
               "Method: useState. The hook can an only be called from the top of the stack"
             );
           }
+          if (!this.vm.hooks) {
+            throw new Error("Hooks are unavailable for modules");
+          }
           if (args.length < 1) {
             throw new Error(
               "Method: useState. Required arguments: 'initialState'"
@@ -1170,6 +1244,9 @@ class VmStack {
             throw new Error(
               "Method: useEffect. The hook can an only be called from the top of the stack"
             );
+          }
+          if (!this.vm.hooks) {
+            throw new Error("Hooks are unavailable for modules");
           }
           if (args.length < 1) {
             throw new Error(
@@ -1350,13 +1427,6 @@ class VmStack {
       ) {
         const keyword = code.object.name;
         if (keyword in Keywords) {
-          // Special case for Promise.all and Promise.any
-          if (keyword === 'Promise' && ['all', 'any'].includes(code.property.name)) {
-            return {
-              obj: Promise,  // Return the Promise object itself
-              key: code.property.name
-            };
-           }
           if (!options?.callee) {
             throw new Error(
               "Cannot dereference keyword '" +
@@ -2038,7 +2108,7 @@ export default class VM {
     this.cache = cache;
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
-    this.depth = depth;
+    this.depth = depth ?? 0;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
     this.version = version;
@@ -2082,7 +2152,7 @@ export default class VM {
     return deepCopy(promise(invalidate));
   }
 
-  cachedSocialGet(keys, recursive, blockId, options) {
+  cachedSocialGet(keys, recursive, blockId, options, cacheOptions) {
     keys = Array.isArray(keys) ? keys : [keys];
     return this.cachedPromise(
       (invalidate) =>
@@ -2092,7 +2162,8 @@ export default class VM {
           recursive,
           blockId,
           options,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -2108,7 +2179,7 @@ export default class VM {
     return this.cache.localStorageSet(domain, key, value);
   }
 
-  cachedSocialKeys(keys, blockId, options) {
+  cachedSocialKeys(keys, blockId, options, cacheOptions) {
     keys = Array.isArray(keys) ? keys : [keys];
     return this.cachedPromise(
       (invalidate) =>
@@ -2121,7 +2192,8 @@ export default class VM {
             options,
           },
           blockId,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -2142,13 +2214,21 @@ export default class VM {
           this.ethersProvider,
           callee,
           args,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       subscribe
     );
   }
 
-  cachedNearView(contractName, methodName, args, blockId, subscribe) {
+  cachedNearView(
+    contractName,
+    methodName,
+    args,
+    blockId,
+    subscribe,
+    cacheOptions
+  ) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedViewCall(
@@ -2157,12 +2237,20 @@ export default class VM {
           methodName,
           args,
           blockId,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       subscribe
     );
   }
-  cachedCalimeroView(contractName, methodName, args, blockId, subscribe) {
+  cachedCalimeroView(
+    contractName,
+    methodName,
+    args,
+    blockId,
+    subscribe,
+    cacheOptions
+  ) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedCalimeroViewCall(
@@ -2171,15 +2259,17 @@ export default class VM {
           methodName,
           args,
           blockId,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       subscribe
     );
   }
 
-  cachedNearBlock(blockId, subscribe) {
+  cachedNearBlock(blockId, subscribe, cacheOptions) {
     return this.cachedPromise(
-      (invalidate) => this.cache.cachedBlock(this.near, blockId, invalidate),
+      (invalidate) =>
+        this.cache.cachedBlock(this.near, blockId, invalidate, cacheOptions),
       subscribe
     );
   }
@@ -2188,22 +2278,30 @@ export default class VM {
     return this.cache.asyncFetch(url, options);
   }
 
-  cachedFetch(url, options) {
-    return this.cachedPromise(
-      (invalidate) => this.cache.cachedFetch(url, options, invalidate),
-      options?.subscribe
-    );
-  }
-
-  cachedIndex(action, key, options) {
+  cachedFetch(url, options, cacheOptions) {
     return this.cachedPromise(
       (invalidate) =>
-        this.cache.socialIndex(this.near, action, key, options, invalidate),
+        this.cache.cachedFetch(url, options, invalidate, cacheOptions),
       options?.subscribe
     );
   }
 
-  useCache(promiseGenerator, dataKey, options) {
+  cachedIndex(action, key, options, cacheOptions) {
+    return this.cachedPromise(
+      (invalidate) =>
+        this.cache.socialIndex(
+          this.near,
+          action,
+          key,
+          options,
+          invalidate,
+          cacheOptions
+        ),
+      options?.subscribe
+    );
+  }
+
+  useCache(promiseGenerator, dataKey, options, cacheOptions) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedCustomPromise(
@@ -2212,7 +2310,8 @@ export default class VM {
             dataKey,
           },
           promiseGenerator,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -2305,20 +2404,18 @@ export default class VM {
       return "Too deep";
     }
     this.gIndex = 0;
-    const { hooks, state } = reactState;
+    const { hooks, state } = reactState ?? {};
     this.hooks = hooks;
     this.state = {
+      ...GlobalInjected,
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
-      nacl: frozenNacl,
       get elliptic() {
         delete this.elliptic;
-        this.elliptic = _.cloneDeep(elliptic);
+        this.elliptic = cloneDeep(elliptic);
         return this.elliptic;
       },
-      ethers: frozenEthers,
-      nanoid: frozenNanoid,
     };
     this.forwardedProps = forwardedProps;
     this.loopLimit = LoopLimit;
