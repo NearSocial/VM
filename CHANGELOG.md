@@ -2,6 +2,7 @@
 
 ## Pending 
 
+- Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
 - Expose all VM functions into the state directly, it simplifies VM readability and implementation.
 - Expose certain native objects directly into the state. It should improve access to the functions.
 - Update the way events and errors are passed to the functions. 
