@@ -3,7 +3,7 @@ import { findAndReplace } from "mdast-util-find-and-replace";
 // scheme://authority/path?query#fragment
 const urlRegex = /(([^:\/?#\s]+):\/\/(?:([^\/?#\s]*))?([^?\s]*)(?:\?([^#\s]*))?(?:#(\S*))?)/gi;
 
-export default function widgets() {
+export default function urls() {
   function replace(value, url, scheme, authority, path, query, fragment, match) {
     if (
       /[\w`]/.test(match.input.charAt(match.index - 1)) ||
