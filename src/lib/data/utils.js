@@ -52,6 +52,8 @@ export const isObject = (o) =>
 
 export const isString = (s) => typeof s === "string";
 
+export const isFunction = (f) => typeof f === "function";
+
 export const keysToCamel = function (o) {
   if (isObject(o)) {
     const n = {};
@@ -391,6 +393,14 @@ export const deepCopy = (o) => {
   } else {
     return JSON.parse(JSON.stringify(o));
   }
+};
+
+export const filterValues = (o) => {
+  return isObject(o)
+    ? Object.fromEntries(
+        Object.entries(o).filter(([key, value]) => value !== undefined)
+      )
+    : o;
 };
 
 export const deepEqual = equal;
