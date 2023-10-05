@@ -33,7 +33,7 @@ export const Markdown = (props) => {
         },
         a: ({ node, ...props }) =>
           onLink ? (
-            onLink({ ...props })
+            onLink({ ...props, href: node.properties?.href })
           ) : onLinkClick ? (
             <a onClick={onLinkClick} {...props} />
           ) : (
