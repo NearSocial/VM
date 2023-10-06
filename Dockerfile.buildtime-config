@@ -36,6 +36,7 @@ COPY calimero-portal/sentry.client.config.ts /calimero-portal/sentry.client.conf
 COPY calimero-portal/sentry.edge.config.ts /calimero-portal/sentry.edge.config.ts
 COPY calimero-portal/sentry.server.config.ts /calimero-portal/sentry.server.config.ts
 COPY calimero-portal/tsconfig.json /calimero-portal/tsconfig.json
+COPY calimero-portal/FirebaseEnvVariablesWebpackPlugin.js /calimero-portal/FirebaseEnvVariablesWebpackPlugin.js
 
 # .env is generated during CI/CD pipeline
 COPY .env /calimero-portal/.env
