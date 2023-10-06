@@ -584,7 +584,7 @@ class VmStack {
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
 
-    if (this.vm.near.features.enableWidgetSrcDataKey == true) {
+    if (this.vm.near?.features?.enableWidgetSrcDataKey == true) {
       attributes["data-key"] = attributes["data-key"] ?? this.vm.widgetSrc;
     }
 
