@@ -1836,7 +1836,7 @@ export default class VM {
         },
       },
       VM: {
-        require: this.vmRequire,
+        require: this.vmRequire.bind(this),
       },
       Ethers,
       WebSocket: (...args) => {
