@@ -21,6 +21,6 @@ See [CHANGELOG.md](./CHANGELOG.md)
 
 You can play with the VM at one of the gateways:
 - https://near.social/
-- `dev` VM branch https://dev.near.social/
+- https://dev.near.social/ (`dev` VM branch)
 - https://near.org/
 - https://jutsu.ai/
