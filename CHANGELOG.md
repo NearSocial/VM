@@ -11,6 +11,7 @@
   - For errors, expose `message`, `name` and `type`.
 - Fix `vm.depth` not being initialized.
 - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
+- Add support for VM.require when using redirectMap.
 
 ```jsx
 const data = [

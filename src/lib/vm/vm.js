@@ -1,6 +1,7 @@
 import React from "react";
 import { Widget } from "../components/Widget";
 import {
+  computeSrcOrCode,
   deepCopy,
   deepEqual,
   deepFreeze,
@@ -2149,17 +2150,24 @@ export default class VM {
   }
 
   vmRequire(src) {
-    const [srcPath, version] = src.split("@");
-    const code = this.cachedSocialGet(
-      srcPath.toString(),
-      false,
-      version, // may be undefined, meaning `latest`
-      undefined
-    );
-    if (!code) {
-      return code;
+    const srcOrCode = computeSrcOrCode(src, null, this.widgetConfigs);
+    let code;
+    if (srcOrCode?.src) {
+      const src = srcOrCode.src;
+      const [srcPath, version] = src.split("@");
+      code = this.cachedSocialGet(
+        srcPath.toString(),
+        false,
+        version, // may be undefined, meaning `latest`
+        undefined
+      );
+      if (!code) {
+        return code;
+      }
+    } else if (srcOrCode?.code) {
+      code = srcOrCode.code;
     }
-    const vm = this.getVmInstance(code, src);
+    const vm = this.getVmInstance(code, srcOrCode?.src);
     return vm.execCode({
       context: deepCopy(this.context),
       forwardedProps: this.forwardedProps,
