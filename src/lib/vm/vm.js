@@ -1,6 +1,7 @@
 import React from "react";
 import { Widget } from "../components/Widget";
 import {
+  computeSrcOrCode,
   deepCopy,
   deepEqual,
   deepFreeze,
@@ -1835,7 +1836,7 @@ export default class VM {
         },
       },
       VM: {
-        require: this.vmRequire,
+        require: this.vmRequire.bind(this),
       },
       Ethers,
       WebSocket: (...args) => {
@@ -2149,17 +2150,24 @@ export default class VM {
   }
 
   vmRequire(src) {
-    const [srcPath, version] = src.split("@");
-    const code = this.cachedSocialGet(
-      srcPath.toString(),
-      false,
-      version, // may be undefined, meaning `latest`
-      undefined
-    );
-    if (!code) {
-      return code;
+    const srcOrCode = computeSrcOrCode(src, null, this.widgetConfigs);
+    let code;
+    if (srcOrCode?.src) {
+      const src = srcOrCode.src;
+      const [srcPath, version] = src.split("@");
+      code = this.cachedSocialGet(
+        srcPath.toString(),
+        false,
+        version, // may be undefined, meaning `latest`
+        undefined
+      );
+      if (!code) {
+        return code;
+      }
+    } else if (srcOrCode?.code) {
+      code = srcOrCode.code;
     }
-    const vm = this.getVmInstance(code, src);
+    const vm = this.getVmInstance(code, srcOrCode?.src);
     return vm.execCode({
       context: deepCopy(this.context),
       forwardedProps: this.forwardedProps,
@@ -2167,13 +2175,13 @@ export default class VM {
   }
 
   getVmInstance(code, src) {
-    if (this.vmInstances.has(src)) {
-      const vm = this.vmInstances.get(src);
+    if (this.vmInstances.has(code)) {
+      const vm = this.vmInstances.get(code);
       if (vm.rawCode === code) {
         return vm;
       }
       vm.stop();
-      this.vmInstances.delete(src);
+      this.vmInstances.delete(code);
     }
     const vm = new VM({
       near: this.near,
@@ -2189,7 +2197,7 @@ export default class VM {
       ethersProviderContext: this.ethersProviderContext,
       isModule: true,
     });
-    this.vmInstances.set(src, vm);
+    this.vmInstances.set(code, vm);
     return vm;
   }
 

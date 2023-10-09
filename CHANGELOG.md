@@ -2,6 +2,8 @@
 
 ## Pending 
 
+- Add support for VM.require when using redirectMap.
+- Fixes an issue with VM.require not retaining context in migration to initGlobalFunctions.
 - Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
 - Expose all VM functions into the state directly, it simplifies VM readability and implementation.
 - Expose certain native objects directly into the state. It should improve access to the functions.
