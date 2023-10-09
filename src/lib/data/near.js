@@ -211,6 +211,10 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
   }
 }
 
+/**
+ * Current VM Features:
+ * - enableWidgetSrcDataKey: Allows enabling the widget source data-key for rendered DOM elements. Disabled by default.
+**/
 async function _initNear({
   networkId,
   config,
