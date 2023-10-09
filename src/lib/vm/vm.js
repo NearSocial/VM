@@ -2175,13 +2175,13 @@ export default class VM {
   }
 
   getVmInstance(code, src) {
-    if (this.vmInstances.has(src)) {
-      const vm = this.vmInstances.get(src);
+    if (this.vmInstances.has(code)) {
+      const vm = this.vmInstances.get(code);
       if (vm.rawCode === code) {
         return vm;
       }
       vm.stop();
-      this.vmInstances.delete(src);
+      this.vmInstances.delete(code);
     }
     const vm = new VM({
       near: this.near,
@@ -2197,7 +2197,7 @@ export default class VM {
       ethersProviderContext: this.ethersProviderContext,
       isModule: true,
     });
-    this.vmInstances.set(src, vm);
+    this.vmInstances.set(code, vm);
     return vm;
   }
 
