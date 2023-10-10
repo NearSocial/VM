@@ -28,3 +28,6 @@ neardev
 
 # OS X
 .DS_Store
+
+.yarn
+.pnpm-lock.yaml
