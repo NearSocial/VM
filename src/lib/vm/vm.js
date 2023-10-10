@@ -2,10 +2,12 @@ import React from "react";
 import { Widget } from "../components/Widget";
 import {
   deepCopy,
+  deepEqual,
   deepFreeze,
   ipfsUpload,
   ipfsUrl,
   isArray,
+  isFunction,
   isObject,
   isReactObject,
   isString,
@@ -26,9 +28,11 @@ import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
 import { nanoid, customAlphabet } from "nanoid";
-import _ from "lodash";
+import cloneDeep from "lodash.clonedeep";
 import { Parser } from "acorn";
 import jsx from "acorn-jsx";
+import { ethers } from "ethers";
+import { Web3ConnectButton } from "../components/ethers";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -58,8 +62,6 @@ import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import { ethers } from "ethers";
-import { Web3ConnectButton } from "../components/ethers";
 
 const frozenNacl = Object.freeze({
   randomBytes: deepFreeze(nacl.randomBytes),
@@ -434,6 +436,7 @@ class Stack {
 class VmStack {
   constructor(vm, prevStack, state, isTrusted) {
     this.gIndex = 0;
+    this.hookIndex = 0;
     this.vm = vm;
     this.isTrusted = !!isTrusted;
     this.stack = new Stack(prevStack, state);
@@ -741,7 +744,13 @@ class VmStack {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.getr");
         }
-        return this.vm.cachedSocialGet(args[0], true, args[1], args[2]);
+        return this.vm.cachedSocialGet(
+          args[0],
+          true,
+          args[1],
+          args[2],
+          args[3]
+        );
       } else if (
         (keyword === "Social" && callee === "get") ||
         callee === "socialGet"
@@ -749,19 +758,25 @@ class VmStack {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.get");
         }
-        return this.vm.cachedSocialGet(args[0], false, args[1], args[2]);
+        return this.vm.cachedSocialGet(
+          args[0],
+          false,
+          args[1],
+          args[2],
+          args[3]
+        );
       } else if (keyword === "Social" && callee === "keys") {
         if (args.length < 1) {
           throw new Error("Missing argument 'keys' for Social.keys");
         }
-        return this.vm.cachedSocialKeys(args[0], args[1], args[2]);
+        return this.vm.cachedSocialKeys(...args);
       } else if (keyword === "Social" && callee === "index") {
         if (args.length < 2) {
           throw new Error(
             "Missing argument 'action' and 'key` for Social.index"
           );
         }
-        return this.vm.cachedIndex(args[0], args[1], args[2]);
+        return this.vm.cachedIndex(...args);
       } else if (keyword === "Social" && callee === "set") {
         if (args.length < 1) {
           throw new Error("Missing argument 'data' for Social.set");
@@ -770,17 +785,25 @@ class VmStack {
       } else if (keyword === "Near" && callee === "view") {
         if (args.length < 2) {
           throw new Error(
-            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe'"
+            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
           );
         }
-        const [contractName, methodName, viewArg, blockId, subscribe] = args;
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
 
         return this.vm.cachedNearView(
           contractName,
           methodName,
           viewArg,
           blockId,
-          maybeSubscribe(subscribe, blockId)
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
         );
       } else if (keyword === "Near" && callee === "asyncView") {
         if (args.length < 2) {
@@ -790,10 +813,11 @@ class VmStack {
         }
         return this.vm.asyncNearView(...args);
       } else if (keyword === "Near" && callee === "block") {
-        const [blockId, subscribe] = args;
+        const [blockId, subscribe, cacheOptions] = args;
         return this.vm.cachedNearBlock(
           blockId,
-          maybeSubscribe(subscribe, blockId)
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
         );
       } else if (keyword === "Near" && callee === "call") {
         if (args.length === 1) {
@@ -1005,12 +1029,86 @@ class VmStack {
               "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
             );
           }
-          if (!(args[0] instanceof Function)) {
+          if (!isFunction(args[0])) {
             throw new Error(
               "Method: useCache. The first argument 'promiseGenerator' must be a function"
             );
           }
           return this.vm.useCache(...args);
+        } else if (callee === "useState") {
+          if (this.prevStack) {
+            throw new Error(
+              "Method: useState. The hook can an only be called from the top of the stack"
+            );
+          }
+          if (!this.vm.hooks) {
+            throw new Error("Hooks are unavailable for modules");
+          }
+          if (args.length < 1) {
+            throw new Error(
+              "Method: useState. Required arguments: 'initialState'"
+            );
+          }
+          const initialState = args[0];
+          const hookIndex = this.hookIndex++;
+          const hook = this.vm.hooks[hookIndex];
+          if (hook) {
+            return [hook.state, hook.setState];
+          }
+
+          const getState = () => this.vm.hooks[hookIndex]?.state;
+
+          const setState = (newState) => {
+            if (isFunction(newState)) {
+              newState = newState(getState());
+            }
+            this.vm.setReactHook(hookIndex, { state: newState, setState });
+            return newState;
+          };
+
+          return [setState(initialState), setState];
+        } else if (callee === "useEffect") {
+          if (this.prevStack) {
+            throw new Error(
+              "Method: useEffect. The hook can an only be called from the top of the stack"
+            );
+          }
+          if (!this.vm.hooks) {
+            throw new Error("Hooks are unavailable for modules");
+          }
+          if (args.length < 1) {
+            throw new Error(
+              "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
+            );
+          }
+          const setup = args[0];
+          if (!isFunction(setup)) {
+            throw new Error(
+              "Method: useEffect. The first argument 'setup' must be a function"
+            );
+          }
+          const hookIndex = this.hookIndex++;
+          const dependencies = args[1];
+          const hook = this.vm.hooks[hookIndex];
+          if (hook) {
+            const oldDependencies = hook.dependencies;
+            if (
+              oldDependencies !== undefined &&
+              deepEqual(oldDependencies, dependencies)
+            ) {
+              return undefined;
+            }
+          }
+          const cleanup = hook?.cleanup;
+          if (isFunction(cleanup)) {
+            cleanup();
+          }
+          this.vm.setReactHook(hookIndex, {
+            cleanup: setup(),
+            dependencies,
+          });
+
+          return undefined;
         } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
@@ -1762,7 +1860,22 @@ export default class VM {
     }
 
     this.setReactState = setReactState
-      ? (s) => setReactState(isObject(s) ? Object.assign({}, s) : s)
+      ? (s) =>
+          setReactState({
+            hooks: this.hooks,
+            state: isObject(s) ? Object.assign({}, s) : s,
+          })
+      : () => {
+          throw new Error("State is unavailable for modules");
+        };
+    this.setReactHook = setReactState
+      ? (i, v) => {
+          this.hooks[i] = v;
+          setReactState({
+            hooks: this.hooks,
+            state: this.state.state,
+          });
+        }
       : () => {
           throw new Error("State is unavailable for modules");
         };
@@ -1816,7 +1929,7 @@ export default class VM {
     return deepCopy(promise(invalidate));
   }
 
-  cachedSocialGet(keys, recursive, blockId, options) {
+  cachedSocialGet(keys, recursive, blockId, options, cacheOptions) {
     keys = Array.isArray(keys) ? keys : [keys];
     return this.cachedPromise(
       (invalidate) =>
@@ -1826,7 +1939,8 @@ export default class VM {
           recursive,
           blockId,
           options,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -1842,7 +1956,7 @@ export default class VM {
     return this.cache.localStorageSet(domain, key, value);
   }
 
-  cachedSocialKeys(keys, blockId, options) {
+  cachedSocialKeys(keys, blockId, options, cacheOptions) {
     keys = Array.isArray(keys) ? keys : [keys];
     return this.cachedPromise(
       (invalidate) =>
@@ -1855,7 +1969,8 @@ export default class VM {
             options,
           },
           blockId,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -1865,20 +1980,28 @@ export default class VM {
     return this.near.viewCall(contractName, methodName, args, blockId);
   }
 
-  cachedEthersCall(callee, args, subscribe) {
+  cachedEthersCall(callee, args, subscribe, cacheOptions) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedEthersCall(
           this.ethersProvider,
           callee,
           args,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       subscribe
     );
   }
 
-  cachedNearView(contractName, methodName, args, blockId, subscribe) {
+  cachedNearView(
+    contractName,
+    methodName,
+    args,
+    blockId,
+    subscribe,
+    cacheOptions
+  ) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedViewCall(
@@ -1887,15 +2010,17 @@ export default class VM {
           methodName,
           args,
           blockId,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       subscribe
     );
   }
 
-  cachedNearBlock(blockId, subscribe) {
+  cachedNearBlock(blockId, subscribe, cacheOptions) {
     return this.cachedPromise(
-      (invalidate) => this.cache.cachedBlock(this.near, blockId, invalidate),
+      (invalidate) =>
+        this.cache.cachedBlock(this.near, blockId, invalidate, cacheOptions),
       subscribe
     );
   }
@@ -1904,22 +2029,30 @@ export default class VM {
     return this.cache.asyncFetch(url, options);
   }
 
-  cachedFetch(url, options) {
-    return this.cachedPromise(
-      (invalidate) => this.cache.cachedFetch(url, options, invalidate),
-      options?.subscribe
-    );
-  }
-
-  cachedIndex(action, key, options) {
+  cachedFetch(url, options, cacheOptions) {
     return this.cachedPromise(
       (invalidate) =>
-        this.cache.socialIndex(this.near, action, key, options, invalidate),
+        this.cache.cachedFetch(url, options, invalidate, cacheOptions),
       options?.subscribe
     );
   }
 
-  useCache(promiseGenerator, dataKey, options) {
+  cachedIndex(action, key, options, cacheOptions) {
+    return this.cachedPromise(
+      (invalidate) =>
+        this.cache.socialIndex(
+          this.near,
+          action,
+          key,
+          options,
+          invalidate,
+          cacheOptions
+        ),
+      options?.subscribe
+    );
+  }
+
+  useCache(promiseGenerator, dataKey, options, cacheOptions) {
     return this.cachedPromise(
       (invalidate) =>
         this.cache.cachedCustomPromise(
@@ -1928,7 +2061,8 @@ export default class VM {
             dataKey,
           },
           promiseGenerator,
-          invalidate
+          invalidate,
+          cacheOptions
         ),
       options?.subscribe
     );
@@ -2021,7 +2155,7 @@ export default class VM {
     );
   }
 
-  execCode({ props, context, state, forwardedProps }) {
+  execCode({ props, context, reactState, forwardedProps }) {
     if (this.compileError) {
       throw this.compileError;
     }
@@ -2029,6 +2163,8 @@ export default class VM {
       return "Too deep";
     }
     this.gIndex = 0;
+    const { hooks, state } = reactState ?? {};
+    this.hooks = hooks;
     this.state = {
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
@@ -2036,7 +2172,7 @@ export default class VM {
       nacl: frozenNacl,
       get elliptic() {
         delete this.elliptic;
-        this.elliptic = _.cloneDeep(elliptic);
+        this.elliptic = cloneDeep(elliptic);
         return this.elliptic;
       },
       ethers: frozenEthers,
