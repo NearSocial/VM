@@ -10,7 +10,7 @@ module.exports = () => {
     //   // filename: "[name].[contenthash].bundle.js",
     //   filename: "index.js",
     // },
-    devtool: false,
+    devtool: 'eval-source-map',
     module: {
       rules: [
         // {
