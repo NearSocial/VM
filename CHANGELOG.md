@@ -2,6 +2,7 @@
 
 ## Pending 
 
+- Add a VM feature, `enableComponentSrcDataKey`, which adds the `data-component` attribute specifying the path of the comonent responsible for rendering the DOM element.
 - Add support for VM.require when using redirectMap.
 - Fixes an issue with VM.require not retaining context in migration to initGlobalFunctions.
 - Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
