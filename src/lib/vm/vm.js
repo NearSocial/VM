@@ -585,7 +585,8 @@ class VmStack {
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
 
     if (this.vm.near?.features?.enableComponentSrcDataKey == true) {
-      attributes["data-component"] = attributes["data-component"] ?? this.vm.widgetSrc;
+      attributes["data-component"] =
+        attributes["data-component"] ?? this.vm.widgetSrc;
     }
 
     delete attributes.dangerouslySetInnerHTML;
@@ -1371,29 +1372,27 @@ class VmStack {
         if (caseToken.type !== "SwitchCase") {
           throw new Error("Unknown switch case type '" + caseToken.type + "'");
         }
-        if (!found && caseToken.test) {
+        if (!found && caseToken.test !== null) {
           const test = stack.executeExpression(caseToken.test);
           if (test !== discriminant) {
             continue;
           }
-          found = true;
         }
-        if (found) {
-          let isBreak = false;
-          for (const statement of caseToken.consequent) {
-            const result = stack.executeStatement(statement);
-            if (result) {
-              if (result.break) {
-                isBreak = true;
-                break;
-              } else {
-                return result;
-              }
+        found = true;
+        let isBreak = false;
+        for (const statement of caseToken.consequent) {
+          const result = stack.executeStatement(statement);
+          if (result) {
+            if (result.break) {
+              isBreak = true;
+              break;
+            } else {
+              return result;
             }
           }
-          if (isBreak) {
-            break;
-          }
+        }
+        if (isBreak) {
+          break;
         }
       }
     } else {
