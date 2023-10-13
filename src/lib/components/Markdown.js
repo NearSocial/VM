@@ -7,8 +7,15 @@ import mentions from "./remark/mentions";
 import hashtags from "./remark/hashtags";
 
 export const Markdown = (props) => {
-  const { onLinkClick, text, onMention, onHashtag, syntaxHighlighterProps } =
-    props;
+  const {
+    onLink,
+    onLinkClick,
+    text,
+    onMention,
+    onHashtag,
+    onImage,
+    syntaxHighlighterProps,
+  } = props;
   return (
     <ReactMarkdown
       plugins={[]}
@@ -25,12 +32,19 @@ export const Markdown = (props) => {
           return <strong {...props}>{children}</strong>;
         },
         a: ({ node, ...props }) =>
-          onLinkClick ? (
+          onLink ? (
+            onLink({ ...props, href: node.properties?.href })
+          ) : onLinkClick ? (
             <a onClick={onLinkClick} {...props} />
           ) : (
             <a target="_blank" {...props} />
           ),
-        img: ({ node, ...props }) => <img className="img-fluid" {...props} />,
+        img: ({ node, ...props }) =>
+          onImage ? (
+            onImage({ ...props })
+          ) : (
+            <img className="img-fluid" {...props} />
+          ),
         blockquote: ({ node, ...props }) => (
           <blockquote className="blockquote" {...props} />
         ),
