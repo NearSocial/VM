@@ -29,6 +29,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import { MarkdownEditor } from "../components/MarkdownEditor";
 import { nanoid, customAlphabet } from "nanoid";
 import cloneDeep from "lodash.clonedeep";
 import { Parser } from "acorn";
@@ -181,6 +182,7 @@ const ApprovedTagsCustom = {
   GlobalStateProvider: true,
   IpfsImageUpload: false,
   Markdown: false,
+  MarkdownEditor: false,
   Fragment: true,
   InfiniteScroll: true,
   VirtualizedChat: false,
@@ -717,6 +719,8 @@ class VmStack {
       return <Typeahead {...attributes} />;
     } else if (element === "Markdown") {
       return <Markdown {...attributes} />;
+     } else if (element === "MarkdownEditor") {
+      return <MarkdownEditor {...attributes} />;
     } else if (element === "Fragment") {
       return <React.Fragment {...attributes}>{children}</React.Fragment>;
     } else if (element === "IpfsImageUpload") {
