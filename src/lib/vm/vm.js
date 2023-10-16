@@ -590,6 +590,7 @@ class VmStack {
     }
 
     delete attributes.dangerouslySetInnerHTML;
+    delete attributes.is;
     const basicElement =
       (isStyledComponent(customComponent) && customComponent?.target) ||
       element;
@@ -1772,6 +1773,7 @@ export default class VM {
         }
         return f(...args);
       },
+      send: (...args) => this.cachedEthersCall("send", args),
     };
 
     const vmUseMemoOrCallback = (callee, ...args) => {
