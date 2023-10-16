@@ -1,5 +1,9 @@
 # Changelog
 
+## Pending
+
+- FIX: Disable `is` attribute to avoid conflicts with React. Reported by @brunomodificato
+
 ## 2.5.0
 
 - Fix `default` case for the switch statement in `VM`.
