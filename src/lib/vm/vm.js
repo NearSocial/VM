@@ -590,6 +590,7 @@ class VmStack {
     }
 
     delete attributes.dangerouslySetInnerHTML;
+    delete attributes.is;
     const basicElement =
       (isStyledComponent(customComponent) && customComponent?.target) ||
       element;
