@@ -2,7 +2,7 @@
 
 ## Pending
 
-- Disable `is` attribute to avoid conflicts with React.
+- Disable `is` attribute to avoid conflicts with React. Reported by @brunomodificato
 
 ## 2.5.0
 
