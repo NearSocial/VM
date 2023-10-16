@@ -3,7 +3,7 @@
 ## 2.5.1
 
 - FIX: Add back `Ethers.send`, that was incorrectly removed as part of the https://github.com/NearSocial/VM/pull/128
-- FIX: Disable `is` attribute to avoid conflicts with React. Reported by @brunomodificato
+- FIX: Disable `is` attribute to avoid conflicts with React. Reported by BrunoModificato from OtterSec.
 
 ## 2.5.0
 
