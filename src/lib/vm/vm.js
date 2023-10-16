@@ -1773,6 +1773,7 @@ export default class VM {
         }
         return f(...args);
       },
+      send: (...args) => this.cachedEthersCall("send", args),
     };
 
     const vmUseMemoOrCallback = (callee, ...args) => {
