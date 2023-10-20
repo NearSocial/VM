@@ -18,7 +18,7 @@ import Files from "react-files";
 import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
-import { VirtualizedChat } from "virtualized-chat";
+import { VirtualizedChat, messageRenderer  } from "virtualized-chat";
 import { CommitButton } from "../components/Commit";
 import { Typeahead } from "react-bootstrap-typeahead";
 import styled, { isStyledComponent, keyframes } from "styled-components";
@@ -1351,6 +1351,24 @@ class VmStack {
           }, timeout);
           this.vm.timeouts.add(timer);
           return timer;
+        } else if (callee === "createMessageRenderer") {
+            const params = args[0];
+            if (typeof params.accountId !== 'string') {
+              throw new Error('Invalid accountId. It should be a string.');
+            }
+          
+            if (typeof params.isThread !== 'boolean') {
+              throw new Error('Invalid isThread. It should be a boolean.');
+            }
+          
+            if (typeof params.addMessageReaction !== 'function') {
+              throw new Error('Invalid addMessageReaction. It should be a function.');
+            }
+          
+            if (params.setThread && typeof params.setThread !== 'function') {
+              throw new Error('Invalid setThread. If provided, it should be a function.');
+            }        
+            return messageRenderer(params);
         } else if (callee === "setInterval") {
           if (this.vm.intervals.size >= MAX_INTERVALS) {
             throw new Error(
