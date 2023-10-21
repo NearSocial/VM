@@ -1361,8 +1361,8 @@ class VmStack {
               throw new Error('Invalid isThread. It should be a boolean.');
             }
           
-            if (typeof params.addMessageReaction !== 'function') {
-              throw new Error('Invalid addMessageReaction. It should be a function.');
+            if (typeof params.handleReaction !== 'function') {
+              throw new Error('Invalid handleReaction. It should be a function.');
             }
           
             if (params.setThread && typeof params.setThread !== 'function') {
