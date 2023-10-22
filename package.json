@@ -69,7 +69,7 @@
     "remark-gfm": "^3.0.1",
     "styled-components": "^5.3.6",
     "tweetnacl": "^1.0.3",
-    "virtualized-chat": "0.0.0-alpha.25"
+    "virtualized-chat": "0.0.0-alpha.26"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
