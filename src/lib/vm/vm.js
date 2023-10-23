@@ -18,7 +18,7 @@ import Files from "react-files";
 import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
-import { VirtualizedChat, messageRenderer  } from "virtualized-chat";
+import { VirtualizedChat, messageRenderer, Message  } from "virtualized-chat";
 import { CommitButton } from "../components/Commit";
 import { Typeahead } from "react-bootstrap-typeahead";
 import styled, { isStyledComponent, keyframes } from "styled-components";
@@ -186,6 +186,7 @@ const ApprovedTagsCustom = {
   Fragment: true,
   InfiniteScroll: true,
   VirtualizedChat: false,
+  Message: false,
   Typeahead: false,
   Tooltip: true,
   OverlayTrigger: true,
@@ -706,6 +707,8 @@ class VmStack {
       return <InfiniteScroll {...attributes}>{children}</InfiniteScroll>;
     } else if (element === "VirtualizedChat") {
       return <VirtualizedChat {...attributes}/>;
+    } else if (element === "Message") {
+      return <Message {...attributes}/>;
     }
     else if (element === "Tooltip") {
       return <Tooltip {...attributes}>{children}</Tooltip>;
