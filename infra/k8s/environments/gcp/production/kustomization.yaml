@@ -10,4 +10,4 @@ images:
   newTag: bb38f13dfc1b9680a2542a8837e70b2add570888-ZM
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
-  newTag: bb38f13dfc1b9680a2542a8837e70b2add570888-ZM
+  newTag: cc05c87
