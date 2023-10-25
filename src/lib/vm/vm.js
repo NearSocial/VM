@@ -313,6 +313,8 @@ const assertValidObject = (o) => {
 };
 
 const assertRadixComponent = (element) => {
+  if (!element) return;
+
   let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
 
   if (!isRadixElement) return;
@@ -1011,14 +1013,15 @@ class VmStack {
           const args = this.getArray(code.tag.arguments);
           const arg = args?.[0];
           const RadixComp = assertRadixComponent(arg);
+          const CustomElement = this.vm.near.config.customElements[arg];
 
-          if (!isStyledComponent(arg) && !RadixComp) {
+          if (!isStyledComponent(arg) && !RadixComp && !CustomElement) {
             throw new Error(
-              'styled() can only take `styled` components or valid Radix components (EG: "Accordion.Trigger")'
+              'styled() can only take `styled` components, Radix component names (EG: "Accordion.Trigger"), or a customElement name (EG: "Link")'
             );
           }
 
-          styledTemplate = styled(RadixComp ?? arg);
+          styledTemplate = styled(CustomElement ?? RadixComp ?? arg);
         } else {
           if (key === "keyframes") {
             styledTemplate = keyframes;
