@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.5.2
+## Pending
 
 - Use `styled-components` in combination with `customElements` like `Link`:
 
