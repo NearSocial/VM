@@ -1,15 +1,19 @@
 import "./quill.snow.css";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import ReactQuill from "react-quill";
 
 export const MarkdownEditor = (props) => {
   useEffect(() => {
     if (props.selectedEmoji) {
-      const newValue = `${props.value.replace(/<p><br><\/p>\s*$/i, '')}${props.selectedEmoji}`;
+      let newValue = "";
+      if (props.value) {
+        newValue = `${props.value.replace(/<p><br><\/p>\s*$/i, '')}${props.selectedEmoji}`;
+      } else {
+        newValue = `<p>${props.selectedEmoji}</p>`;
+      }
       props.setValue(newValue);
       props.resetSelectedEmoji();
-    }
-    if (!props.value) {
+    } else if (!props.value) {
       props.setValue("");
     }
   }, [props.selectedEmoji, props.value]);
