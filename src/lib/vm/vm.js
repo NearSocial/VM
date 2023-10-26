@@ -1344,6 +1344,16 @@ class VmStack {
             return newRef;
           }
           return this.vm.hooks[hookIndex].ref;
+        } else if (callee === "extractQueryParams") {
+          const currentURL = new URL(window.location.href);
+          const params = new URLSearchParams(currentURL.search);
+          const paramsObject = {};
+          for (const [key, value] of params.entries()) {
+            paramsObject[key] = value;
+          }
+          currentURL.search = "";
+          history.pushState({}, "", currentURL.toString());
+          return paramsObject; 
         } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
