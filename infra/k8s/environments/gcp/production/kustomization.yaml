@@ -10,4 +10,4 @@ images:
   newTag: 19de5c0
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
-  newTag: 19de5c0
+  newTag: 1cb32a1
