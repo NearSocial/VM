@@ -3175,6 +3175,11 @@
   dependencies:
     "@types/node" "*"
 
+"@uidotdev/usehooks@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@uidotdev/usehooks/-/usehooks-2.4.1.tgz#4b733eaeae09a7be143c6c9ca158b56cc1ea75bf"
+  integrity sha512-1I+RwWyS+kdv3Mv0Vmc+p0dPYH0DTRAo04HLyXReYBL9AeseDWUJyi4THuksBJcu9F0Pih69Ak150VDnqbVnXg==
+
 "@webassemblyjs/ast@1.11.6", "@webassemblyjs/ast@^1.11.5":
   version "1.11.6"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.6.tgz#db046555d3c413f8966ca50a95176a0e2c642e24"
@@ -10061,12 +10066,13 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
-virtualized-chat@0.0.0-alpha.32:
-  version "0.0.0-alpha.32"
-  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.32.tgz#ba541f9cccc6fb81a4f6388399dd8f38e7cc7e59"
-  integrity sha512-HIHVBQdcjG3cB487DgABS7rhxdr1e2+QCVW7Bt1I3TX5MIFGHBzVFw4wfnssUsSKQju5oiQsQ8t727L4Gye04Q==
+virtualized-chat@0.0.0-alpha.33:
+  version "0.0.0-alpha.33"
+  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.33.tgz#2b2c27af486086e3c0bea94bc9c29d944033b348"
+  integrity sha512-Cr63UbEWzCsgJwcfkbZD+YHrgplz62siClNKceQITdANQCKOQuKcQ+Ie4xZwNytCGLIIUkarAtBjnuO3IR8uxA==
   dependencies:
     "@radix-ui/react-dialog" "^1.0.5"
+    "@uidotdev/usehooks" "^2.4.1"
     dompurify "^3.0.6"
     react-virtuoso "^4.6.1"
     styled-components "^6.0.9"
