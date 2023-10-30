@@ -31,7 +31,6 @@ export const MarkdownEditor = (props) => {
       onKeyDown={(e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           props.handleMessageSent();
-          props.setValue("");
         }
       }}
     />
