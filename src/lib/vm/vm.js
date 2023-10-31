@@ -215,8 +215,8 @@ const GlobalInjected = deepFreeze(
     parseInt,
     parseFloat,
     isFinite,
-    btoa,
-    atob,
+    btoa: (s) => btoa(s),
+    atob: (s) => atob(s),
     decodeURI,
     encodeURI,
 
