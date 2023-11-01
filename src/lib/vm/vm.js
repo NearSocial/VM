@@ -615,7 +615,6 @@ class VmStack {
     } else if (element === "Widget") {
       attributes.depth = this.vm.depth + 1;
       attributes.overrides = this.vm.overrides;
-      attributes.autoConfirm = this.vm.autoConfirm;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
       );
@@ -1419,7 +1418,6 @@ export default class VM {
       confirmTransactions,
       depth,
       overrides,
-      autoConfirm,
       widgetSrc,
       requestCommit,
       version,
@@ -1472,7 +1470,6 @@ export default class VM {
     this.confirmTransactions = confirmTransactions;
     this.depth = depth ?? 0;
     this.overrides = overrides;
-    this.autoConfirm = autoConfirm;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
     this.version = version;
@@ -2206,7 +2203,6 @@ export default class VM {
       confirmTransactions: this.confirmTransactions,
       depth: this.depth + 1,
       overrides: this.overrides,
-      autoConfirm: this.autoConfirm,
       widgetSrc: src,
       requestCommit: this.requestCommit,
       version: this.version,
