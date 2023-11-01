@@ -211,6 +211,10 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
   }
 }
 
+/**
+ * Current VM Features:
+ * - enableComponentSrcDataKey: Allows enabling the component source `data-component` attribute for rendered DOM elements. Disabled by default.
+**/
 async function _initNear({
   networkId,
   config,
@@ -218,6 +222,7 @@ async function _initNear({
   selector,
   walletConnectCallback = () => {},
   customElements = {},
+  features = {},
 }) {
   if (!config) {
     config = {};
@@ -250,6 +255,7 @@ async function _initNear({
     selector,
     keyStore,
     nearConnection,
+    features
   };
 
   _near.nearArchivalConnection = nearAPI.Connection.fromConfig({

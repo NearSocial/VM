@@ -1,5 +1,77 @@
 # Changelog
 
+## 2.5.2
+
+- Use `styled-components` in combination with `customElements` like `Link`:
+
+```jsx
+const MyLink = styled("Link")`
+  color: red;
+`;
+
+return (
+  <MyLink href="/my/page">
+    Click Me!
+  </MyLink>
+);
+```
+
+## 2.5.1
+
+- FIX: Add back `Ethers.send`, that was incorrectly removed as part of the https://github.com/NearSocial/VM/pull/128
+- FIX: Disable `is` attribute to avoid conflicts with React. Reported by BrunoModificato from OtterSec.
+
+## 2.5.0
+
+- Fix `default` case for the switch statement in `VM`.
+- Add a VM feature, `enableComponentSrcDataKey`, which adds the `data-component` attribute specifying the path of the comonent responsible for rendering the DOM element.
+- Add support for VM.require when using redirectMap.
+- Fixes an issue with VM.require not retaining context in migration to initGlobalFunctions.
+- Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
+- Expose all VM functions into the state directly, it simplifies VM readability and implementation.
+- Expose certain native objects directly into the state. It should improve access to the functions.
+- Update the way events and errors are passed to the functions. 
+  - For events, expose `preventDefault()` and `stopPropagation()` functions.
+  NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
+  - For errors, expose `message`, `name` and `type`.
+- Fix `vm.depth` not being initialized.
+- Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
+
+```jsx
+const data = [
+  //...some large array
+];
+
+const filteredData = useMemo(() => {
+  console.log("Filtering data");
+  return data.filter(/* some filtering criteria */);
+}, [data]);
+
+return (
+  <div>
+    {filteredData.map(item => (
+      <div key={item.id}>{item.name}</div>
+    ))}
+  </div>
+);
+```
+
+- Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
+ ```jsx
+ const incrementCounter = useCallback(() => {
+  setCounter(counter + 1);
+}, [counter]);
+
+return (
+  <div>
+    Counter = {counter}
+    <div>
+      <button onClick={incrementCounter}>Increment</button>
+    </div>
+  </div>
+);
+```
+
 ## 2.4.2
 
 - Add missing code changes (`cacheOptions` and `lodash`) from 2.4.0.
