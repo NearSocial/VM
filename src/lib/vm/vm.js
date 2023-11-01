@@ -616,7 +616,6 @@ class VmStack {
       attributes.depth = this.vm.depth + 1;
       attributes.overrides = this.vm.overrides;
       attributes.autoConfirm = this.vm.autoConfirm;
-      attributes.enableDataSrcAttribute = this.vm.enableDataSrcAttribute;
       attributes.config = [attributes.config, ...this.vm.widgetConfigs].filter(
         Boolean
       );
@@ -1421,7 +1420,6 @@ export default class VM {
       depth,
       overrides,
       autoConfirm,
-      enableDataSrcAttribute,
       widgetSrc,
       requestCommit,
       version,
@@ -1475,7 +1473,6 @@ export default class VM {
     this.depth = depth ?? 0;
     this.overrides = overrides;
     this.autoConfirm = autoConfirm;
-    this.enableDataSrcAttribute = enableDataSrcAttribute;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
     this.version = version;
@@ -2210,7 +2207,6 @@ export default class VM {
       depth: this.depth + 1,
       overrides: this.overrides,
       autoConfirm: this.autoConfirm,
-      enableDataSrcAttribute: this.enableDataSrcAttribute,
       widgetSrc: src,
       requestCommit: this.requestCommit,
       version: this.version,
@@ -2236,12 +2232,7 @@ export default class VM {
       return <div className="alert alert-danger">VM is dead</div>;
     }
 
-    let result = this.execCode(args);
-
-    if (this.enableDataSrcAttribute && isReactObject(result)) {
-      result = { ...result };
-      result.props = { ...result.props, "data-bos-src": this.widgetSrc };
-    }
+    const result = this.execCode(args);
 
     return isReactObject(result) ||
       typeof result === "string" ||

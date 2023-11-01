@@ -35,7 +35,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     depth,
     overrides,
     autoConfirm,
-    enableDataSrcAttribute,
     config: propsConfig,
     props: propsProps,
     ...forwardedProps
@@ -179,7 +178,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       depth,
       overrides,
       autoConfirm,
-      enableDataSrcAttribute,
       widgetSrc: src,
       requestCommit,
       version: uuid(),
@@ -197,7 +195,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     depth,
     overrides,
     autoConfirm,
-    enableDataSrcAttribute,
     requestCommit,
     confirmTransactions,
     configs,
