@@ -15,6 +15,7 @@ export const Markdown = (props) => {
     onHashtag,
     onImage,
     syntaxHighlighterProps,
+    responsiveTable,
   } = props;
   return (
     <ReactMarkdown
@@ -48,9 +49,14 @@ export const Markdown = (props) => {
         blockquote: ({ node, ...props }) => (
           <blockquote className="blockquote" {...props} />
         ),
-        table: ({ node, ...props }) => (
-          <table className="table table-striped" {...props} />
-        ),
+        table: ({ node, ...props }) =>
+          responsiveTable ? (
+            <div className="table-responsive">
+              <table className="table table-striped" {...props} />
+            </div>
+          ) : (
+            <table className="table table-striped" {...props} />
+          ),
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || "");
           const { wrapLines, lineProps, showLineNumbers, lineNumberStyle } =
