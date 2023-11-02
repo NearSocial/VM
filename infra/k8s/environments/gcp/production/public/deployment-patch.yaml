@@ -1,0 +1,6 @@
+# - op: replace
+#   path: /spec/template/spec/containers/0/envFrom/1/secretRef/name
+#   value: bos-gateway-public
+- op: replace
+  path: /spec/template/spec/containers/0/image
+  value: bos-gateway-public-production:latest
