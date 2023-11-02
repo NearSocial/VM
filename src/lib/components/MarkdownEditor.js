@@ -1,6 +1,7 @@
 import "./quill.snow.css";
 import React, { useEffect } from "react";
 import ReactQuill from "react-quill";
+import { sanitizePasteHtml } from "virtualized-chat";
 
 export const MarkdownEditor = (props) => {
   useEffect(() => {
@@ -27,7 +28,10 @@ export const MarkdownEditor = (props) => {
       }}
       theme="snow"
       value={props.value}
-      onChange={props.setValue}
+      onChange={(value) => {
+        const purifiedText = sanitizePasteHtml(value);
+        props.setValue(purifiedText);
+      }}
       onKeyDown={(e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           props.handleMessageSent();
