@@ -18,12 +18,16 @@ import Files from "react-files";
 import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
-import { VirtualizedChat, messageRenderer, Message  } from "virtualized-chat";
+import { VirtualizedChat, messageRenderer, Message } from "virtualized-chat";
 import { CommitButton } from "../components/Commit";
 import { Typeahead } from "react-bootstrap-typeahead";
 import styled, { isStyledComponent, keyframes } from "styled-components";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto-browserify';
+import {
+  randomBytes,
+  createCipheriv,
+  createDecipheriv,
+} from "crypto-browserify";
 import Big from "big.js";
 import * as elliptic from "elliptic";
 import BN from "bn.js";
@@ -675,10 +679,10 @@ class VmStack {
     }
 
     if (element === "GlobalStateProvider") {
-      if(!attributes.value) {
+      if (!attributes.value) {
         throw new Error("GlobalStateProvider requires a value prop");
       }
-      if(!isArray(attributes.value) || attributes.value.length !== 2) {
+      if (!isArray(attributes.value) || attributes.value.length !== 2) {
         throw new Error("Invalid value prop for GlobalStateProvider");
       }
       this.vm.globalStateContext = attributes.value;
@@ -706,11 +710,10 @@ class VmStack {
     } else if (element === "InfiniteScroll") {
       return <InfiniteScroll {...attributes}>{children}</InfiniteScroll>;
     } else if (element === "VirtualizedChat") {
-      return <VirtualizedChat {...attributes}/>;
+      return <VirtualizedChat {...attributes} />;
     } else if (element === "Message") {
-      return <Message {...attributes}/>;
-    }
-    else if (element === "Tooltip") {
+      return <Message {...attributes} />;
+    } else if (element === "Tooltip") {
       return <Tooltip {...attributes}>{children}</Tooltip>;
     } else if (element === "OverlayTrigger") {
       return (
@@ -722,7 +725,7 @@ class VmStack {
       return <Typeahead {...attributes} />;
     } else if (element === "Markdown") {
       return <Markdown {...attributes} />;
-     } else if (element === "MarkdownEditor") {
+    } else if (element === "MarkdownEditor") {
       return <MarkdownEditor {...attributes} />;
     } else if (element === "Fragment") {
       return <React.Fragment {...attributes}>{children}</React.Fragment>;
@@ -872,7 +875,10 @@ class VmStack {
           maybeSubscribe(subscribe, blockId),
           cacheOptions
         );
-      } else if (keyword === "Near" && callee === "calimeroView" || keyword === "Calimero" && callee === "view") {
+      } else if (
+        (keyword === "Near" && callee === "calimeroView") ||
+        (keyword === "Calimero" && callee === "view")
+      ) {
         if (args.length < 2) {
           throw new Error(
             "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
@@ -902,7 +908,10 @@ class VmStack {
           );
         }
         return this.vm.asyncNearView(...args);
-      } else if (keyword === "Near" && callee === "asyncCalimeroView" || keyword === "Calimero" && callee === "asyncView") {
+      } else if (
+        (keyword === "Near" && callee === "asyncCalimeroView") ||
+        (keyword === "Calimero" && callee === "asyncView")
+      ) {
         if (args.length < 2) {
           throw new Error(
             "Method: Calimero.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
@@ -946,13 +955,28 @@ class VmStack {
         }
       } else if (keyword === "Near" && callee === "requestFak") {
         return this.vm.near.requestFak(this.vm.widgetSrc, ...args);
-      } else if (keyword === "Near" && callee === "requestCalimeroFak" || keyword === "Calimero" && callee === "requestFak") {
-        return this.vm.near.requestCalimeroFak(this.vm.near.calimeroConnection.config.networkId, ...args);
-      } else if (keyword === "Near" && callee === "hasValidCalimeroFak" || keyword === "Calimero" && callee === "hasValidFak") {
-        return this.vm.near.verifyCalimeroFak(this.vm.near.calimeroConnection.config.networkId, ...args);
+      } else if (
+        (keyword === "Near" && callee === "requestCalimeroFak") ||
+        (keyword === "Calimero" && callee === "requestFak")
+      ) {
+        return this.vm.near.requestCalimeroFak(
+          this.vm.near.calimeroConnection.config.networkId,
+          ...args
+        );
+      } else if (
+        (keyword === "Near" && callee === "hasValidCalimeroFak") ||
+        (keyword === "Calimero" && callee === "hasValidFak")
+      ) {
+        return this.vm.near.verifyCalimeroFak(
+          this.vm.near.calimeroConnection.config.networkId,
+          ...args
+        );
       } else if (keyword === "Near" && callee === "hasValidFak") {
         return this.vm.near.verifyFak(this.vm.widgetSrc, ...args);
-      } else if (keyword === "Near" && callee === "fakCalimeroCall" || keyword === "Calimero" && callee === "fakCall") {
+      } else if (
+        (keyword === "Near" && callee === "fakCalimeroCall") ||
+        (keyword === "Calimero" && callee === "fakCall")
+      ) {
         if (args.length < 2 || args.length > 5) {
           throw new Error(
             "Method: Calimero.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
@@ -1003,7 +1027,7 @@ class VmStack {
         return this.vm.near.signWithCalimeroFak(
           this.vm.near.calimeroConnection.config.networkId,
           args[0],
-          args[1],
+          args[1]
         );
       } else if (
         (keyword === "JSON" && callee === "stringify") ||
@@ -1146,6 +1170,17 @@ class VmStack {
           },
           args[0]
         );
+      } else if (keyword === "Storage" && callee === "innerGet") {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'key' for Storage.innerGet");
+        }
+        return this.vm.storageInnerGet(
+          {
+            src: args[1] ?? this.vm.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0]
+        );
       } else if (keyword === "console" && callee === "log") {
         return console.log(this.vm.widgetSrc, ...args);
       } else if (keyword === "clipboard" && callee === "writeText") {
@@ -1166,16 +1201,17 @@ class VmStack {
         }
         return this.vm.cachedEthersCall(callee, args);
       } else if (callee === "useGlobalState") {
-        if(args.length < 1 || !isString(args[0])) {
+        if (args.length < 1 || !isString(args[0])) {
           throw new Error("Method: useGlobalState. Requires string argument");
         }
-        const [globalState, setGlobalState] = this.vm.globalStateContext
+        const [globalState, setGlobalState] = this.vm.globalStateContext;
         return [
-          globalState[args[0]], 
-          (value) => setGlobalState({
-            ...globalState,
-            [args[0]]: value,
-          })
+          globalState[args[0]],
+          (value) =>
+            setGlobalState({
+              ...globalState,
+              [args[0]]: value,
+            }),
         ];
       } else if (keyword === "WebSocket") {
         if (callee === "WebSocket") {
@@ -1290,50 +1326,50 @@ class VmStack {
           return undefined;
         } else if (callee === "useMemo" || callee === "useCallback") {
           if (this.prevStack) {
-              throw new Error(
-                  `Method: ${callee}. The hook can only be called from the top of the stack`
-              );
+            throw new Error(
+              `Method: ${callee}. The hook can only be called from the top of the stack`
+            );
           }
-      
+
           const isMemo = callee === "useMemo";
-          const fnArgName = isMemo ? 'factory' : 'callback';
+          const fnArgName = isMemo ? "factory" : "callback";
           if (args.length < 1) {
-              throw new Error(
-                  `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
-              );
+            throw new Error(
+              `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+            );
           }
-      
+
           const fn = args[0];
           if (!(fn instanceof Function)) {
-              throw new Error(
-                  `Method: ${callee}. The first argument '${fnArgName}' must be a function`
-              );
+            throw new Error(
+              `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+            );
           }
-      
+
           const hookIndex = this.hookIndex++;
           const dependencies = args[1];
           const hook = this.vm.hooks[hookIndex];
-          
+
           if (hook) {
-              const oldDependencies = hook.dependencies;
-              if (
-                  oldDependencies !== undefined &&
-                  deepEqual(oldDependencies, dependencies)
-              ) {
-                  return hook.memoized;
-              }
+            const oldDependencies = hook.dependencies;
+            if (
+              oldDependencies !== undefined &&
+              deepEqual(oldDependencies, dependencies)
+            ) {
+              return hook.memoized;
+            }
           }
-          
+
           const memoized = isMemo ? fn() : fn;
           this.vm.setReactHook(hookIndex, {
-              memoized,
-              dependencies,
+            memoized,
+            dependencies,
           });
           return memoized;
         } else if (callee === "useRef") {
           if (this.prevStack) {
             throw new Error(
-              'useRef hook error: Hooks should only be called from the top level, not inside loops, conditions, or nested functions.'
+              "useRef hook error: Hooks should only be called from the top level, not inside loops, conditions, or nested functions."
             );
           }
           const hookIndex = this.hookIndex++;
@@ -1353,7 +1389,7 @@ class VmStack {
           }
           currentURL.search = "";
           history.pushState({}, "", currentURL.toString());
-          return paramsObject; 
+          return paramsObject;
         } else if (callee === "setTimeout") {
           const [callback, timeout] = args;
           const timer = setTimeout(() => {
@@ -1365,23 +1401,25 @@ class VmStack {
           this.vm.timeouts.add(timer);
           return timer;
         } else if (callee === "createMessageRenderer") {
-            const params = args[0];
-            if (typeof params.accountId !== 'string') {
-              throw new Error('Invalid accountId. It should be a string.');
-            }
-          
-            if (typeof params.isThread !== 'boolean') {
-              throw new Error('Invalid isThread. It should be a boolean.');
-            }
-          
-            if (typeof params.handleReaction !== 'function') {
-              throw new Error('Invalid handleReaction. It should be a function.');
-            }
-          
-            if (params.setThread && typeof params.setThread !== 'function') {
-              throw new Error('Invalid setThread. If provided, it should be a function.');
-            }        
-            return messageRenderer(params);
+          const params = args[0];
+          if (typeof params.accountId !== "string") {
+            throw new Error("Invalid accountId. It should be a string.");
+          }
+
+          if (typeof params.isThread !== "boolean") {
+            throw new Error("Invalid isThread. It should be a boolean.");
+          }
+
+          if (typeof params.handleReaction !== "function") {
+            throw new Error("Invalid handleReaction. It should be a function.");
+          }
+
+          if (params.setThread && typeof params.setThread !== "function") {
+            throw new Error(
+              "Invalid setThread. If provided, it should be a function."
+            );
+          }
+          return messageRenderer(params);
         } else if (callee === "setInterval") {
           if (this.vm.intervals.size >= MAX_INTERVALS) {
             throw new Error(
@@ -2208,6 +2246,10 @@ export default class VM {
     return this.cachedPromise((invalidate) =>
       this.cache.localStorageGet(domain, key, invalidate)
     );
+  }
+
+  storageInnerGet(domain, key) {
+    return this.cache.asyncLocalStorageGet(domain, key);
   }
 
   storageSet(domain, key, value) {
