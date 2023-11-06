@@ -5,3 +5,4 @@ metadata:
 spec:
   domains:
     - portal-temp.calimero.network
+    - portal.calimero.network

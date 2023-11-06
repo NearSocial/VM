@@ -19,3 +19,13 @@ spec:
                 name: bos-gateway
                 port:
                   number: 3000
+    - host: portal.calimero.network
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            path: /*
+            backend:
+              service:
+                name: bos-gateway
+                port:
+                  number: 3000
