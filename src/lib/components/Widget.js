@@ -90,9 +90,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       const src = srcOrCode.src;
       let [srcPath, version] = src.split("@");
 
-      const srcOverwritten = overrides?.[srcPath.toString()];
-      if (srcOverwritten) {
-        [srcPath, version] = srcOverwritten.split("@");
+      const target = overrides?.[srcPath.toString()];
+      if (typeof target === "string") {
+        [srcPath, version] = target.split("@");
+      } else if (typeof target === "object") {
+        [srcPath, version] = target.src.split("@");
       }
 
       const code = cache.socialGet(
@@ -215,8 +217,20 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     if (!vm) {
       return;
     }
+
+    const src = srcOrCode.src;
+    let [srcPath] = src.split("@");
+
+    const target = overrides?.[srcPath.toString()];
+    let overrideProps = {};
+    if (typeof target === "object") {
+      overrideProps = target.props;
+    }
+
+    const props = { ...(propsProps ?? {}), ...overrideProps }
+
     const vmInput = {
-      props: propsProps || {},
+      props,
       context,
       reactState,
       cacheNonce,
@@ -251,6 +265,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     prevVmInput,
     forwardedRef,
     forwardedProps,
+    overrides,
   ]);
 
   return element !== null && element !== undefined ? (
