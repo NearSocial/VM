@@ -10,7 +10,7 @@ images:
   newTag: 515cf67
 - name: bos-gateway-internal-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-internal-production
-  newTag: 378875f
+  newTag: 82bd839
 - name: bos-gateway-public-production
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-public-production
   newTag: 74da7c9
