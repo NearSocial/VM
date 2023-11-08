@@ -168,6 +168,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       return;
     }
     setReactState({ hooks: [], state: undefined });
+    
+    let [srcPath] = src.split("@");
+
+    const target = overrides?.[srcPath.toString()];
+
     const vm = new VM({
       near,
       rawCode: code,
@@ -178,7 +183,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       },
       confirmTransactions,
       depth,
-      overrides,
+      overrides: target ? {} : overrides, // stop recuirsive overrding
       widgetSrc: src,
       requestCommit,
       version: uuid(),
