@@ -10066,10 +10066,10 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
-virtualized-chat@0.0.0-alpha.44:
-  version "0.0.0-alpha.44"
-  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.44.tgz#e4232f15bc2b5caba64a60c5e90fedc77246994d"
-  integrity sha512-MuBVBRIEhJrmi+IjfI4L2CuAXafNVULhqxEk+SFaEz5u/qxmD0bzk38YMulb3VYhwDlLzC7XCsQ5UdSTgw0sYA==
+virtualized-chat@0.0.0-alpha.45:
+  version "0.0.0-alpha.45"
+  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.45.tgz#03c9d75f19c1088ed50b56af38c4bf3bbcb2ac8d"
+  integrity sha512-c4FWYqsaZwtDeqnLpHZFIPAhUa8x/qeXW6HFuDZnIf9y00QUcvKAEzW+mOBV54ZM+hGJrKjg+depn8gw9fOVMA==
   dependencies:
     "@radix-ui/react-dialog" "^1.0.5"
     "@uidotdev/usehooks" "^2.4.1"
