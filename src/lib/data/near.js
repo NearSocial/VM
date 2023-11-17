@@ -1,7 +1,9 @@
-import * as nearAPI from "near-api-js";
 import Big from "big.js";
+import * as nearAPI from "near-api-js";
 import { useEffect, useMemo, useState } from "react";
 import { singletonHook } from "react-singleton-hook";
+import { generateSeedPhrase } from "near-seed-phrase";
+
 import { MaxGasPerTransaction, TGas } from "./utils";
 
 const UseLegacyFunctionCallCreator = true;
@@ -150,6 +152,31 @@ async function sendTransactions(near, functionCalls) {
   }
 }
 
+export const exportWallet = async (near) => {
+  try {
+    const { seedPhrase, publicKey, secretKey } = generateSeedPhrase();
+    const wallet = await (await near.selector).wallet();
+    const [account] = await wallet.getAccounts();
+    await wallet.signAndSendTransaction({
+      receiverId: account.accountId,
+      actions: [
+        {
+          type: "AddKey",
+          params: {
+            publicKey: publicKey,
+            accessKey: { permission: "FullAccess" },
+          },
+        },
+      ],
+    });
+
+    return { seedPhrase, publicKey, secretKey, accountId: account.accountId };
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
+};
+
 function setupContract(near, contractId, options) {
   const { viewMethods = [], changeMethods = [] } = options;
   const contract = {
@@ -214,7 +241,7 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
 /**
  * Current VM Features:
  * - enableComponentSrcDataKey: Allows enabling the component source `data-component` attribute for rendered DOM elements. Disabled by default.
-**/
+ **/
 async function _initNear({
   networkId,
   config,
@@ -255,7 +282,7 @@ async function _initNear({
     selector,
     keyStore,
     nearConnection,
-    features
+    features,
   };
 
   _near.nearArchivalConnection = nearAPI.Connection.fromConfig({
@@ -319,6 +346,7 @@ async function _initNear({
     functionCall(_near, contractName, methodName, args, gas, deposit);
   _near.sendTransactions = (transactions) =>
     sendTransactions(_near, transactions);
+  _near.exportWallet = () => exportWallet(_near);
 
   _near.contract = setupContract(_near, config.contractName, {
     viewMethods: [

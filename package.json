@@ -8,6 +8,7 @@
   ],
   "dependencies": {
     "@braintree/sanitize-url": "6.0.0",
+    "@near-wallet-selector/account-export": "^8.7.2",
     "@radix-ui/react-accordion": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.0.3",
     "@radix-ui/react-aspect-ratio": "^1.0.2",
@@ -51,6 +52,7 @@
     "lodash.clonedeep": "^4.5.0",
     "mdast-util-find-and-replace": "^2.0.0",
     "nanoid": "^4.0.1",
+    "near-seed-phrase": "^0.2.0",
     "prettier": "^2.7.1",
     "react-bootstrap": "^2.5.0",
     "react-bootstrap-typeahead": "^6.0.0",

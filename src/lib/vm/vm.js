@@ -1415,6 +1415,7 @@ export default class VM {
       cache,
       refreshCache,
       confirmTransactions,
+      exportWallet,
       depth,
       widgetSrc,
       requestCommit,
@@ -1466,6 +1467,7 @@ export default class VM {
     this.cache = cache;
     this.refreshCache = refreshCache;
     this.confirmTransactions = confirmTransactions;
+    this.exportWallet = exportWallet;
     this.depth = depth ?? 0;
     this.widgetSrc = widgetSrc;
     this.requestCommit = requestCommit;
@@ -1577,6 +1579,7 @@ export default class VM {
           cacheOptions
         );
       },
+      exportWallet: () => this.exportWallet(),
       call: (...args) => {
         if (args.length === 1) {
           if (isObject(args[0])) {
@@ -2200,6 +2203,7 @@ export default class VM {
       confirmTransactions: this.confirmTransactions,
       depth: this.depth + 1,
       widgetSrc: src,
+      exportWallet: this.exportWallet,
       requestCommit: this.requestCommit,
       version: this.version,
       widgetConfigs: this.widgetConfigs,

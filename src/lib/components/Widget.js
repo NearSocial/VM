@@ -5,27 +5,27 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import { useNear } from "../data/near";
-import ConfirmTransactions from "./ConfirmTransactions";
+import Big from "big.js";
+import uuid from "react-uuid";
+import { ErrorBoundary } from "react-error-boundary";
+
 import VM from "../vm/vm";
+import { useNear } from "../data/near";
+import { useAccountId } from "../data/account";
+import { useCache } from "../data/cache";
 import {
   deepCopy,
   deepEqual,
   ErrorFallback,
-  isObject,
-  isString,
-  isFunction,
   Loading,
   TGas,
   computeSrcOrCode,
 } from "../data/utils";
-import { ErrorBoundary } from "react-error-boundary";
-import { useCache } from "../data/cache";
+
 import { CommitModal } from "./Commit";
-import { useAccountId } from "../data/account";
-import Big from "big.js";
-import uuid from "react-uuid";
 import { EthersProviderContext } from "./ethers";
+import ConfirmTransactions from "./ConfirmTransactions";
+import ExportWallet from "./ExportWallet";
 
 export const Widget = React.forwardRef((props, forwardedRef) => {
   const {
@@ -45,9 +45,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     hooks: [],
     state: undefined,
   });
+
+  const [vm, setVm] = useState(null);
   const [cacheNonce, setCacheNonce] = useState(0);
   const [context, setContext] = useState({});
-  const [vm, setVm] = useState(null);
+  const [isExportingWallet, setExportingWallet] = useState(false);
   const [transactions, setTransactions] = useState(null);
   const [commitRequest, setCommitRequest] = useState(null);
   const [prevVmInput, setPrevVmInput] = useState(null);
@@ -138,6 +140,10 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     [near]
   );
 
+  const exportWallet = useCallback(() => {
+    setExportingWallet(true);
+  }, []);
+
   const requestCommit = useCallback(
     (commitRequest) => {
       if (!near) {
@@ -163,6 +169,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         setCacheNonce((cacheNonce) => cacheNonce + 1);
       },
       confirmTransactions,
+      exportWallet,
       depth,
       widgetSrc: src,
       requestCommit,
@@ -256,6 +263,14 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
             networkId={networkId}
           />
         )}
+
+        {isExportingWallet && (
+          <ExportWallet
+            onHide={() => setExportingWallet(false)}
+            networkId={networkId}
+          />
+        )}
+
         {commitRequest && (
           <CommitModal
             show={true}
