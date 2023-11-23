@@ -181,6 +181,9 @@ class Cache {
         } catch {
           // ignore
         }
+      } else if (key.action === Action.ViewCall && key.contractId === data) {
+        // Invalidate cache for entire contract
+        affectedKeys.push([stringKey, key.blockId === "final"]);
       }
       // Trying to parse index
       if (key.action === Action.Fetch && key.url === indexUrl) {
