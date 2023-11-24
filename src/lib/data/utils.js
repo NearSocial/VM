@@ -248,7 +248,7 @@ const matchGet = (obj, keys) => {
   const values =
     matchKey === "*" || isRecursiveMatch
       ? Object.values(obj)
-      : matchKey in obj
+      : obj.hasOwnProperty(matchKey)
       ? [obj[matchKey]]
       : [];
 
@@ -266,7 +266,7 @@ const matchKeys = (obj, keys) => {
   const values =
     matchKey === "*"
       ? Object.values(obj)
-      : matchKey in obj
+      : obj.hasOwnProperty(matchKey)
       ? [obj[matchKey]]
       : [];
 
@@ -311,7 +311,7 @@ export const computeWritePermission = (previousPermissions, data) => {
 
   if (isObject(data)) {
     Object.entries(data).forEach(([key, value]) => {
-      if (key in KnownSecondLevelKeys) {
+      if (KnownSecondLevelKeys.hasOwnProperty(key)) {
         if (isObject(value)) {
           const subPermissions = (permissions[key] = permissions[key] || {});
           Object.keys(value).forEach((key) => {
