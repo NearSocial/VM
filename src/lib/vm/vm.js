@@ -609,7 +609,7 @@ class VmStack {
     } else if (basicElement === "a") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
-          attributes[name] = sanitizeUrl(value);
+          attributes[name] = sanitizeUrl(isString(value) ? value : "");
         }
       });
     } else if (element === "Widget") {

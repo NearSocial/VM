@@ -2,6 +2,7 @@
 
 ## Pending
 
+- FIX: Check type of `href` before sanitizing it.
 - FIX: `atob` and `btoa` are working correctly now.
 
 ## 2.5.2
