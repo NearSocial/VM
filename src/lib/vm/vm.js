@@ -17,7 +17,6 @@ import {
   ReactKey,
 } from "../data/utils";
 import Files from "react-files";
-import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
 import { CommitButton } from "../components/Commit";
@@ -35,6 +34,7 @@ import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import { isValidAttribute } from "dompurify";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -611,7 +611,9 @@ class VmStack {
     } else if (basicElement === "a") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
-          attributes[name] = sanitizeUrl(isString(value) ? value : "");
+          attributes[name] = isValidAttribute("a", "href", value)
+            ? value
+            : "about:blank";
         }
       });
     } else if (element === "Widget") {
