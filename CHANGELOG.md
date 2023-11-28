@@ -1,8 +1,9 @@
 # Changelog
 
-## Pending
+## 2.5.3
 
-- FIX: Check type of `href` before sanitizing it.
+- FIX: Replace url-sanitize library with dompurify. Reported by BrunoModificato from OtterSec.
+- FIX: Replace internal usage of `in` operator with `hasOwnProperty` on dictionaries to avoid exposing certain built-in methods and properties. Reported by BrunoModificato from OtterSec.
 - FIX: `atob` and `btoa` are working correctly now.
 
 ## 2.5.2
