@@ -31,7 +31,7 @@ const TestNearConfig = {
 export const MainNearConfig = {
   networkId: "mainnet",
   nodeUrl: "https://rpc.mainnet.near.org",
-  archivalNodeUrl: "https://rpc.mainnet.internal.near.org",
+  archivalNodeUrl: "https://archival-rpc.mainnet.near.org",
   contractName: "social.near",
   walletUrl: "https://wallet.near.org",
   wrapNearAccountId: "wrap.near",

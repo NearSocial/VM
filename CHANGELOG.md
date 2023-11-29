@@ -2,6 +2,7 @@
 
 ## 2.5.3
 
+- Update default `archivalNodeUrl` config to `"https://archival-rpc.mainnet.near.org"` from `"https://rpc.mainnet.internal.near.org"`. 
 - FIX: Replace url-sanitize library with dompurify. Reported by BrunoModificato from OtterSec.
 - FIX: Replace internal usage of `in` operator with `hasOwnProperty` on dictionaries to avoid exposing certain built-in methods and properties. Reported by BrunoModificato from OtterSec.
 - FIX: `atob` and `btoa` are working correctly now.
