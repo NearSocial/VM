@@ -2258,6 +2258,7 @@ export default class VM {
       get elliptic() {
         delete this.elliptic;
         this.elliptic = cloneDeep(elliptic);
+        delete this.elliptic.utils.cachedProperty;
         return this.elliptic;
       },
     };
