@@ -1,9 +1,11 @@
 import React from "react";
 import { Widget } from "../components/Widget";
 import {
+  computeSrcOrCode,
   deepCopy,
   deepEqual,
   deepFreeze,
+  filterValues,
   ipfsUpload,
   ipfsUrl,
   isArray,
@@ -15,7 +17,6 @@ import {
   ReactKey,
 } from "../data/utils";
 import Files from "react-files";
-import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
 import { VirtualizedChat, messageRenderer, Message } from "virtualized-chat";
@@ -40,6 +41,7 @@ import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import { isValidAttribute } from "dompurify";
 import * as nearAPI from "near-api-js";
 
 // Radix:
@@ -70,23 +72,6 @@ import * as Toggle from "@radix-ui/react-toggle";
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-
-const frozenNacl = Object.freeze({
-  randomBytes: deepFreeze(nacl.randomBytes),
-  secretbox: deepFreeze(nacl.secretbox),
-  scalarMult: deepFreeze(nacl.scalarMult),
-  box: deepFreeze(nacl.box),
-  sign: deepFreeze(nacl.sign),
-  hash: deepFreeze(nacl.hash),
-  verify: deepFreeze(nacl.verify),
-});
-
-const frozenEthers = Object.freeze({
-  utils: deepFreeze(ethers.utils),
-  BigNumber: deepFreeze(ethers.BigNumber),
-  Contract: deepFreeze(ethers.Contract),
-  providers: deepFreeze(ethers.providers),
-});
 
 // `nanoid.nanoid()` is a but odd, but it seems better to match the official
 // API than to create an alias
@@ -237,20 +222,7 @@ const ApprovedTags = {
 };
 
 const Keywords = {
-  JSON: true,
-  Social: true,
-  Storage: true,
-  Near: true,
-  State: true,
-  console: true,
   styled: true,
-  Object: true,
-  clipboard: true,
-  Ethers: true,
-  WebSocket: true,
-  Calimero: true,
-  VM: true,
-  Crypto: true,
 };
 
 const GlobalInjected = deepFreeze(
@@ -262,8 +234,8 @@ const GlobalInjected = deepFreeze(
     parseInt,
     parseFloat,
     isFinite,
-    btoa,
-    atob,
+    btoa: (s) => btoa(s),
+    atob: (s) => atob(s),
     decodeURI,
     encodeURI,
 
@@ -341,14 +313,16 @@ const AcornOptions = {
   allowReturnOutsideFunction: true,
 };
 
-const ParsedCodeCache = {};
+const ParsedCodeCache = new Map();
 const JsxParser = Parser.extend(jsx());
 
 const parseCode = (code) => {
-  if (code in ParsedCodeCache) {
-    return ParsedCodeCache[code];
+  if (ParsedCodeCache.has(code)) {
+    return ParsedCodeCache.get(code);
   }
-  return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
+  const parsedCode = JsxParser.parse(code, AcornOptions);
+  ParsedCodeCache.set(code, parsedCode);
+  return parsedCode;
 };
 
 const assertNotReservedKey = (key) => {
@@ -373,6 +347,8 @@ const assertValidObject = (o) => {
 };
 
 const assertRadixComponent = (element) => {
+  if (!element) return;
+
   let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
 
   if (!isRadixElement) return;
@@ -402,7 +378,7 @@ const requireIdentifier = (id) => {
   }
   const name = id.name;
   assertNotReservedKey(name);
-  if (name in Keywords) {
+  if (Keywords.hasOwnProperty(name)) {
     throw new Error("Cannot use keyword: " + name);
   }
   return {
@@ -476,14 +452,14 @@ class Stack {
   }
 
   findObj(name) {
-    if (name in this.state) {
+    if (this.state.hasOwnProperty(name)) {
       return this.state;
     }
     return this.prevStack ? this.prevStack.findObj(name) : undefined;
   }
 
   get(name) {
-    if (name in this.state) {
+    if (this.state.hasOwnProperty(name)) {
       return this.state[name];
     }
     return this.prevStack ? this.prevStack.get(name) : undefined;
@@ -643,7 +619,14 @@ class VmStack {
     });
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
+
+    if (this.vm.near?.features?.enableComponentSrcDataKey == true) {
+      attributes["data-component"] =
+        attributes["data-component"] ?? this.vm.widgetSrc;
+    }
+
     delete attributes.dangerouslySetInnerHTML;
+    delete attributes.is;
     const basicElement =
       (isStyledComponent(customComponent) && customComponent?.target) ||
       element;
@@ -660,7 +643,9 @@ class VmStack {
     } else if (basicElement === "a") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
-          attributes[name] = sanitizeUrl(value);
+          attributes[name] = isValidAttribute("a", "href", value)
+            ? value
+            : "about:blank";
         }
       });
     } else if (element === "Widget") {
@@ -804,665 +789,6 @@ class VmStack {
     return key;
   }
 
-  callFunction(keyword, callee, args, optional, isNew) {
-    const keywordType = Keywords[keyword];
-    if (keywordType === true || keywordType === undefined) {
-      if (
-        (keyword === "Social" && callee === "getr") ||
-        callee === "socialGetr"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.getr");
-        }
-        return this.vm.cachedSocialGet(
-          args[0],
-          true,
-          args[1],
-          args[2],
-          args[3]
-        );
-      } else if (
-        (keyword === "Social" && callee === "get") ||
-        callee === "socialGet"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.get");
-        }
-        return this.vm.cachedSocialGet(
-          args[0],
-          false,
-          args[1],
-          args[2],
-          args[3]
-        );
-      } else if (keyword === "Social" && callee === "keys") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'keys' for Social.keys");
-        }
-        return this.vm.cachedSocialKeys(...args);
-      } else if (keyword === "Social" && callee === "index") {
-        if (args.length < 2) {
-          throw new Error(
-            "Missing argument 'action' and 'key` for Social.index"
-          );
-        }
-        return this.vm.cachedIndex(...args);
-      } else if (keyword === "Social" && callee === "set") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'data' for Social.set");
-        }
-        return this.vm.socialSet(args[0], args[1]);
-      } else if (keyword === "Near" && callee === "view") {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
-          );
-        }
-        const [
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          subscribe,
-          cacheOptions,
-        ] = args;
-
-        return this.vm.cachedNearView(
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          maybeSubscribe(subscribe, blockId),
-          cacheOptions
-        );
-      } else if (
-        (keyword === "Near" && callee === "calimeroView") ||
-        (keyword === "Calimero" && callee === "view")
-      ) {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
-          );
-        }
-        const [
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          subscribe,
-          cacheOptions,
-        ] = args;
-
-        return this.vm.cachedCalimeroView(
-          contractName,
-          methodName,
-          viewArg,
-          blockId,
-          maybeSubscribe(subscribe, blockId),
-          cacheOptions
-        );
-      } else if (keyword === "Near" && callee === "asyncView") {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
-          );
-        }
-        return this.vm.asyncNearView(...args);
-      } else if (
-        (keyword === "Near" && callee === "asyncCalimeroView") ||
-        (keyword === "Calimero" && callee === "asyncView")
-      ) {
-        if (args.length < 2) {
-          throw new Error(
-            "Method: Calimero.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
-          );
-        }
-        return this.vm.asyncCalimeroView(...args);
-      } else if (keyword === "Near" && callee === "block") {
-        const [blockId, subscribe, cacheOptions] = args;
-        return this.vm.cachedNearBlock(
-          blockId,
-          maybeSubscribe(subscribe, blockId),
-          cacheOptions
-        );
-      } else if (keyword === "Near" && callee === "call") {
-        if (args.length === 1) {
-          if (isObject(args[0])) {
-            return this.vm.confirmTransactions([args[0]]);
-          } else if (isArray(args[0])) {
-            return this.vm.confirmTransactions(args[0]);
-          } else {
-            throw new Error(
-              "Method: Near.call. Required argument: 'tx/txs'. A single argument call requires an TX object or an array of TX objects."
-            );
-          }
-        } else {
-          if (args.length < 2 || args.length > 5) {
-            throw new Error(
-              "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
-            );
-          }
-
-          return this.vm.confirmTransactions([
-            {
-              contractName: args[0],
-              methodName: args[1],
-              args: args[2] ?? {},
-              gas: args[3],
-              deposit: args[4],
-            },
-          ]);
-        }
-      } else if (keyword === "Near" && callee === "requestFak") {
-        return this.vm.near.requestFak(this.vm.widgetSrc, ...args);
-      } else if (
-        (keyword === "Near" && callee === "requestCalimeroFak") ||
-        (keyword === "Calimero" && callee === "requestFak")
-      ) {
-        return this.vm.near.requestCalimeroFak(
-          this.vm.near.calimeroConnection.config.networkId,
-          ...args
-        );
-      } else if (
-        (keyword === "Near" && callee === "hasValidCalimeroFak") ||
-        (keyword === "Calimero" && callee === "hasValidFak")
-      ) {
-        return this.vm.near.verifyCalimeroFak(
-          this.vm.near.calimeroConnection.config.networkId,
-          ...args
-        );
-      } else if (keyword === "Near" && callee === "hasValidFak") {
-        return this.vm.near.verifyFak(this.vm.widgetSrc, ...args);
-      } else if (
-        (keyword === "Near" && callee === "fakCalimeroCall") ||
-        (keyword === "Calimero" && callee === "fakCall")
-      ) {
-        if (args.length < 2 || args.length > 5) {
-          throw new Error(
-            "Method: Calimero.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
-          );
-        }
-        return this.vm.near.submitCalimeroFakTransaction(
-          this.vm.near.calimeroConnection.config.networkId,
-          args[0],
-          args[1],
-          args[2] ?? {},
-          args[3],
-          args[4]
-        );
-      } else if (keyword === "Near" && callee === "fakCall") {
-        if (args.length < 2 || args.length > 5) {
-          throw new Error(
-            "Method: Near.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
-          );
-        }
-        return this.vm.near.submitFakTransaction(
-          this.vm.widgetSrc,
-          args[0],
-          args[1],
-          args[2] ?? {},
-          args[3],
-          args[4]
-        );
-      } else if (keyword === "Calimero" && callee === "fakSignTx") {
-        if (args.length < 2 || args.length > 5) {
-          throw new Error(
-            "Method: Calimero.fakSignTx. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
-          );
-        }
-        return this.vm.near.signCalimeroFakTransaction(
-          this.vm.near.calimeroConnection.config.networkId,
-          args[0],
-          args[1],
-          args[2] ?? {},
-          args[3],
-          args[4]
-        );
-      } else if (keyword === "Calimero" && callee === "sign") {
-        if (args.length !== 2) {
-          throw new Error(
-            "Method: Calimero.sign. Required arguments: 'contractName' -> contract that will verify signature. 'message' -> message to be signed."
-          );
-        }
-        return this.vm.near.signWithCalimeroFak(
-          this.vm.near.calimeroConnection.config.networkId,
-          args[0],
-          args[1]
-        );
-      } else if (
-        (keyword === "JSON" && callee === "stringify") ||
-        callee === "stringify"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'obj' for JSON.stringify");
-        }
-        assertNotReactObject(args[0]);
-        return JSON.stringify(args[0], args[1], args[2]);
-      } else if (keyword === "JSON" && callee === "parse") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 's' for JSON.parse");
-        }
-        try {
-          const obj = JSON.parse(args[0]);
-          assertValidObject(obj);
-          return obj;
-        } catch (e) {
-          return null;
-        }
-      } else if (keyword === "Object") {
-        if (callee === "keys") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.keys");
-          }
-          assertNotReactObject(args[0]);
-          return Object.keys(args[0]);
-        } else if (callee === "values") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.values");
-          }
-          assertNotReactObject(args[0]);
-          return Object.values(args[0]);
-        } else if (callee === "entries") {
-          if (args.length < 1) {
-            throw new Error("Missing argument 'obj' for Object.entries");
-          }
-          assertNotReactObject(args[0]);
-          return Object.entries(args[0]);
-        } else if (callee === "assign") {
-          args.forEach((arg) => assertNotReactObject(arg));
-          const obj = Object.assign(...args);
-          assertValidObject(obj);
-          return obj;
-        } else if (callee === "fromEntries") {
-          const obj = Object.fromEntries(args[0]);
-          assertValidObject(obj);
-          return obj;
-        }
-      } else if (keyword === "Crypto" && callee === "randomBytes") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'n' for Crypto.randomBytes");
-        }
-        return randomBytes(args[0]);
-      } else if (keyword === "Crypto" && callee === "createCipheriv") {
-        return createCipheriv(...args);
-      } else if (keyword === "Crypto" && callee === "createDecipheriv") {
-        return createDecipheriv(...args);
-      } else if (
-        (keyword === "State" && callee === "init") ||
-        callee === "initState"
-      ) {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'initialState' for State.init");
-        }
-        if (
-          args[0] === null ||
-          typeof args[0] !== "object" ||
-          isReactObject(args[0])
-        ) {
-          throw new Error("'initialState' is not an object");
-        }
-        if (this.vm.state.state === undefined) {
-          const newState = args[0];
-          this.vm.state.state = newState;
-          this.vm.setReactState(newState);
-        }
-        return this.vm.state.state;
-      } else if (keyword === "State" && callee === "update") {
-        if (isObject(args[0])) {
-          this.vm.state.state = this.vm.state.state ?? {};
-          Object.assign(this.vm.state.state, args[0]);
-        } else if (args[0] instanceof Function) {
-          this.vm.state.state = this.vm.state.state ?? {};
-          this.vm.state.state = args[0](this.vm.state.state);
-        }
-        if (this.vm.state.state === undefined) {
-          throw new Error("The state was not initialized");
-        }
-        this.vm.setReactState(this.vm.state.state);
-        return this.vm.state.state;
-      } else if (keyword === "State" && callee === "get") {
-        return this.vm.state.state;
-      } else if (keyword === "Storage" && callee === "privateSet") {
-        if (args.length < 2) {
-          throw new Error(
-            "Missing argument 'key' or 'value' for Storage.privateSet"
-          );
-        }
-        return this.vm.storageSet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Private,
-          },
-          args[0],
-          args[1]
-        );
-      } else if (keyword === "Storage" && callee === "privateGet") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'key' for Storage.privateGet");
-        }
-        return this.vm.storageGet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Private,
-          },
-          args[0]
-        );
-      } else if (keyword === "Storage" && callee === "set") {
-        if (args.length < 2) {
-          throw new Error("Missing argument 'key' or 'value' for Storage.set");
-        }
-        return this.vm.storageSet(
-          {
-            src: this.vm.widgetSrc,
-            type: StorageType.Public,
-          },
-          args[0],
-          args[1]
-        );
-      } else if (keyword === "Storage" && callee === "get") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'key' for Storage.get");
-        }
-        return this.vm.storageGet(
-          {
-            src: args[1] ?? this.vm.widgetSrc,
-            type: StorageType.Public,
-          },
-          args[0]
-        );
-      } else if (keyword === "Storage" && callee === "innerGet") {
-        if (args.length < 1) {
-          throw new Error("Missing argument 'key' for Storage.innerGet");
-        }
-        return this.vm.storageInnerGet(
-          {
-            src: args[1] ?? this.vm.widgetSrc,
-            type: StorageType.Public,
-          },
-          args[0]
-        );
-      } else if (keyword === "console" && callee === "log") {
-        return console.log(this.vm.widgetSrc, ...args);
-      } else if (keyword === "clipboard" && callee === "writeText") {
-        return this.isTrusted
-          ? navigator.clipboard.writeText(...args)
-          : Promise.reject(new Error("Not trusted (not a click)"));
-      } else if (keyword === "VM" && callee === "require") {
-        return this.vm.vmRequire(...args);
-      } else if (keyword === "Ethers") {
-        if (callee === "provider") {
-          return this.vm.ethersProvider;
-        } else if (callee === "setChain") {
-          const f = this.vm.ethersProviderContext?.setChain;
-          if (!f) {
-            throw new Error("The gateway doesn't support `setChain` operation");
-          }
-          return f(...args);
-        }
-        return this.vm.cachedEthersCall(callee, args);
-      } else if (callee === "useGlobalState") {
-        if (args.length < 1 || !isString(args[0])) {
-          throw new Error("Method: useGlobalState. Requires string argument");
-        }
-        const [globalState, setGlobalState] = this.vm.globalStateContext;
-        return [
-          globalState[args[0]],
-          (value) =>
-            setGlobalState({
-              ...globalState,
-              [args[0]]: value,
-            }),
-        ];
-      } else if (keyword === "WebSocket") {
-        if (callee === "WebSocket") {
-          const websocket = new WebSocket(...args);
-          this.vm.websockets.push(websocket);
-          return websocket;
-        } else {
-          throw new Error("Unsupported WebSocket method");
-        }
-      } else if (keywordType === undefined) {
-        if (NativeFunctions.hasOwnProperty(callee)) {
-          return NativeFunctions[callee](...args);
-        } else if (callee === "fetch") {
-          if (args.length < 1) {
-            throw new Error(
-              "Method: fetch. Required arguments: 'url'. Optional: 'options'"
-            );
-          }
-          return this.vm.cachedFetch(...args);
-        } else if (callee === "asyncFetch") {
-          if (args.length < 1) {
-            throw new Error(
-              "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
-            );
-          }
-          return this.vm.asyncFetch(...args);
-        } else if (callee === "useCache") {
-          if (args.length < 2) {
-            throw new Error(
-              "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
-            );
-          }
-          if (!isFunction(args[0])) {
-            throw new Error(
-              "Method: useCache. The first argument 'promiseGenerator' must be a function"
-            );
-          }
-          return this.vm.useCache(...args);
-        } else if (callee === "useState") {
-          if (this.prevStack) {
-            throw new Error(
-              "Method: useState. The hook can an only be called from the top of the stack"
-            );
-          }
-          if (!this.vm.hooks) {
-            throw new Error("Hooks are unavailable for modules");
-          }
-          if (args.length < 1) {
-            throw new Error(
-              "Method: useState. Required arguments: 'initialState'"
-            );
-          }
-          const initialState = args[0];
-          const hookIndex = this.hookIndex++;
-          const hook = this.vm.hooks[hookIndex];
-          if (hook) {
-            return [hook.state, hook.setState];
-          }
-
-          const getState = () => this.vm.hooks[hookIndex]?.state;
-
-          const setState = (newState) => {
-            if (isFunction(newState)) {
-              newState = newState(getState());
-            }
-            this.vm.setReactHook(hookIndex, { state: newState, setState });
-            return newState;
-          };
-
-          return [setState(initialState), setState];
-        } else if (callee === "useEffect") {
-          if (this.prevStack) {
-            throw new Error(
-              "Method: useEffect. The hook can an only be called from the top of the stack"
-            );
-          }
-          if (!this.vm.hooks) {
-            throw new Error("Hooks are unavailable for modules");
-          }
-          if (args.length < 1) {
-            throw new Error(
-              "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
-            );
-          }
-          const setup = args[0];
-          if (!isFunction(setup)) {
-            throw new Error(
-              "Method: useEffect. The first argument 'setup' must be a function"
-            );
-          }
-          const hookIndex = this.hookIndex++;
-          const dependencies = args[1];
-          const hook = this.vm.hooks[hookIndex];
-          if (hook) {
-            const oldDependencies = hook.dependencies;
-            if (
-              oldDependencies !== undefined &&
-              deepEqual(oldDependencies, dependencies)
-            ) {
-              return undefined;
-            }
-          }
-          const cleanup = hook?.cleanup;
-          if (isFunction(cleanup)) {
-            cleanup();
-          }
-          this.vm.setReactHook(hookIndex, {
-            cleanup: setup(),
-            dependencies,
-          });
-
-          return undefined;
-        } else if (callee === "useMemo" || callee === "useCallback") {
-          if (this.prevStack) {
-            throw new Error(
-              `Method: ${callee}. The hook can only be called from the top of the stack`
-            );
-          }
-
-          const isMemo = callee === "useMemo";
-          const fnArgName = isMemo ? "factory" : "callback";
-          if (args.length < 1) {
-            throw new Error(
-              `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
-            );
-          }
-
-          const fn = args[0];
-          if (!(fn instanceof Function)) {
-            throw new Error(
-              `Method: ${callee}. The first argument '${fnArgName}' must be a function`
-            );
-          }
-
-          const hookIndex = this.hookIndex++;
-          const dependencies = args[1];
-          const hook = this.vm.hooks[hookIndex];
-
-          if (hook) {
-            const oldDependencies = hook.dependencies;
-            if (
-              oldDependencies !== undefined &&
-              deepEqual(oldDependencies, dependencies)
-            ) {
-              return hook.memoized;
-            }
-          }
-
-          const memoized = isMemo ? fn() : fn;
-          this.vm.setReactHook(hookIndex, {
-            memoized,
-            dependencies,
-          });
-          return memoized;
-        } else if (callee === "useRef") {
-          if (this.prevStack) {
-            throw new Error(
-              "useRef hook error: Hooks should only be called from the top level, not inside loops, conditions, or nested functions."
-            );
-          }
-          const hookIndex = this.hookIndex++;
-          if (!this.vm.hooks[hookIndex]) {
-            const initialValue = args.length > 0 ? args[0] : null;
-            const newRef = { current: initialValue };
-            this.vm.setReactHook(hookIndex, { ref: newRef });
-            return newRef;
-          }
-          return this.vm.hooks[hookIndex].ref;
-        } else if (callee === "extractQueryParams") {
-          const currentURL = new URL(window.location.href);
-          const params = new URLSearchParams(currentURL.search);
-          const paramsObject = {};
-          for (const [key, value] of params.entries()) {
-            paramsObject[key] = value;
-          }
-          currentURL.search = "";
-          history.pushState({}, "", currentURL.toString());
-          return paramsObject;
-        } else if (callee === "setTimeout") {
-          const [callback, timeout] = args;
-          const timer = setTimeout(() => {
-            if (!this.vm.alive) {
-              return;
-            }
-            callback();
-          }, timeout);
-          this.vm.timeouts.add(timer);
-          return timer;
-        } else if (callee === "createMessageRenderer") {
-          const params = args[0];
-          if (typeof params.accountId !== "string") {
-            throw new Error("Invalid accountId. It should be a string.");
-          }
-
-          if (typeof params.isThread !== "boolean") {
-            throw new Error("Invalid isThread. It should be a boolean.");
-          }
-
-          if (typeof params.handleReaction !== "function") {
-            throw new Error("Invalid handleReaction. It should be a function.");
-          }
-
-          if (params.setThread && typeof params.setThread !== "function") {
-            throw new Error(
-              "Invalid setThread. If provided, it should be a function."
-            );
-          }
-          return messageRenderer(params);
-        } else if (callee === "setInterval") {
-          if (this.vm.intervals.size >= MAX_INTERVALS) {
-            throw new Error(
-              `Too many intervals. Max allowed: ${MAX_INTERVALS}`
-            );
-          }
-          const [callback, timeout] = args;
-          const timer = setInterval(() => {
-            if (!this.vm.alive) {
-              return;
-            }
-            callback();
-          }, timeout);
-          this.vm.intervals.add(timer);
-          return timer;
-        } else if (callee === "clearTimeout") {
-          const timer = args[0];
-          this.vm.timeouts.delete(timer);
-          return clearTimeout(timer);
-        } else if (callee === "clearInterval") {
-          const timer = args[0];
-          this.vm.intervals.delete(timer);
-          return clearInterval(timer);
-        }
-      }
-    } else {
-      const f = callee === keyword ? keywordType : keywordType[callee];
-      if (typeof f === "function") {
-        return isNew ? new f(...args) : f(...args);
-      }
-    }
-
-    if (optional) {
-      return undefined;
-    }
-
-    throw new Error(
-      keyword && keyword !== callee
-        ? `Unsupported callee method '${keyword}.${callee}'`
-        : `Unsupported callee method '${callee}'`
-    );
-  }
-
   /// Resolves the underlying object and the key to modify.
   /// Should only be used by left hand expressions for assignments.
   /// Options:
@@ -1477,7 +803,7 @@ class VmStack {
       const obj = this.stack.findObj(key) ?? this.stack.state;
       assertNotReactObject(obj);
       if (obj === this.stack.state) {
-        if (key in Keywords) {
+        if (Keywords.hasOwnProperty(key)) {
           if (options?.left) {
             throw new Error("Cannot assign to keyword '" + key + "'");
           }
@@ -1485,7 +811,7 @@ class VmStack {
         }
       }
       if (options?.left) {
-        if (!obj || !(key in obj)) {
+        if (!obj || !obj.hasOwnProperty(key)) {
           throw new Error(`Accessing undeclared identifier '${code.name}'`);
         }
       }
@@ -1499,7 +825,7 @@ class VmStack {
         code.object?.type === "JSXIdentifier"
       ) {
         const keyword = code.object.name;
-        if (keyword in Keywords) {
+        if (Keywords.hasOwnProperty(keyword)) {
           if (!options?.callee) {
             throw new Error(
               "Cannot dereference keyword '" +
@@ -1592,20 +918,15 @@ class VmStack {
       });
       const args = this.getArray(code.arguments);
       if (!keyword && obj?.[key] instanceof Function) {
-        return isNew ? new obj[key](...args) : obj[key](...args);
-      } else if (keyword || obj === this.stack.state || obj === this.vm.state) {
-        return this.callFunction(
-          keyword ?? "",
-          key,
-          args,
-          code.optional,
-          isNew
-        );
+        this.vm.currentVmStack = this;
+        const result = isNew ? new obj[key](...args) : obj[key](...args);
+        this.vm.currentVmStack = undefined;
+        return result;
       } else {
         if (code.optional) {
           return undefined;
         }
-        throw new Error("Not a function call expression");
+        throw new Error(`"${key}" is not a function`);
       }
     } else if (type === "Literal" || type === "JSXText") {
       return code.value;
@@ -1744,18 +1065,19 @@ class VmStack {
           const args = this.getArray(code.tag.arguments);
           const arg = args?.[0];
           const RadixComp = assertRadixComponent(arg);
+          const CustomElement = this.vm.near.config.customElements[arg];
 
-          if (!isStyledComponent(arg) && !RadixComp) {
+          if (!isStyledComponent(arg) && !RadixComp && !CustomElement) {
             throw new Error(
-              'styled() can only take `styled` components or valid Radix components (EG: "Accordion.Trigger")'
+              'styled() can only take `styled` components, Radix component names (EG: "Accordion.Trigger"), or a customElement name (EG: "Link")'
             );
           }
 
-          styledTemplate = styled(RadixComp ?? arg);
+          styledTemplate = styled(CustomElement ?? RadixComp ?? arg);
         } else {
           if (key === "keyframes") {
             styledTemplate = keyframes;
-          } else if (key in ApprovedTagsSimple) {
+          } else if (ApprovedTagsSimple.hasOwnProperty(key)) {
             styledTemplate = styled(key);
           } else {
             throw new Error("Unsupported styled tag: " + key);
@@ -1824,33 +1146,51 @@ class VmStack {
         if (arg !== undefined) {
           try {
             if (arg?.nativeEvent instanceof Event) {
-              arg.preventDefault();
+              const native = arg;
               arg = arg.nativeEvent;
+              arg._preventDefault = () => native.preventDefault();
+              arg._stopPropagation = () => native.stopPropagation();
+              arg._isDefaultPrevented = () => native.isDefaultPrevented();
+              arg._isPropagationStopped = () => native.isPropagationStopped();
             }
             if (arg instanceof Event) {
-              arg = {
-                target: {
-                  value: arg?.target?.value,
-                  id: arg?.target?.id,
-                  dataset: arg?.target?.dataset,
-                  href: arg?.target?.href,
-                  checked: arg?.target?.checked,
-                },
-                data: arg?.data,
-                code: arg?.code,
-                key: arg?.key,
-                ctrlKey: arg?.ctrlKey,
-                altKey: arg?.altKey,
-                shiftKey: arg?.shiftKey,
-                metaKey: arg?.metaKey,
-                button: arg?.button,
-                buttons: arg?.buttons,
-                clientX: arg?.clientX,
-                clientY: arg?.clientY,
-                screenX: arg?.screenX,
-                screenY: arg?.screenY,
-                touches: arg?.touches,
-              };
+              arg = filterValues({
+                target: arg.target
+                  ? filterValues({
+                      value: arg.target?.value,
+                      id: arg.target?.id,
+                      dataset: arg.target?.dataset,
+                      href: arg.target?.href,
+                      checked: arg.target?.checked,
+                    })
+                  : undefined,
+                data: arg.data,
+                code: arg.code,
+                key: arg.key,
+                ctrlKey: arg.ctrlKey,
+                altKey: arg.altKey,
+                shiftKey: arg.shiftKey,
+                metaKey: arg.metaKey,
+                button: arg.button,
+                buttons: arg.buttons,
+                clientX: arg.clientX,
+                clientY: arg.clientY,
+                screenX: arg.screenX,
+                screenY: arg.screenY,
+                touches: arg.touches,
+                preventDefault: arg._preventDefault ?? arg.preventDefault,
+                stopPropagation: arg._stopPropagation ?? arg.stopPropagation,
+                defaultPrevented: arg.defaultPrevented,
+                isDefaultPrevented:
+                  arg._isDefaultPrevented ?? (() => arg.defaultPrevented),
+                isPropagationStopped: arg._isPropagationStopped,
+              });
+            } else if (arg instanceof Error) {
+              arg = filterValues({
+                type: arg.type,
+                name: arg.name,
+                message: arg.message,
+              });
             }
             v = deepCopy(arg);
           } catch (e) {
@@ -2088,7 +1428,7 @@ class VmStack {
         if (caseToken.type !== "SwitchCase") {
           throw new Error("Unknown switch case type '" + caseToken.type + "'");
         }
-        if (!found && caseToken.test) {
+        if (!found && caseToken.test !== null) {
           const test = stack.executeExpression(caseToken.test);
           if (test !== discriminant) {
             continue;
@@ -2200,6 +1540,8 @@ export default class VM {
     this.networkId =
       widgetConfigs.findLast((config) => config && config.networkId)
         ?.networkId || near.config.networkId;
+
+    this.globalFunctions = this.initGlobalFunctions();
   }
 
   stop() {
@@ -2211,6 +1553,693 @@ export default class VM {
     this.intervals.forEach((interval) => clearInterval(interval));
     this.websockets.forEach((websocket) => websocket.close());
     this.vmInstances.forEach((vm) => vm.stop());
+  }
+
+  initGlobalFunctions() {
+    const Social = {
+      getr: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.getr");
+        }
+        return this.cachedSocialGet(args[0], true, args[1], args[2], args[3]);
+      },
+      get: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.get");
+        }
+        return this.cachedSocialGet(args[0], false, args[1], args[2], args[3]);
+      },
+      keys: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'keys' for Social.keys");
+        }
+        return this.cachedSocialKeys(...args);
+      },
+      index: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Missing argument 'action' and 'key` for Social.index"
+          );
+        }
+        return this.cachedIndex(...args);
+      },
+      set: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'data' for Social.set");
+        }
+        return this.socialSet(args[0], args[1]);
+      },
+    };
+
+    const Near = {
+      view: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
+          );
+        }
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
+
+        return this.cachedNearView(
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
+        );
+      },
+      calimeroView: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Calimero.view. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality', 'subscribe', 'cacheOptions'"
+          );
+        }
+        const [
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          subscribe,
+          cacheOptions,
+        ] = args;
+  
+        return this.cachedCalimeroView(
+          contractName,
+          methodName,
+          viewArg,
+          blockId,
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
+        );
+      },
+      asyncView: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
+          );
+        }
+        return this.asyncNearView(...args);
+      },
+      asyncCalimeroView: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: Near.asyncView. Required arguments: 'contractName', 'methodName'. Optional: 'args', 'blockId/finality'"
+          );
+        }
+        return this.asyncCalimeroView(...args);
+      },
+      block: (...args) => {
+        const [blockId, subscribe, cacheOptions] = args;
+        return this.cachedNearBlock(
+          blockId,
+          maybeSubscribe(subscribe, blockId),
+          cacheOptions
+        );
+      },
+      call: (...args) => {
+        if (args.length === 1) {
+          if (isObject(args[0])) {
+            return this.confirmTransactions([args[0]]);
+          } else if (isArray(args[0])) {
+            return this.confirmTransactions(args[0]);
+          } else {
+            throw new Error(
+              "Method: Near.call. Required argument: 'tx/txs'. A single argument call requires an TX object or an array of TX objects."
+            );
+          }
+        } else {
+          if (args.length < 2 || args.length > 5) {
+            throw new Error(
+              "Method: Near.call. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+            );
+          }
+
+          return this.confirmTransactions([
+            {
+              contractName: args[0],
+              methodName: args[1],
+              args: args[2] ?? {},
+              gas: args[3],
+              deposit: args[4],
+            },
+          ]);
+        }
+      },
+      requestFak: (...args) => {
+        return this.near.requestFak(this.widgetSrc, ...args);
+      },
+      requestCalimeroFak: (...args) => {
+        return this.near.requestCalimeroFak(this.widgetSrc, ...args);
+      },
+      hasValidFak: (...args) => {
+        return this.near.verifyFak(this.widgetSrc, ...args);
+      },
+      hasValidCalimeroFak: (...args) => {
+        return this.near.verifyCalimeroFak(this.widgetSrc, ...args);
+      },
+      fakCall: (...args) => {
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Near.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+        return this.near.submitFakTransaction(
+          this.widgetSrc,
+          args[0],
+          args[1],
+          args[2] ?? {},
+          args[3],
+          args[4]
+        );
+      },
+      fakCalimeroCall: (...args) => {
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Calimero.fakCall. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+        return this.near.submitCalimeroFakTransaction(
+          this.near.calimeroConnection.config.networkId,
+          args[0],
+          args[1],
+          args[2] ?? {},
+          args[3],
+          args[4]
+        );
+      },
+    };
+
+    const Calimero = {
+      view: Near.calimeroView,
+      asyncView: Near.asyncCalimeroView,
+      requestFak: Near.requestCalimeroFak,
+      hasValidFak: Near.hasValidCalimeroFak,
+      fakCall: Near.fakCalimeroCall,
+      fakSignTx: (...args) => {
+        if (args.length < 2 || args.length > 5) {
+          throw new Error(
+            "Method: Calimero.fakSignTx. Required argument: 'contractName'. If the first argument is a string: 'methodName'. Optional: 'args', 'gas' (defaults to 300Tg), 'deposit' (defaults to 0)"
+          );
+        }
+        return this.near.signCalimeroFakTransaction(
+          this.near.calimeroConnection.config.networkId,
+          args[0],
+          args[1],
+          args[2] ?? {},
+          args[3],
+          args[4]
+        );
+      },
+      sign: (...args) => {
+        if (args.length !== 2) {
+          throw new Error(
+            "Method: Calimero.sign. Required arguments: 'contractName' -> contract that will verify signature. 'message' -> message to be signed."
+          );
+        }
+        return this.near.signWithCalimeroFak(
+          this.near.calimeroConnection.config.networkId,
+          args[0],
+          args[1]
+        );
+      }
+    };
+
+    const Crypto = {
+      randomBytes: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'n' for Crypto.randomBytes");
+        }
+        return randomBytes(args[0]);
+      },
+      createCipheriv: (...args) => {
+        return createCipheriv(...args);
+      },
+      createDecipheriv: (...args) => {
+        return createDecipheriv(...args);
+      },
+    };
+
+    const vmJSON = {
+      stringify: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for JSON.stringify");
+        }
+        assertNotReactObject(args[0]);
+        return JSON.stringify(args[0], args[1], args[2]);
+      },
+      parse: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 's' for JSON.parse");
+        }
+        try {
+          const obj = JSON.parse(args[0]);
+          assertValidObject(obj);
+          return obj;
+        } catch (e) {
+          return null;
+        }
+      },
+    };
+
+    const vmObject = {
+      keys: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.keys");
+        }
+        assertNotReactObject(args[0]);
+        return Object.keys(args[0]);
+      },
+      values: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.values");
+        }
+        assertNotReactObject(args[0]);
+        return Object.values(args[0]);
+      },
+      entries: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'obj' for Object.entries");
+        }
+        assertNotReactObject(args[0]);
+        return Object.entries(args[0]);
+      },
+      assign: (...args) => {
+        args.forEach((arg) => assertNotReactObject(arg));
+        const obj = Object.assign(...args);
+        assertValidObject(obj);
+        return obj;
+      },
+      fromEntries: (...args) => {
+        const obj = Object.fromEntries(args[0]);
+        assertValidObject(obj);
+        return obj;
+      },
+    };
+
+    const State = {
+      init: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'initialState' for State.init");
+        }
+        if (
+          args[0] === null ||
+          typeof args[0] !== "object" ||
+          isReactObject(args[0])
+        ) {
+          throw new Error("'initialState' is not an object");
+        }
+        if (this.state.state === undefined) {
+          const newState = args[0];
+          this.state.state = newState;
+          this.setReactState(newState);
+        }
+        return this.state.state;
+      },
+      update: (...args) => {
+        if (isObject(args[0])) {
+          this.state.state = this.state.state ?? {};
+          Object.assign(this.state.state, args[0]);
+        } else if (args[0] instanceof Function) {
+          this.state.state = this.state.state ?? {};
+          this.state.state = args[0](this.state.state);
+        }
+        if (this.state.state === undefined) {
+          throw new Error("The state was not initialized");
+        }
+        this.setReactState(this.state.state);
+        return this.state.state;
+      },
+      get: (...args) => {
+        return this.state.state;
+      },
+    };
+
+    const Storage = {
+      privateSet: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Missing argument 'key' or 'value' for Storage.privateSet"
+          );
+        }
+        return this.storageSet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Private,
+          },
+          args[0],
+          args[1]
+        );
+      },
+      privateGet: (...args) => {
+        if (args.length < 1) {
+          throw new Error("Missing argument 'key' for Storage.privateGet");
+        }
+        return this.storageGet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Private,
+          },
+          args[0]
+        );
+      },
+      set: (...args) => {
+        if (args.length < 2) {
+          throw new Error("Missing argument 'key' or 'value' for Storage.set");
+        }
+        return this.storageSet(
+          {
+            src: this.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0],
+          args[1]
+        );
+      },
+      get: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Missing argument 'key' for Storage.get. Optional argument: `widgetSrc`"
+          );
+        }
+        return this.storageGet(
+          {
+            src: args[1] ?? this.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0]
+        );
+      },
+      innerGet: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Missing argument 'key' for Storage.get. Optional argument: `widgetSrc`"
+          );
+        }
+        return this.storageInnerGet(
+          {
+            src: args[1] ?? this.widgetSrc,
+            type: StorageType.Public,
+          },
+          args[0]
+        );
+      },
+    };
+
+    const vmConsole = {
+      log: (...args) => console.log(this.widgetSrc, ...args),
+      warn: (...args) => console.warn(this.widgetSrc, ...args),
+      error: (...args) => console.error(this.widgetSrc, ...args),
+      info: (...args) => console.info(this.widgetSrc, ...args),
+    };
+
+    const Ethers = {
+      provider: () => this.ethersProvider,
+      setChain: (...args) => {
+        const f = this.ethersProviderContext?.setChain;
+        if (!f) {
+          throw new Error("The gateway doesn't support `setChain` operation");
+        }
+        return f(...args);
+      },
+      send: (...args) => this.cachedEthersCall("send", args),
+    };
+
+    const vmUseMemoOrCallback = (callee, ...args) => {
+      if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+        throw new Error(
+          `Method: ${callee}. The hook can only be called from the top of the stack`
+        );
+      }
+      if (!this.hooks) {
+        throw new Error("Hooks are unavailable for modules");
+      }
+      const isMemo = callee === "useMemo";
+      const fnArgName = isMemo ? "factory" : "callback";
+      if (args.length < 1) {
+        throw new Error(
+          `Method: ${callee}. Required arguments: '${fnArgName}'. Optional: 'dependencies'`
+        );
+      }
+
+      const fn = args[0];
+      if (!isFunction(fn)) {
+        throw new Error(
+          `Method: ${callee}. The first argument '${fnArgName}' must be a function`
+        );
+      }
+
+      const hookIndex = this.currentVmStack.hookIndex++;
+      const dependencies = args[1];
+      const hook = this.hooks[hookIndex];
+
+      if (hook) {
+        const oldDependencies = hook.dependencies;
+        if (
+          oldDependencies !== undefined &&
+          deepEqual(oldDependencies, dependencies)
+        ) {
+          return hook.memoized;
+        }
+      }
+
+      const memoized = isMemo ? fn() : fn;
+      this.setReactHook(hookIndex, {
+        memoized,
+        dependencies,
+      });
+      return memoized;
+    };
+
+    const vmUseRef = (...args) => {
+      if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+        throw new Error(
+          "useRef hook error: Hooks should only be called from the top level, not inside loops, conditions, or nested functions."
+        );
+      }
+      const hookIndex = this.currentVmStack.hookIndex++;
+      if (!this.hooks[hookIndex]) {
+        const initialValue = args.length > 0 ? args[0] : null;
+        const newRef = { current: initialValue };
+        this.setReactHook(hookIndex, { ref: newRef });
+        return newRef;
+      }
+      return this.hooks[hookIndex].ref;
+    }
+
+    return deepFreeze({
+      socialGetr: Social.getr,
+      socialGet: Social.get,
+      Social,
+      Near,
+      Calimero,
+      Crypto,
+      stringify: vmJSON.stringify,
+      JSON: vmJSON,
+      Object: vmObject,
+      initState: State.init,
+      State,
+      Storage,
+      console: vmConsole,
+      clipboard: {
+        writeText: (...args) => {
+          return this.currentVmStack?.isTrusted
+            ? navigator.clipboard.writeText(...args)
+            : Promise.reject(new Error("Not trusted (not a click)"));
+        },
+      },
+      VM: {
+        require: this.vmRequire.bind(this),
+      },
+      Ethers,
+      WebSocket: (...args) => {
+        const websocket = new WebSocket(...args);
+        this.websockets.push(websocket);
+        return websocket;
+      },
+      fetch: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Method: fetch. Required arguments: 'url'. Optional: 'options'"
+          );
+        }
+        return this.cachedFetch(...args);
+      },
+      asyncFetch: (...args) => {
+        if (args.length < 1) {
+          throw new Error(
+            "Method: asyncFetch. Required arguments: 'url'. Optional: 'options'"
+          );
+        }
+        return this.asyncFetch(...args);
+      },
+      useCache: (...args) => {
+        if (args.length < 2) {
+          throw new Error(
+            "Method: useCache. Required arguments: 'promiseGenerator', 'dataKey'. Optional: 'options'"
+          );
+        }
+        if (!isFunction(args[0])) {
+          throw new Error(
+            "Method: useCache. The first argument 'promiseGenerator' must be a function"
+          );
+        }
+        return this.useCache(...args);
+      },
+      useState: (...args) => {
+        if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+          throw new Error(
+            "Method: useState. The hook can an only be called from the top of the stack"
+          );
+        }
+        if (!this.hooks) {
+          throw new Error("Hooks are unavailable for modules");
+        }
+        if (args.length < 1) {
+          throw new Error(
+            "Method: useState. Required arguments: 'initialState'"
+          );
+        }
+        const initialState = args[0];
+        const hookIndex = this.currentVmStack.hookIndex++;
+        const hook = this.hooks[hookIndex];
+        if (hook) {
+          return [hook.state, hook.setState];
+        }
+
+        const getState = () => this.hooks[hookIndex]?.state;
+
+        const setState = (newState) => {
+          if (isFunction(newState)) {
+            newState = newState(getState());
+          }
+          this.setReactHook(hookIndex, { state: newState, setState });
+          return newState;
+        };
+
+        return [setState(initialState), setState];
+      },
+      useEffect: (...args) => {
+        if (!this.currentVmStack || this.currentVmStack?.prevStack) {
+          throw new Error(
+            "Method: useEffect. The hook can an only be called from the top of the stack"
+          );
+        }
+        if (!this.hooks) {
+          throw new Error("Hooks are unavailable for modules");
+        }
+        if (args.length < 1) {
+          throw new Error(
+            "Method: useEffect. Required arguments: 'setup'. Optional: 'dependencies'"
+          );
+        }
+        const setup = args[0];
+        if (!isFunction(setup)) {
+          throw new Error(
+            "Method: useEffect. The first argument 'setup' must be a function"
+          );
+        }
+        const hookIndex = this.currentVmStack.hookIndex++;
+        const dependencies = args[1];
+        const hook = this.hooks[hookIndex];
+        if (hook) {
+          const oldDependencies = hook.dependencies;
+          if (
+            oldDependencies !== undefined &&
+            deepEqual(oldDependencies, dependencies)
+          ) {
+            return undefined;
+          }
+        }
+        const cleanup = hook?.cleanup;
+        if (isFunction(cleanup)) {
+          cleanup();
+        }
+        this.setReactHook(hookIndex, {
+          cleanup: setup(),
+          dependencies,
+        });
+
+        return undefined;
+      },
+      useMemo: (...args) => vmUseMemoOrCallback("useMemo", ...args),
+      useCallback: (...args) => vmUseMemoOrCallback("useCallback", ...args),
+      useRef: (...args) => vmUseRef(...args),
+      extractQueryParams: () => {
+        const currentURL = new URL(window.location.href);
+        const params = new URLSearchParams(currentURL.search);
+        const paramsObject = {};
+        for (const [key, value] of params.entries()) {
+          paramsObject[key] = value;
+        }
+        currentURL.search = "";
+        history.pushState({}, "", currentURL.toString());
+        return paramsObject;
+      },
+      createMessageRenderer: (...args) => {
+        const params = args[0];
+        if (typeof params.accountId !== "string") {
+          throw new Error("Invalid accountId. It should be a string.");
+        }
+
+        if (typeof params.isThread !== "boolean") {
+          throw new Error("Invalid isThread. It should be a boolean.");
+        }
+
+        if (typeof params.handleReaction !== "function") {
+          throw new Error("Invalid handleReaction. It should be a function.");
+        }
+
+        if (params.setThread && typeof params.setThread !== "function") {
+          throw new Error(
+            "Invalid setThread. If provided, it should be a function."
+          );
+        }
+        return messageRenderer(params);
+      },
+      setTimeout: (...args) => {
+        const [callback, timeout] = args;
+        const timer = setTimeout(() => {
+          if (!this.alive) {
+            return;
+          }
+          callback();
+        }, timeout);
+        this.timeouts.add(timer);
+        return timer;
+      },
+      setInterval: (...args) => {
+        if (this.intervals.size >= MAX_INTERVALS) {
+          throw new Error(`Too many intervals. Max allowed: ${MAX_INTERVALS}`);
+        }
+        const [callback, timeout] = args;
+        const timer = setInterval(() => {
+          if (!this.alive) {
+            return;
+          }
+          callback();
+        }, timeout);
+        this.intervals.add(timer);
+        return timer;
+      },
+      clearTimeout: (...args) => {
+        const timer = args[0];
+        this.timeouts.delete(timer);
+        return clearTimeout(timer);
+      },
+      clearInterval: (...args) => {
+        const timer = args[0];
+        this.intervals.delete(timer);
+        return clearInterval(timer);
+      },
+    });
   }
 
   cachedPromise(promise, subscribe) {
@@ -2320,6 +2349,7 @@ export default class VM {
       subscribe
     );
   }
+
   cachedCalimeroView(
     contractName,
     methodName,
@@ -2404,17 +2434,24 @@ export default class VM {
   }
 
   vmRequire(src) {
-    const [srcPath, version] = src.split("@");
-    const code = this.cachedSocialGet(
-      srcPath.toString(),
-      false,
-      version, // may be undefined, meaning `latest`
-      undefined
-    );
-    if (!code) {
-      return code;
+    const srcOrCode = computeSrcOrCode(src, null, this.widgetConfigs);
+    let code;
+    if (srcOrCode?.src) {
+      const src = srcOrCode.src;
+      const [srcPath, version] = src.split("@");
+      code = this.cachedSocialGet(
+        srcPath.toString(),
+        false,
+        version, // may be undefined, meaning `latest`
+        undefined
+      );
+      if (!code) {
+        return code;
+      }
+    } else if (srcOrCode?.code) {
+      code = srcOrCode.code;
     }
-    const vm = this.getVmInstance(code, src);
+    const vm = this.getVmInstance(code, srcOrCode?.src);
     return vm.execCode({
       context: deepCopy(this.context),
       forwardedProps: this.forwardedProps,
@@ -2422,13 +2459,13 @@ export default class VM {
   }
 
   getVmInstance(code, src) {
-    if (this.vmInstances.has(src)) {
-      const vm = this.vmInstances.get(src);
+    if (this.vmInstances.has(code)) {
+      const vm = this.vmInstances.get(code);
       if (vm.rawCode === code) {
         return vm;
       }
       vm.stop();
-      this.vmInstances.delete(src);
+      this.vmInstances.delete(code);
     }
     const vm = new VM({
       near: this.near,
@@ -2444,7 +2481,7 @@ export default class VM {
       ethersProviderContext: this.ethersProviderContext,
       isModule: true,
     });
-    this.vmInstances.set(src, vm);
+    this.vmInstances.set(code, vm);
     return vm;
   }
 
@@ -2485,6 +2522,7 @@ export default class VM {
     this.hooks = hooks;
     this.state = {
       ...GlobalInjected,
+      ...this.globalFunctions,
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,

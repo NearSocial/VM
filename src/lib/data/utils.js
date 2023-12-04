@@ -248,7 +248,7 @@ const matchGet = (obj, keys) => {
   const values =
     matchKey === "*" || isRecursiveMatch
       ? Object.values(obj)
-      : matchKey in obj
+      : obj.hasOwnProperty(matchKey)
       ? [obj[matchKey]]
       : [];
 
@@ -266,7 +266,7 @@ const matchKeys = (obj, keys) => {
   const values =
     matchKey === "*"
       ? Object.values(obj)
-      : matchKey in obj
+      : obj.hasOwnProperty(matchKey)
       ? [obj[matchKey]]
       : [];
 
@@ -311,7 +311,7 @@ export const computeWritePermission = (previousPermissions, data) => {
 
   if (isObject(data)) {
     Object.entries(data).forEach(([key, value]) => {
-      if (key in KnownSecondLevelKeys) {
+      if (KnownSecondLevelKeys.hasOwnProperty(key)) {
         if (isObject(value)) {
           const subPermissions = (permissions[key] = permissions[key] || {});
           Object.keys(value).forEach((key) => {
@@ -395,4 +395,33 @@ export const deepCopy = (o) => {
   }
 };
 
+export const filterValues = (o) => {
+  return isObject(o)
+    ? Object.fromEntries(
+        Object.entries(o).filter(([key, value]) => value !== undefined)
+      )
+    : o;
+};
+
 export const deepEqual = equal;
+
+export const computeSrcOrCode = (src, code, configs) => {
+  let srcOrCode = src ? { src } : code ? { code } : null;
+  for (const config of configs || []) {
+    if (srcOrCode?.src) {
+      const src = srcOrCode.src;
+      let value = isObject(config?.redirectMap) && config.redirectMap[src];
+      if (!value) {
+        try {
+          value = isFunction(config?.redirect) && config.redirect(src);
+        } catch {}
+      }
+      if (isString(value)) {
+        srcOrCode = { src: value };
+      } else if (isString(value?.code)) {
+        return { code: value.code };
+      }
+    }
+  }
+  return srcOrCode;
+};

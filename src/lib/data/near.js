@@ -65,7 +65,7 @@ const SupportedApiMethods = {
 };
 
 const apiCall = async (config, methodName, args, blockId, fallback) => {
-  if (!config.apiUrl || !(methodName in SupportedApiMethods)) {
+  if (!config.apiUrl || !SupportedApiMethods.hasOwnProperty(methodName)) {
     return fallback();
   }
   args = args || {};
@@ -491,6 +491,10 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
   }
 }
 
+/**
+ * Current VM Features:
+ * - enableComponentSrcDataKey: Allows enabling the component source `data-component` attribute for rendered DOM elements. Disabled by default.
+ **/
 async function _initNear({
   networkId,
   config,
@@ -498,6 +502,7 @@ async function _initNear({
   selector,
   walletConnectCallback = () => {},
   customElements = {},
+  features = {},
 }) {
   if (!config) {
     config = {};
@@ -543,7 +548,8 @@ async function _initNear({
     selector,
     keyStore,
     nearConnection,
-    calimeroConnection
+    calimeroConnection,
+    features,
   };
 
   _near.nearArchivalConnection = nearAPI.Connection.fromConfig({

@@ -1,7 +1,44 @@
 # Changelog
 
-## Pending 
+## Pending
 
+- FIX: Check type of `href` before sanitizing it.
+- FIX: `atob` and `btoa` are working correctly now.
+
+## 2.5.2
+
+- Use `styled-components` in combination with `customElements` like `Link`:
+
+```jsx
+const MyLink = styled("Link")`
+  color: red;
+`;
+
+return (
+  <MyLink href="/my/page">
+    Click Me!
+  </MyLink>
+);
+```
+
+## 2.5.1
+
+- FIX: Add back `Ethers.send`, that was incorrectly removed as part of the https://github.com/NearSocial/VM/pull/128
+- FIX: Disable `is` attribute to avoid conflicts with React. Reported by BrunoModificato from OtterSec.
+
+## 2.5.0
+
+- Fix `default` case for the switch statement in `VM`.
+- Add a VM feature, `enableComponentSrcDataKey`, which adds the `data-component` attribute specifying the path of the comonent responsible for rendering the DOM element.
+- Add support for VM.require when using redirectMap.
+- Fixes an issue with VM.require not retaining context in migration to initGlobalFunctions.
+- Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
+- Expose all VM functions into the state directly, it simplifies VM readability and implementation.
+- Expose certain native objects directly into the state. It should improve access to the functions.
+- Update the way events and errors are passed to the functions. 
+  - For events, expose `preventDefault()` and `stopPropagation()` functions.
+  NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
+  - For errors, expose `message`, `name` and `type`.
 - Fix `vm.depth` not being initialized.
 - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
 
@@ -39,6 +76,11 @@ return (
   </div>
 );
 ```
+
+## 2.4.2
+
+- Add missing code changes (`cacheOptions` and `lodash`) from 2.4.0.
+> This happened due to revert from master that later cleaned changes from dev at merge conflict.
 
 ## 2.4.1
 
@@ -102,94 +144,6 @@ const index = Social.index(
 );
 ```
 
-## 2.3.2
-
-- Nothing. Missed the package.json bump in the previous release.
-
-## 2.3.1
-
-- Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
-Correct usage:
-```jsx
-// Use `Ethers.provider().send()` to get a promise without caching.
-if (state.sender === undefined) {
-  Ethers.provider().send("eth_requestAccounts", []).then((accounts) => {
-    if (accounts.length) {
-      State.update({ sender: accounts[0] });
-      console.log("set sender", accounts[0]);
-    }
-  });
-}
-```
-Legacy example:
-```jsx
-// Use `Ethers.send()` to get a cached version, but might run into stale cached data.
-if (state.sender === undefined) {
-  const accounts = Ethers.send("eth_requestAccounts", []);
-  if (accounts.length) {
-    State.update({ sender: accounts[0] });
-    console.log("set sender", accounts[0]);
-  }
-}
-```
-
-## 2.3.0
-
-- Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
-```jsx
-const [a, setA] = useState(() => {
-  console.log("Init 'a'");
-  return "Y";
-});
-
-const [b, setB] = useState("B");
-const [sum, setSum] = useState(0);
-
-useEffect(() => {
-  setSum(a.length + b.length);
-  return () => {
-    console.log("cleanup");
-  };
-}, [a, b]);
-
-return (
-  <div>
-    A = {a}
-    <br />B = {b}
-    <br />
-    Length sum = {sum}
-    <div>
-      <button onClick={() => setA((s) => s + "O")}>A</button>
-      <button onClick={() => setB(b + "O")}>B</button>
-    </div>
-  </div>
-);
-```
-
-- Add `cacheOptions` optional argument to the following methods:
-  - `Social.get(keys, blockId|finality, options, cacheOptions)`
-  - `Social.getr(keys, blockId|finality, options, cacheOptions)`
-  - `Social.keys(keys, blockId|finality, options, cacheOptions)`
-  - `Social.index(action, key, options, cacheOptions)`
-  - `Near.view(contractName, methodName, args, blockId|finality, subscribe, cacheOptions)`
-  - `Near.block(blockId|finality, subscribe, cacheOptions)`
-    The `cacheOptions` object is optional and may contain the following property:
-  - `ignoreCache` - boolean, if true, the method will ignore the cached value in the local DB and fetch the data from the API server. This will only happen once per session. Default is false.
-
-This is useful to avoid loading stale objects that are likely to change often. For example, the index of posts for the main feed, or notifications.
-```jsx
-const index = Social.index(
-  "post",
-  "main",
-  {
-    limit: 10,
-    order: "desc",
-  },
-  {
-    ignoreCache: true,
-  }
-);
-```
 - Replace `lodash` dependency with `lodash.clonedeep` to reduce bundle size.
 
 ## 2.3.2

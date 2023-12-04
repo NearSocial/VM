@@ -17,6 +17,7 @@ import {
   isFunction,
   Loading,
   TGas,
+  computeSrcOrCode,
 } from "../data/utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCache } from "../data/cache";
@@ -26,27 +27,6 @@ import Big from "big.js";
 import uuid from "react-uuid";
 import { EthersProviderContext } from "./ethers";
 import { GlobalStateContext } from "./globalState";
-
-const computeSrcOrCode = (src, code, configs) => {
-  let srcOrCode = src ? { src } : code ? { code } : null;
-  for (const config of configs || []) {
-    if (srcOrCode?.src) {
-      const src = srcOrCode.src;
-      let value = isObject(config?.redirectMap) && config.redirectMap[src];
-      if (!value) {
-        try {
-          value = isFunction(config?.redirect) && config.redirect(src);
-        } catch {}
-      }
-      if (isString(value)) {
-        srcOrCode = { src: value };
-      } else if (isString(value?.code)) {
-        return { code: value.code };
-      }
-    }
-  }
-  return srcOrCode;
-};
 
 export const Widget = React.forwardRef((props, forwardedRef) => {
   const {

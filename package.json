@@ -1,13 +1,12 @@
 {
   "name": "near-social-vm",
-  "version": "2.4.2",
+  "version": "2.5.2",
   "description": "Near Social VM",
   "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@braintree/sanitize-url": "6.0.0",
     "@mdxeditor/editor": "^1.3.0",
     "@radix-ui/react-accordion": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.0.3",
@@ -46,6 +45,7 @@
     "crypto-browserify": "^3.12.0",
     "deep-equal": "^2.2.0",
     "dotenv-webpack": "^8.0.1",
+    "dompurify": "^3.0.6",
     "elliptic": "^6.5.4",
     "ethers": "^5.7.2",
     "idb": "^7.1.1",
