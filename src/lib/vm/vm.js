@@ -1697,13 +1697,13 @@ export default class VM {
         return this.near.requestFak(this.widgetSrc, ...args);
       },
       requestCalimeroFak: (...args) => {
-        return this.near.requestCalimeroFak(this.widgetSrc, ...args);
+        return this.near.requestCalimeroFak(this.near.calimeroConnection.config.networkId, ...args);
       },
       hasValidFak: (...args) => {
         return this.near.verifyFak(this.widgetSrc, ...args);
       },
       hasValidCalimeroFak: (...args) => {
-        return this.near.verifyCalimeroFak(this.widgetSrc, ...args);
+        return this.near.verifyCalimeroFak(this.near.calimeroConnection.config.networkId, ...args);
       },
       fakCall: (...args) => {
         if (args.length < 2 || args.length > 5) {
