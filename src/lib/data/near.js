@@ -110,36 +110,24 @@ async function accountState(near, accountId) {
   return await account.state();
 }
 
-async function sendTransactions(near, functionCalls) {
+async function sendTransactions(near, transactions) {
   try {
     const wallet = await (await near.selector).wallet();
-    const transactions = [];
-    let currentTotalGas = Big(0);
-    functionCalls.forEach(
-      ({ contractName, methodName, args, gas, deposit }) => {
-        const newTotalGas = currentTotalGas.add(gas);
 
-        const action = functionCallCreator(
-          methodName,
-          args,
-          gas.toFixed(0),
-          deposit.toFixed(0)
-        );
-        if (
-          transactions[transactions.length - 1]?.receiverId !== contractName ||
-          newTotalGas.gt(MaxGasPerTransaction)
-        ) {
-          transactions.push({
-            receiverId: contractName,
-            actions: [],
-          });
-          currentTotalGas = gas;
-        } else {
-          currentTotalGas = newTotalGas;
+    transactions.forEach((trx) => {
+      trx.actions.forEach((action) => {
+        if (action.type === "FunctionCall") {
+          action.params.deposit = action.params.deposit
+            ? new Big(action.params.deposit)
+            : new Big(0);
+
+          action.params.gas = action.params.gas
+            ? new Big(action.params.gas)
+            : TGas.mul(30);
         }
-        transactions[transactions.length - 1].actions.push(action);
-      }
-    );
+      });
+    });
+
     return await wallet.signAndSendTransactions({ transactions });
   } catch (e) {
     // const msg = e.toString();

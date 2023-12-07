@@ -125,13 +125,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       if (!near || !transactions || transactions.length === 0) {
         return null;
       }
-      transactions = transactions.map((t) => ({
-        contractName: t.contractName,
-        methodName: t.methodName,
-        args: t.args || {},
-        deposit: t.deposit ? Big(t.deposit) : Big(0),
-        gas: t.gas ? Big(t.gas) : TGas.mul(30),
-      }));
+
       console.log("confirm txs", transactions);
       setTransactions(transactions);
     },
@@ -242,9 +236,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   return element !== null && element !== undefined ? (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onReset={() => {
-        setElement(null);
-      }}
+      onReset={() => setElement(null)}
       resetKeys={[element]}
     >
       <>

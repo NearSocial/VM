@@ -1581,12 +1581,37 @@ export default class VM {
           cacheOptions
         );
       },
+      signAndSendTransactions: (args) => {
+        return this.confirmTransactions(args);
+      },
       call: (...args) => {
         if (args.length === 1) {
           if (isObject(args[0])) {
-            return this.confirmTransactions([args[0]]);
+            return this.confirmTransactions([
+              {
+                receiverId: args[0].contractName,
+                actions: [{ type: "FunctionCall", params: args[0] }],
+              },
+            ]);
           } else if (isArray(args[0])) {
-            return this.confirmTransactions(args[0]);
+            let transactions = [];
+            args[0].forEach((action) => {
+              const lastReceiverId =
+                transactions[transactions.length - 1]?.receiverId;
+              if (lastReceiverId !== action.contractName) {
+                transactions.push({
+                  receiverId: action.contractName,
+                  actions: [{ type: "FunctionCall", params: action }],
+                });
+              } else {
+                transactions[transactions.length - 1].actions.push({
+                  type: "FunctionCall",
+                  params: action,
+                });
+              }
+            });
+
+            return this.confirmTransactions(transactions);
           } else {
             throw new Error(
               "Method: Near.call. Required argument: 'tx/txs'. A single argument call requires an TX object or an array of TX objects."
@@ -1601,11 +1626,18 @@ export default class VM {
 
           return this.confirmTransactions([
             {
-              contractName: args[0],
-              methodName: args[1],
-              args: args[2] ?? {},
-              gas: args[3],
-              deposit: args[4],
+              receiverId: args[0],
+              actions: [
+                {
+                  type: "FunctionCall",
+                  params: {
+                    methodName: args[1],
+                    args: args[2] ?? {},
+                    gas: args[3],
+                    deposit: args[4],
+                  },
+                },
+              ],
             },
           ]);
         }
