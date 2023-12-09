@@ -119,13 +119,13 @@ export const bigToString = (b, p, len) => {
 export const displayNear = (balance) =>
   !balance ? (
     "???"
-  ) : balance.eq(1) ? (
+  ) : new Big(balance).eq(1) ? (
     <>
       1 <span className="text-secondary">yoctoNEAR</span>
     </>
   ) : (
     <>
-      {bigToString(balance.div(OneNear))}{" "}
+      {bigToString(new Big(balance).div(OneNear))}{" "}
       <span className="text-secondary">NEAR</span>
     </>
   );
@@ -133,7 +133,8 @@ export const displayNear = (balance) =>
 export const displayGas = (gas) =>
   gas ? (
     <>
-      {bigToString(gas.div(TGas))} <span className="text-secondary">TGas</span>
+      {bigToString(new Big(gas).div(TGas))}{" "}
+      <span className="text-secondary">TGas</span>
     </>
   ) : (
     "???"
