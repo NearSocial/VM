@@ -1,8 +1,28 @@
 # Changelog
 
+## Pending
+
+- Added optional `commitModalBypass` feature config. When the `<CommitButton />` component is used inside of a widget with a matching `src` prop, the `CommitModal` will be bypassed and `onCommit()` will be called instantly when the button is clicked. If for some reason the requested transaction is invalid, the `CommitModal` will still appear to show an error message to the user. View example below to see configuration options.
+- Added optional `enableWidgetSrcWithCodeOverride` boolean feature flag. This is helpful to enable when developing in a local environment when using a `redirectMap` in combination with the new `commitModalBypass` feature. With this enabled, any widget that is overridden via `redirectMap` can still reference its `src` prop to respect your `commitModalBypass` config.
+
+```js
+initNear({
+  features: {
+    commitModalBypass: {
+      authorIds: ["mob.near", "root.near"], // Bypass for all widgets published by these accounts
+      sources: [
+        "cool.near/widget/CoolComponent",
+        "awesome.near/widget/AwesomeComponent",
+      ], // Bypass for specific components
+    },
+    enableWidgetSrcWithCodeOverride: isLocalEnvironment,
+  },
+});
+```
+
 ## 2.5.3
 
-- FIX: Remove `cachedPropery` from `elliptic.utils`. Reported by BrunoModificato from OtterSec. 
+- FIX: Remove `cachedPropery` from `elliptic.utils`. Reported by BrunoModificato from OtterSec.
 - FIX: Replace url-sanitize library with dompurify. Reported by BrunoModificato from OtterSec.
 - FIX: Replace internal usage of `in` operator with `hasOwnProperty` on dictionaries to avoid exposing certain built-in methods and properties. Reported by BrunoModificato from OtterSec.
 - FIX: `atob` and `btoa` are working correctly now.
@@ -16,11 +36,7 @@ const MyLink = styled("Link")`
   color: red;
 `;
 
-return (
-  <MyLink href="/my/page">
-    Click Me!
-  </MyLink>
-);
+return <MyLink href="/my/page">Click Me!</MyLink>;
 ```
 
 ## 2.5.1
@@ -37,9 +53,9 @@ return (
 - Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
 - Expose all VM functions into the state directly, it simplifies VM readability and implementation.
 - Expose certain native objects directly into the state. It should improve access to the functions.
-- Update the way events and errors are passed to the functions. 
+- Update the way events and errors are passed to the functions.
   - For events, expose `preventDefault()` and `stopPropagation()` functions.
-  NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
+    NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
   - For errors, expose `message`, `name` and `type`.
 - Fix `vm.depth` not being initialized.
 - Introduce `useMemo` hook. Similar to the React hook, it calculates a value and memoizes it, only recalculating when one of its dependencies changes.
@@ -56,7 +72,7 @@ const filteredData = useMemo(() => {
 
 return (
   <div>
-    {filteredData.map(item => (
+    {filteredData.map((item) => (
       <div key={item.id}>{item.name}</div>
     ))}
   </div>
@@ -64,8 +80,9 @@ return (
 ```
 
 - Introduce `useCallback` hook. Similarly to the React hook, it memoizes a callback function and returns that memoized version unless one of its dependencies changes.
- ```jsx
- const incrementCounter = useCallback(() => {
+
+```jsx
+const incrementCounter = useCallback(() => {
   setCounter(counter + 1);
 }, [counter]);
 
@@ -82,7 +99,7 @@ return (
 ## 2.4.2
 
 - Add missing code changes (`cacheOptions` and `lodash`) from 2.4.0.
-> This happened due to revert from master that later cleaned changes from dev at merge conflict.
+  > This happened due to revert from master that later cleaned changes from dev at merge conflict.
 
 ## 2.4.1
 
@@ -91,6 +108,7 @@ return (
 ## 2.4.0
 
 - Introduce `useState` and `useEffect`. They should work similarly to the React hooks. Example:
+
 ```jsx
 const [a, setA] = useState(() => {
   console.log("Init 'a'");
@@ -132,6 +150,7 @@ return (
   - `ignoreCache` - boolean, if true, the method will ignore the cached value in the local DB and fetch the data from the API server. This will only happen once per session. Default is false.
 
 This is useful to avoid loading stale objects that are likely to change often. For example, the index of posts for the main feed, or notifications.
+
 ```jsx
 const index = Social.index(
   "post",
@@ -155,19 +174,24 @@ const index = Social.index(
 ## 2.3.1
 
 - Rollback the following change: "`Ethers.send` to ignore cache and return a promise instead of the cached value". REASON: Too many widgets forked the logic to retrieve accounts using `Ethers.send`. We'll address it later with cache invalidation strategy. Examples:
-Correct usage:
+  Correct usage:
+
 ```jsx
 // Use `Ethers.provider().send()` to get a promise without caching.
 if (state.sender === undefined) {
-  Ethers.provider().send("eth_requestAccounts", []).then((accounts) => {
-    if (accounts.length) {
-      State.update({ sender: accounts[0] });
-      console.log("set sender", accounts[0]);
-    }
-  });
+  Ethers.provider()
+    .send("eth_requestAccounts", [])
+    .then((accounts) => {
+      if (accounts.length) {
+        State.update({ sender: accounts[0] });
+        console.log("set sender", accounts[0]);
+      }
+    });
 }
 ```
+
 Legacy example:
+
 ```jsx
 // Use `Ethers.send()` to get a cached version, but might run into stale cached data.
 if (state.sender === undefined) {
@@ -188,15 +212,16 @@ if (state.sender === undefined) {
 ```jsx
 // Import widget from testnet initialized VM
 
-<Widget 
+<Widget
   config={{
-    networkId: 'mainnet'
+    networkId: "mainnet",
   }}
   src="devgovgigs.near/widget/Ideas" // `src` prop here is a path in mainnet SocialDB
 />
 
 // Also works with the `code` prop where `Social.get` and other [BOS API](https://docs.near.org/bos/api/near#) features and `Widget`s will reference mainnet in this case.
 ```
+
 - Expose `Ethers.setChain({chainId})` to be able to switch between EVM networks. Note, the gateway should inject it as part of the `EthersProviderContext`.
 - Add `config.defaultFinality` to be able to specify `final` instead of `optimistic` (default). It would route the majority of the view calls through the API server.
 - Expose `ethers.providers`. You will be able to construct a custom JSON provider for read only data. Example usage:
@@ -208,11 +233,13 @@ const opGoerliProvider = new ethers.providers.JsonRpcProvider(
 
 console.log(opGoerliProvider);
 ```
+
 - BREAKING: Update `Ethers.send` to ignore cache and return a promise instead of the cached value.
 - Add `loading` prop to a Widget. It would display the passed value instead of the default loading spinner. It can be used to display a custom loading indicator or a placeholder. Example:
+
 ```jsx
 <Widget
-  loading={<div style={{width: "100%", height: "200px"}}>Loading...</div>}
+  loading={<div style={{ width: "100%", height: "200px" }}>Loading...</div>}
   src="mob.near/widget/ProfilePage"
 />
 ```
