@@ -2225,6 +2225,11 @@ export default class VM {
 
     let result = this.execCode(args);
 
+    if (this.near.features?.enableComponentPropsDataKey && isReactObject(result)) {
+      result = { ...result };
+      result.props = { ...result.props, "data-props": JSON.stringify(args.props) };
+    }
+
     if (this.near.features?.enableComponentSrcDataKey && isReactObject(result)) {
       result = { ...result };
       result.props = { ...result.props, "data-component": this.widgetSrc };
