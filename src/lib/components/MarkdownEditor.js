@@ -18,17 +18,21 @@ export const MarkdownEditor = (props) => {
 
   const handlePaste = (e) => {
     e.preventDefault();
+  
     const clipboardData = e.clipboardData;
-    let pastedData;
-
-    if (clipboardData.types.includes('text/html')) {
-      pastedData = clipboardData.getData('text/html');
-    } else if (clipboardData.types.includes('text/plain')) {
-      pastedData = clipboardData.getData('text/plain');
+    const quill = quillRef.current;
+    const selection = quill.getSelection(true);
+  
+    const { types } = clipboardData;
+  
+    if (types.includes('text/html')) {
+      const pastedData = clipboardData.getData('text/html');
+      const processedData = sanitizePasteHtml(pastedData);
+      quill.pasteHTML(selection.index, processedData);
+    } else if (types.includes('text/plain')) {
+      const pastedData = clipboardData.getData('text/plain');
+      quill.insertText(selection.index, pastedData);
     }
-    const processedData = sanitizePasteHtml(pastedData);
-    const selection = quillRef.current.getSelection(true);
-    quillRef.current.insertText(selection.index, processedData);
   };
 
   useEffect(() => {
