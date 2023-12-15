@@ -34,6 +34,7 @@ import * as elliptic from "elliptic";
 import BN from "bn.js";
 import * as nacl from "tweetnacl";
 import SecureIframe from "../components/SecureIframe";
+import { ChatInputField } from "../components/ChatInputField";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { nanoid, customAlphabet } from "nanoid";
 import cloneDeep from "lodash.clonedeep";
@@ -171,6 +172,7 @@ const ApprovedTagsCustom = {
   GlobalStateProvider: true,
   IpfsImageUpload: false,
   Markdown: false,
+  ChatInputField: false,
   MarkdownEditor: false,
   Fragment: true,
   InfiniteScroll: true,
@@ -710,6 +712,8 @@ class VmStack {
       return <Typeahead {...attributes} />;
     } else if (element === "Markdown") {
       return <Markdown {...attributes} />;
+    } else if (element === "ChatInputField") {
+      return <ChatInputField {...attributes} />;
     } else if (element === "MarkdownEditor") {
       return <MarkdownEditor {...attributes} />;
     } else if (element === "Fragment") {
