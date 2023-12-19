@@ -399,9 +399,6 @@
     position: absolute;
     right: 15px;
   }
-  .ql-toolbar:first-child {
-    display: none !important;
-  }
   .ql-snow.ql-toolbar:after,
   .ql-snow .ql-toolbar:after {
     clear: both;
