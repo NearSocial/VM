@@ -22,7 +22,7 @@ images:
   newTag: "00694e6"
 - name: bos-gateway-staging
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-staging
-  newTag: 1cac4a9
+  newTag: 3eb50a1
 - name: bos-gateway-testnet
   newName: europe-west3-docker.pkg.dev/calimero-ops/calimero/bos-gateway-testnet
   newTag: "00694e6"
