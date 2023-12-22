@@ -70,7 +70,7 @@
     "stream-browserify": "^3.0.0",
     "styled-components": "^5.3.6",
     "tweetnacl": "^1.0.3",
-    "virtualized-chat": "0.0.0-alpha.51"
+    "virtualized-chat": "0.0.0-alpha.52"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
