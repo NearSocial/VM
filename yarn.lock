@@ -4350,7 +4350,7 @@ cross-spawn@^7.0.1, cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-crypto-browserify@^3.12.0:
+crypto-browserify@^3.12.0, "crypto@npm:crypto-browserify":
   version "3.12.0"
   resolved "https://registry.yarnpkg.com/crypto-browserify/-/crypto-browserify-3.12.0.tgz#396cf9f3137f03e4b8e532c58f698254e00f80ec"
   integrity sha512-fz4spIh+znjO2VjL+IdhEpRJ3YN6sMzITSBijk6FK2UvTqruSQW+/cCZTSNsMiZNvUeq0CqurF+dAbyiGOY6Wg==
@@ -5075,7 +5075,7 @@ eventemitter3@^4.0.0:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
-events@^3.2.0:
+events@^3.2.0, "events@npm:events":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
   integrity sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==
@@ -9444,7 +9444,7 @@ stop-iteration-iterator@^1.0.0:
   dependencies:
     internal-slot "^1.0.4"
 
-stream-browserify@^3.0.0:
+stream-browserify@^3.0.0, "stream@npm:stream-browserify":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/stream-browserify/-/stream-browserify-3.0.0.tgz#22b0a2850cdf6503e73085da1fc7b7d0c2122f2f"
   integrity sha512-H73RAHsVBapbim0tU2JwwOiXUj+fikfiaoYAKHF3VJfA0pe2BCzkhAHBlLG6REzE+2WNZcxOXjK7lkso+9euLA==
@@ -10045,16 +10045,20 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
-virtualized-chat@0.0.0-alpha.50:
-  version "0.0.0-alpha.50"
-  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.50.tgz#8749b33d68c9a1492e03c92f8782e30880409b47"
-  integrity sha512-DovhAYGfIHDqx5azRAc+TCOyoRFx2YMQeKIWVu3JGyvzTkOMsuYmU+6WheQIv8vAX8cyT+Dzxv+GP0yVPicQsQ==
+virtualized-chat@0.0.0-alpha.51:
+  version "0.0.0-alpha.51"
+  resolved "https://registry.yarnpkg.com/virtualized-chat/-/virtualized-chat-0.0.0-alpha.51.tgz#8d2ddf4a7ddde32a8bc6439599e3033d4731c348"
+  integrity sha512-yz5VTE08lHWId3zDintNvKDM03aTdK6KjkhtRuKPvq0s9VC0UVkKW1Uc2yA9XbW5yZXehlaBzS8G74AwOGzJZA==
   dependencies:
     "@radix-ui/react-dialog" "^1.0.5"
     "@uidotdev/usehooks" "^2.4.1"
+    crypto "npm:crypto-browserify"
+    crypto-browserify "^3.12.0"
     dompurify "^3.0.6"
+    events "npm:events"
     quill "^1.3.7"
     react-virtuoso "^4.6.1"
+    stream "npm:stream-browserify"
     styled-components "^6.0.9"
 
 w3c-keyname@^2.2.4:
