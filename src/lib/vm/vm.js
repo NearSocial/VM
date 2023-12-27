@@ -17,7 +17,6 @@ import {
   ReactKey,
 } from "../data/utils";
 import Files from "react-files";
-import { sanitizeUrl } from "@braintree/sanitize-url";
 import { Markdown } from "../components/Markdown";
 import InfiniteScroll from "react-infinite-scroller";
 import { CommitButton } from "../components/Commit";
@@ -35,6 +34,7 @@ import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import { isValidAttribute } from "dompurify";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -215,8 +215,8 @@ const GlobalInjected = deepFreeze(
     parseInt,
     parseFloat,
     isFinite,
-    btoa,
-    atob,
+    btoa: (s) => btoa(s),
+    atob: (s) => atob(s),
     decodeURI,
     encodeURI,
 
@@ -281,14 +281,16 @@ const AcornOptions = {
   allowReturnOutsideFunction: true,
 };
 
-const ParsedCodeCache = {};
+const ParsedCodeCache = new Map();
 const JsxParser = Parser.extend(jsx());
 
 const parseCode = (code) => {
-  if (code in ParsedCodeCache) {
-    return ParsedCodeCache[code];
+  if (ParsedCodeCache.has(code)) {
+    return ParsedCodeCache.get(code);
   }
-  return (ParsedCodeCache[code] = JsxParser.parse(code, AcornOptions));
+  const parsedCode = JsxParser.parse(code, AcornOptions);
+  ParsedCodeCache.set(code, parsedCode);
+  return parsedCode;
 };
 
 const assertNotReservedKey = (key) => {
@@ -344,7 +346,7 @@ const requireIdentifier = (id) => {
   }
   const name = id.name;
   assertNotReservedKey(name);
-  if (name in Keywords) {
+  if (Keywords.hasOwnProperty(name)) {
     throw new Error("Cannot use keyword: " + name);
   }
   return {
@@ -418,14 +420,14 @@ class Stack {
   }
 
   findObj(name) {
-    if (name in this.state) {
+    if (this.state.hasOwnProperty(name)) {
       return this.state;
     }
     return this.prevStack ? this.prevStack.findObj(name) : undefined;
   }
 
   get(name) {
-    if (name in this.state) {
+    if (this.state.hasOwnProperty(name)) {
       return this.state[name];
     }
     return this.prevStack ? this.prevStack.get(name) : undefined;
@@ -604,7 +606,9 @@ class VmStack {
     } else if (basicElement === "a") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
-          attributes[name] = sanitizeUrl(value);
+          attributes[name] = isValidAttribute("a", "href", value)
+            ? value
+            : "about:blank";
         }
       });
     } else if (element === "Widget") {
@@ -747,7 +751,7 @@ class VmStack {
       const obj = this.stack.findObj(key) ?? this.stack.state;
       assertNotReactObject(obj);
       if (obj === this.stack.state) {
-        if (key in Keywords) {
+        if (Keywords.hasOwnProperty(key)) {
           if (options?.left) {
             throw new Error("Cannot assign to keyword '" + key + "'");
           }
@@ -755,7 +759,7 @@ class VmStack {
         }
       }
       if (options?.left) {
-        if (!obj || !(key in obj)) {
+        if (!obj || !obj.hasOwnProperty(key)) {
           throw new Error(`Accessing undeclared identifier '${code.name}'`);
         }
       }
@@ -769,7 +773,7 @@ class VmStack {
         code.object?.type === "JSXIdentifier"
       ) {
         const keyword = code.object.name;
-        if (keyword in Keywords) {
+        if (Keywords.hasOwnProperty(keyword)) {
           if (!options?.callee) {
             throw new Error(
               "Cannot dereference keyword '" +
@@ -1021,7 +1025,7 @@ class VmStack {
         } else {
           if (key === "keyframes") {
             styledTemplate = keyframes;
-          } else if (key in ApprovedTagsSimple) {
+          } else if (ApprovedTagsSimple.hasOwnProperty(key)) {
             styledTemplate = styled(key);
           } else {
             throw new Error("Unsupported styled tag: " + key);
@@ -2258,6 +2262,7 @@ export default class VM {
       get elliptic() {
         delete this.elliptic;
         this.elliptic = cloneDeep(elliptic);
+        delete this.elliptic.utils.cachedProperty;
         return this.elliptic;
       },
     };
