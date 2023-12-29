@@ -148,6 +148,7 @@ const ApprovedTagsSimple = {
   use: false,
   // svg ends
   a: true,
+  slot: true,
 };
 
 const ApprovedTagsCustom = {
