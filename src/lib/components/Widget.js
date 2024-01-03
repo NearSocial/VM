@@ -102,7 +102,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       setSrc(src);
     } else if (srcOrCode?.code) {
       setCode(srcOrCode.code);
-      setSrc(near.features.enableWidgetSrcWithCodeOverride ? propsSrc : null);
+      setSrc(near?.features?.enableWidgetSrcWithCodeOverride ? propsSrc : null);
     }
   }, [near, srcOrCode, nonce]);
 
