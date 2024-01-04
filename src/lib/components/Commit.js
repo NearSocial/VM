@@ -162,8 +162,26 @@ export const CommitModal = (props) => {
     }
   }
 
-  const show =
+  const bypassConfig = {
+    authorIds: near?.features?.commitModalBypass?.authorIds ?? [],
+    sources: near?.features?.commitModalBypass?.sources ?? [],
+  };
+  const [widgetSrcAccountId] = (widgetSrc ?? "").split("/");
+  const matchesModalBypassConfig =
+    (!!widgetSrcAccountId &&
+      bypassConfig.authorIds.indexOf(widgetSrcAccountId) > -1) ||
+    (!!widgetSrc && bypassConfig.sources.indexOf(widgetSrc.split("@")[0]) > -1);
+  const shouldBypassModal = !cantCommit && matchesModalBypassConfig;
+
+  const isReadyToCommit =
     !!commit && showIntent && !asyncCommitStarted && writePermission !== null;
+  const show = isReadyToCommit && !shouldBypassModal;
+
+  useEffect(() => {
+    if (isReadyToCommit && shouldBypassModal && !commitInProgress) {
+      onCommit();
+    }
+  }, [isReadyToCommit, shouldBypassModal, commitInProgress]);
 
   return (
     <Modal size="xl" centered scrollable show={show} onHide={onCancel}>
