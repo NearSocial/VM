@@ -19,6 +19,7 @@ initNear({
   },
 });
 ```
+- Add string type check to the `href` property on the `a` tag. Reported by BrunoModificato from OtterSec.
 
 ## 2.5.3
 

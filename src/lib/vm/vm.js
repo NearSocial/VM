@@ -611,9 +611,10 @@ class VmStack {
     } else if (basicElement === "a") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
-          attributes[name] = isValidAttribute("a", "href", value)
-            ? value
-            : "about:blank";
+          attributes[name] =
+            isString(value) && isValidAttribute("a", "href", value)
+              ? value
+              : "about:blank";
         }
       });
     } else if (element === "Widget") {
