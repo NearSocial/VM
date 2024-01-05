@@ -413,6 +413,31 @@ const requirePattern = (id) => {
   }
 };
 
+const FilesComponentWhitelist = [
+  "key",
+  "name",
+  "className",
+  "onChange",
+  "onError",
+  "accepts",
+  "multiple",
+  "clickable",
+  "maxFiles",
+  "maxFileSize",
+  "minFileSize",
+  "dragActiveClassName",
+];
+
+const filterFilesAttributes = (attributes) => {
+  const filteredAttributes = {};
+  FilesComponentWhitelist.forEach((key) => {
+    if (attributes.hasOwnProperty(key)) {
+      filteredAttributes[key] = attributes[key];
+    }
+  });
+  return filteredAttributes;
+};
+
 class Stack {
   constructor(prevStack, state) {
     this.prevStack = prevStack;
@@ -688,7 +713,7 @@ class VmStack {
             accepts={["image/*"]}
             minFileSize={1}
             clickable
-            {...attributes}
+            {...filterFilesAttributes(attributes)}
           >
             {status.img?.uploading ? (
               <>{Loading} Uploading</>
@@ -701,7 +726,7 @@ class VmStack {
         </div>
       );
     } else if (element === "Files") {
-      return <Files {...attributes}>{children}</Files>;
+      return <Files {...filterFilesAttributes(attributes)}>{children}</Files>;
     } else if (element === "iframe") {
       return <SecureIframe {...attributes} />;
     } else if (element === "Web3Connect") {
