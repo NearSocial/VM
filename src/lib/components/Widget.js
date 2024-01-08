@@ -3,7 +3,7 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
-  useState,
+  useState
 } from "react";
 import { useNear } from "../data/near";
 import ConfirmTransactions from "./ConfirmTransactions";
@@ -53,8 +53,9 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [prevVmInput, setPrevVmInput] = useState(null);
   const [configs, setConfigs] = useState(null);
   const [srcOrCode, setSrcOrCode] = useState(null);
+ 
   const ethersProviderContext = useContext(EthersProviderContext);
-
+  
   const networkId =
     configs &&
     configs.findLast((config) => config && config.networkId)?.networkId;
@@ -182,7 +183,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     requestCommit,
     confirmTransactions,
     configs,
-    ethersProviderContext,
+    ethersProviderContext
   ]);
 
   useEffect(() => {
@@ -239,7 +240,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     forwardedProps,
   ]);
 
-  return element !== null && element !== undefined ? (
+  const widget = element !== null && element !== undefined ? (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
       onReset={() => {
@@ -250,9 +251,15 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       <>
         {element}
         {transactions && (
-          <ConfirmTransactions
+          <ConfirmTransactions            
             transactions={transactions}
-            onHide={() => setTransactions(null)}
+            widgetSrc={src}
+            onHide={(result) => {
+              setTransactions(null);
+              if (result && result.transaction) {
+                cache.invalidateCache(near, result.transaction.receiver_id);        
+              }
+            }}
             networkId={networkId}
           />
         )}
@@ -273,4 +280,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   ) : (
     loading ?? Loading
   );
+  
+  return widget;
 });

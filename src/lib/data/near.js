@@ -4,17 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { singletonHook } from "react-singleton-hook";
 import { MaxGasPerTransaction, TGas } from "./utils";
 
+const PENDING_TRANSACTION_SESSION_STORAGE_KEY = 'PENDING_TRANSACTION_AFTER_SIGNIN';
+
 const UseLegacyFunctionCallCreator = true;
 export const functionCallCreator = UseLegacyFunctionCallCreator
   ? (methodName, args, gas, deposit) => ({
-      type: "FunctionCall",
-      params: {
-        methodName,
-        args,
-        gas,
-        deposit,
-      },
-    })
+    type: "FunctionCall",
+    params: {
+      methodName,
+      args,
+      gas,
+      deposit,
+    },
+  })
   : nearAPI.transactions.functionCall;
 
 const TestNearConfig = {
@@ -71,6 +73,98 @@ const apiCall = async (config, methodName, args, blockId, fallback) => {
   }
 };
 
+function getKeyStoreForContract(contractId) {
+  return new nearAPI.keyStores.BrowserLocalStorageKeyStore(
+    window.localStorage,
+    `${contractId}:keystore:`
+  );
+}
+
+async function createWalletConnectionForContract(near, contractId) {
+  const keyStore = getKeyStoreForContract(contractId);
+
+  const selector = await near.selector;
+  if (selector) {
+    const wallet = await selector.wallet();
+    const _near = await nearAPI.connect({
+      keyStore,
+      walletUrl: wallet.metadata.walletUrl,
+      networkId: near.config.networkId,
+      nodeUrl: near.config.nodeUrl,
+      headers: {},
+    });
+    return new nearAPI.WalletConnection(_near, contractId);
+  }
+}
+
+async function signInAndSetPendingTransaction(near, pendingTransaction) {
+  const contractId = pendingTransaction.contractName;
+  const walletConnection = await createWalletConnectionForContract(near, contractId);
+
+  if (walletConnection._walletBaseUrl) {
+    sessionStorage.setItem(PENDING_TRANSACTION_SESSION_STORAGE_KEY, JSON.stringify(pendingTransaction));
+    walletConnection.requestSignIn({ contractId, methodNames: [] });
+  } else {
+    const keyPair = nearAPI.utils.KeyPair.fromRandom("ed25519");
+    const accessKey = nearAPI.transactions.functionCallAccessKey(
+      contractId,
+      []
+    );
+
+    const publicKey = keyPair.getPublicKey();
+    const wallet = await near.selector.then(selector => selector.wallet());
+    const walletAccount = (await wallet.getAccounts())[0];
+    const accountId = walletAccount.accountId;
+
+    const result = await wallet.signAndSendTransactions({
+      transactions: [
+        {
+          receiverId: accountId,
+          actions: [{
+            type: 'AddKey',
+            params: {
+              publicKey: publicKey.toString(),
+              accessKey: {
+                permission: accessKey.permission.functionCall
+              }
+            }
+          }],
+          gas: TGas.mul(30)
+        },
+        (() => {
+          const { contractName, methodName, args, gas, deposit } = pendingTransaction;
+          return {
+            receiverId: contractName,
+            actions: [functionCallCreator(
+              methodName,
+              args,
+              gas.toFixed(0),
+              deposit.toFixed(0))
+            ]
+          };
+        })()
+      ]
+    });
+
+    const keyStore = getKeyStoreForContract(contractId);
+    await keyStore.setKey(
+      near.config.networkId,
+      accountId,
+      keyPair
+    );
+
+    localStorage.setItem(
+      `${contractId}_wallet_auth_key`, JSON.stringify({ accountId, allKeys: [walletAccount.publicKey] })
+    );
+    return result;
+  }
+}
+
+async function isSignedIntoContract(near, contractId) {
+  const walletConnection = await createWalletConnectionForContract(near, contractId);
+  return walletConnection.isSignedIn();
+}
+
 async function functionCall(
   near,
   contractName,
@@ -81,6 +175,22 @@ async function functionCall(
 ) {
   try {
     const wallet = await (await near.selector).wallet();
+
+    if (contractName !== near.contract.contractId) {
+      const contractWalletConnection = await createWalletConnectionForContract(near, contractName);
+      if (contractWalletConnection.isSignedIn()) {
+        const functionAccessKeyAccount = contractWalletConnection.account();
+
+        const result = await functionAccessKeyAccount.functionCall({
+          contractId: contractName,
+          methodName,
+          args,
+          gas
+        });
+
+        return result;
+      }
+    }
 
     return await wallet.signAndSendTransaction({
       receiverId: contractName,
@@ -111,6 +221,13 @@ async function accountState(near, accountId) {
 }
 
 async function sendTransactions(near, functionCalls) {
+  if (functionCalls.length === 1) {
+    const { contractName, methodName, args, gas, deposit } = functionCalls[0];
+
+    if (!deposit || deposit.toString() === '0') {
+      return await functionCall(near, contractName, methodName, args, gas?.toString());
+    }
+  }
   try {
     const wallet = await (await near.selector).wallet();
     const transactions = [];
@@ -220,7 +337,7 @@ async function _initNear({
   config,
   keyStore,
   selector,
-  walletConnectCallback = () => {},
+  walletConnectCallback = () => { },
   customElements = {},
   features = {},
 }) {
@@ -270,15 +387,15 @@ async function _initNear({
   const transformBlockId = (blockId) =>
     blockId === "optimistic" || blockId === "final"
       ? {
-          finality: blockId,
-          blockId: undefined,
-        }
+        finality: blockId,
+        blockId: undefined,
+      }
       : blockId !== undefined && blockId !== null
-      ? {
+        ? {
           finality: undefined,
           blockId: parseInt(blockId),
         }
-      : {
+        : {
           finality: config.defaultFinality ?? "optimistic",
           blockId: undefined,
         };
@@ -320,6 +437,9 @@ async function _initNear({
   _near.sendTransactions = (transactions) =>
     sendTransactions(_near, transactions);
 
+  _near.isSignedIntoContract = async (contractId) => isSignedIntoContract(_near, contractId);
+  _near.signInAndSetPendingTransaction = async (transaction) => signInAndSetPendingTransaction(_near, transaction);
+
   _near.contract = setupContract(_near, config.contractName, {
     viewMethods: [
       "storage_balance_of",
@@ -339,6 +459,20 @@ async function _initNear({
 
   _near.accountState = (accountId) => accountState(_near, accountId);
 
+  const pendingTransaction = JSON.parse(sessionStorage.getItem(PENDING_TRANSACTION_SESSION_STORAGE_KEY));
+  if (pendingTransaction) {
+    console.log('found pending transaction', pendingTransaction);
+    const walletConnection = await createWalletConnectionForContract(_near, pendingTransaction.contractName);
+    if (walletConnection) {
+      console.log('sending pending transaction', pendingTransaction);
+      try {
+        await sendTransactions(_near, [pendingTransaction]);
+      } catch (e) {
+        console.error('error sending pending transaction', e);
+      }
+      sessionStorage.removeItem(PENDING_TRANSACTION_SESSION_STORAGE_KEY);
+    }
+  }
   return _near;
 }
 
@@ -356,22 +490,22 @@ export const useInitNear = singletonHook({}, () => {
           defaultNetworkId === "testnet"
             ? args
             : {
-                ...args,
-                networkId: "testnet",
-                config: undefined,
-                keyStore: undefined,
-                selector: undefined,
-              };
+              ...args,
+              networkId: "testnet",
+              config: undefined,
+              keyStore: undefined,
+              selector: undefined,
+            };
         const mainnetArgs =
           defaultNetworkId === "mainnet"
             ? args
             : {
-                ...args,
-                networkId: "mainnet",
-                config: undefined,
-                keyStore: undefined,
-                selector: undefined,
-              };
+              ...args,
+              networkId: "mainnet",
+              config: undefined,
+              keyStore: undefined,
+              selector: undefined,
+            };
         return setNearPromise(
           Promise.all(
             [testnetArgs, mainnetArgs]
