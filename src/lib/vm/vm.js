@@ -315,7 +315,7 @@ const assertValidObject = (o) => {
 };
 
 const assertRadixComponent = (element) => {
-  if (!element) return;
+  if (typeof element !== 'string') return;;
 
   let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
 
