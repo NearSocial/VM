@@ -1,5 +1,13 @@
 # Changelog
 
+## Pending
+
+- Support multiple Limited Access Keys on BOS gateway to enable "Don't ask me again" when interacting with third-party contracts on BOS. See https://github.com/NearSocial/VM/issues/148
+
+## 2.5.5
+
+- FIX: Restrict attributes of `Files` component to a whitelist. Reported by BrunoModificato from OtterSec.
+
 ## 2.5.4
 
 - Added optional `commitModalBypass` feature config. When the `<CommitButton />` component is used inside of a widget with a matching `src` prop, the `CommitModal` will be bypassed and `onCommit()` will be called instantly when the button is clicked. If for some reason the requested transaction is invalid, the `CommitModal` will still appear to show an error message to the user. View example below to see configuration options.
