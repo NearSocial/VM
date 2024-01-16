@@ -633,7 +633,7 @@ class VmStack {
 
     if (basicElement === "img") {
       attributes.alt = attributes.alt ?? "not defined";
-    } else if (basicElement === "a") {
+    } else if (basicElement === "a" || basicElement === "use") {
       Object.entries(attributes).forEach(([name, value]) => {
         if (name.toLowerCase() === "href") {
           attributes[name] =
