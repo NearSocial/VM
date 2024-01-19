@@ -206,6 +206,20 @@ const Keywords = {
   styled: true,
 };
 
+const filterEthersUtils = (utils) => {
+  [
+    "checkProperties",
+    "deepCopy",
+    "defineReadOnly",
+    "getStatic",
+    "resolveProperties",
+    "shallowCopy",
+  ].forEach((key) => {
+    delete utils[key];
+  });
+  return utils;
+};
+
 const GlobalInjected = deepFreeze(
   cloneDeep({
     // Functions
@@ -231,7 +245,7 @@ const GlobalInjected = deepFreeze(
       verify: nacl.verify,
     },
     ethers: {
-      utils: ethers.utils,
+      utils: filterEthersUtils(deepCopy(ethers.utils)),
       BigNumber: ethers.BigNumber,
       Contract: ethers.Contract,
       providers: ethers.providers,
