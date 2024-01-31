@@ -4,6 +4,13 @@
 
 - Support multiple Limited Access Keys on BOS gateway to enable "Don't ask me again" when interacting with third-party contracts on BOS. See https://github.com/NearSocial/VM/issues/148
 
+## 2.5.6
+
+- FIX: Restrict native object prototypes from being accessed. To address BN issue, reported by BrunoModificato from OtterSec.
+- FIX: Filter out some ethers.js utils. Reported by BrunoModificato from OtterSec.
+- FIX: Remove potential XSS vulnerability for some SVG tags. Reported by BrunoModificato from OtterSec.
+- Minor: report widget `src` when VM throws an exception during rendering.
+
 ## 2.5.5
 
 - FIX: Restrict attributes of `Files` component to a whitelist. Reported by BrunoModificato from OtterSec.

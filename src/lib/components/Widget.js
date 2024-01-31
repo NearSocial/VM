@@ -222,6 +222,14 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     } catch (e) {
       setElement(
         <div className="alert alert-danger">
+          {src ? (
+            <>
+              Src: {src}
+              <br />
+            </>
+          ) : (
+            ""
+          )}
           Execution error:
           <pre>{e.message}</pre>
           <pre>{e.stack}</pre>
