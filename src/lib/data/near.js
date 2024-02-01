@@ -335,6 +335,7 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
 async function _initNear({
   networkId,
   config,
+  errorCallback = () => { },
   keyStore,
   selector,
   walletConnectCallback = () => { },
@@ -356,6 +357,7 @@ async function _initNear({
     config = Object.assign({}, TestNearConfig, config);
   }
   config.walletConnectCallback = walletConnectCallback;
+  config.errorCallback = errorCallback;
   config.customElements = Object.assign(
     {},
     config.customElements,
