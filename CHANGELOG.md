@@ -4,6 +4,8 @@
 
 - Support multiple Limited Access Keys on BOS gateway to enable "Don't ask me again" when interacting with third-party contracts on BOS. See https://github.com/NearSocial/VM/issues/148
 
+- Provide an error callback in the vm init method to allow gateways to capture handled errors
+
 ## 2.5.6
 
 - FIX: Restrict native object prototypes from being accessed. To address BN issue, reported by BrunoModificato from OtterSec.

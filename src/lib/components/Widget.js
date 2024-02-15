@@ -12,6 +12,7 @@ import {
   deepCopy,
   deepEqual,
   ErrorFallback,
+  ErrorScopes,
   isObject,
   isString,
   isFunction,
@@ -112,6 +113,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     setElement(null);
     if (!code) {
       if (code === undefined) {
+        near.config.errorCallback({scope: ErrorScopes.Source, message: src});
         setElement(
           <div className="alert alert-danger">
             Source code for "{src}" is not found
@@ -220,6 +222,8 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     try {
       setElement(vm.renderCode(vmInput) ?? "Execution failed");
     } catch (e) {
+      const message = src ? `${src}: ${e.message}` : e.message;
+      near.config.errorCallback({scope: ErrorScopes.Execution, message});
       setElement(
         <div className="alert alert-danger">
           {src ? (
@@ -250,7 +254,11 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
 
   const widget = element !== null && element !== undefined ? (
     <ErrorBoundary
-      FallbackComponent={ErrorFallback}
+      FallbackComponent={ (props) => {
+        near.config.errorCallback({scope: ErrorScopes.Boundary, message: src});
+        const { error = { message: ErrorScopes.Boundary } } = props ;
+        return <ErrorFallback error={error}/>;
+      }}
       onReset={() => {
         setElement(null);
       }}
