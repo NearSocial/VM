@@ -6,6 +6,8 @@
 
 - Provide an error callback in the vm init method to allow gateways to capture handled errors
 
+- FIX: Styled components were not possible to be extended due to an issue parsing Radix components
+
 ## 2.5.6
 
 - FIX: Restrict native object prototypes from being accessed. To address BN issue, reported by BrunoModificato from OtterSec.
