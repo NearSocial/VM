@@ -33,7 +33,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     src: propsSrc,
     code: propsCode,
     depth,
-    overrides,
     config: propsConfig,
     props: propsProps,
     ...forwardedProps
@@ -88,18 +87,10 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     }
     if (srcOrCode?.src) {
       const src = srcOrCode.src;
-      let [srcPath, version] = src.split("@");
-
-      const target = overrides?.[srcPath.toString()];
-      if (typeof target === "string") {
-        [srcPath, version] = target.split("@");
-      } else if (typeof target === "object") {
-        [srcPath, version] = target.src.split("@");
-      }
-
+      const [srcPath, version] = src.split("@");
       const code = cache.socialGet(
         near,
-        srcPath,
+        srcPath.toString(),
         false,
         version, // may be undefined, meaning `latest`
         undefined,
@@ -113,7 +104,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       setCode(srcOrCode.code);
       setSrc(near?.features?.enableWidgetSrcWithCodeOverride ? propsSrc : null);
     }
-  }, [near, srcOrCode, nonce, overrides]);
+  }, [near, srcOrCode, nonce]);
 
   useEffect(() => {
     setVm(null);
@@ -168,10 +159,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       return;
     }
     setReactState({ hooks: [], state: undefined });
-    
-    let [srcPath] = src.split("@");
-
-    const target = overrides?.[srcPath.toString()];
 
     const vm = new VM({
       near,
@@ -183,7 +170,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       },
       confirmTransactions,
       depth,
-      overrides: target ? {} : overrides, // stop recuirsive overrding
       widgetSrc: src,
       requestCommit,
       version: uuid(),
@@ -199,7 +185,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     near,
     code,
     depth,
-    overrides,
     requestCommit,
     confirmTransactions,
     configs,
@@ -223,19 +208,8 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       return;
     }
 
-    const src = srcOrCode.src;
-    let [srcPath] = src.split("@");
-
-    const target = overrides?.[srcPath.toString()];
-    let overrideProps = {};
-    if (typeof target === "object") {
-      overrideProps = target.props;
-    }
-
-    const props = { ...(propsProps ?? {}), ...overrideProps }
-
     const vmInput = {
-      props,
+      props: propsProps || {},
       context,
       reactState,
       cacheNonce,
@@ -278,7 +252,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     prevVmInput,
     forwardedRef,
     forwardedProps,
-    overrides,
   ]);
 
   return element !== null && element !== undefined ? (
