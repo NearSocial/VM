@@ -648,11 +648,6 @@ class VmStack {
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
 
-    if (this.vm.near?.features?.enableComponentSrcDataKey == true) {
-      attributes["data-component"] =
-        attributes["data-component"] ?? this.vm.widgetSrc;
-    }
-
     delete attributes.dangerouslySetInnerHTML;
     delete attributes.is;
     const basicElement =
@@ -2297,7 +2292,17 @@ export default class VM {
       return <div className="alert alert-danger">VM is dead</div>;
     }
 
-    const result = this.execCode(args);
+    let result = this.execCode(args);
+
+    if (this.near.features?.enableComponentPropsDataKey && isReactObject(result)) {
+      result = { ...result };
+      result.props = { ...result.props, "data-props": JSON.stringify(args.props) };
+    }
+
+    if (this.near.features?.enableComponentSrcDataKey && isReactObject(result)) {
+      result = { ...result };
+      result.props = { ...result.props, "data-component": this.widgetSrc };
+    }
 
     return isReactObject(result) ||
       typeof result === "string" ||
