@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.6.0
 
 - Support multiple Limited Access Keys on BOS gateway to enable "Don't ask me again" when interacting with third-party contracts on BOS. See https://github.com/NearSocial/VM/issues/148
 
