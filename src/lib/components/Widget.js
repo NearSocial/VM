@@ -3,7 +3,7 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
-  useState,
+  useState
 } from "react";
 import { useNear } from "../data/near";
 import ConfirmTransactions from "./ConfirmTransactions";
@@ -12,6 +12,7 @@ import {
   deepCopy,
   deepEqual,
   ErrorFallback,
+  ErrorScopes,
   isObject,
   isString,
   isFunction,
@@ -53,8 +54,9 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   const [prevVmInput, setPrevVmInput] = useState(null);
   const [configs, setConfigs] = useState(null);
   const [srcOrCode, setSrcOrCode] = useState(null);
+ 
   const ethersProviderContext = useContext(EthersProviderContext);
-
+  
   const networkId =
     configs &&
     configs.findLast((config) => config && config.networkId)?.networkId;
@@ -111,6 +113,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     setElement(null);
     if (!code) {
       if (code === undefined) {
+        near.config.errorCallback({scope: ErrorScopes.Source, message: src});
         setElement(
           <div className="alert alert-danger">
             Source code for "{src}" is not found
@@ -182,7 +185,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     requestCommit,
     confirmTransactions,
     configs,
-    ethersProviderContext,
+    ethersProviderContext
   ]);
 
   useEffect(() => {
@@ -219,6 +222,8 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     try {
       setElement(vm.renderCode(vmInput) ?? "Execution failed");
     } catch (e) {
+      const message = src ? `${src}: ${e.message}` : e.message;
+      near.config.errorCallback({scope: ErrorScopes.Execution, message});
       setElement(
         <div className="alert alert-danger">
           {src ? (
@@ -247,9 +252,13 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     forwardedProps,
   ]);
 
-  return element !== null && element !== undefined ? (
+  const widget = element !== null && element !== undefined ? (
     <ErrorBoundary
-      FallbackComponent={ErrorFallback}
+      FallbackComponent={ (props) => {
+        near.config.errorCallback({scope: ErrorScopes.Boundary, message: src});
+        const { error = { message: ErrorScopes.Boundary } } = props ;
+        return <ErrorFallback error={error}/>;
+      }}
       onReset={() => {
         setElement(null);
       }}
@@ -258,9 +267,15 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       <>
         {element}
         {transactions && (
-          <ConfirmTransactions
+          <ConfirmTransactions            
             transactions={transactions}
-            onHide={() => setTransactions(null)}
+            widgetSrc={src}
+            onHide={(result) => {
+              setTransactions(null);
+              if (result && result.transaction) {
+                cache.invalidateCache(near, result.transaction.receiver_id);        
+              }
+            }}
             networkId={networkId}
           />
         )}
@@ -281,4 +296,6 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
   ) : (
     loading ?? Loading
   );
+  
+  return widget;
 });

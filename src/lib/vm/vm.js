@@ -5,6 +5,7 @@ import {
   deepCopy,
   deepEqual,
   deepFreeze,
+  ErrorScopes,
   filterValues,
   ipfsUpload,
   ipfsUrl,
@@ -349,7 +350,7 @@ const assertValidObject = (o) => {
 };
 
 const assertRadixComponent = (element) => {
-  if (!element) return;
+  if (!element || typeof element !== "string") return;
 
   let isRadixElement = Object.keys(RadixTags).includes(element.split(".")[0]);
 
@@ -2285,16 +2286,20 @@ export default class VM {
 
   renderCode(args) {
     if (this.compileError) {
+      const { message, stack } = this.compileError;
+      this.vm.near.config.errorCallback({scope: ErrorScopes.Compilation, message});
       return (
         <div className="alert alert-danger">
           Compilation error:
-          <pre>{this.compileError.message}</pre>
-          <pre>{this.compileError.stack}</pre>
+          <pre>{message}</pre>
+          <pre>{stack}</pre>
         </div>
       );
     }
     if (!this.alive) {
-      return <div className="alert alert-danger">VM is dead</div>;
+      const message = "VM is dead";
+      this.vm.near.config.errorCallback({scope: ErrorScopes.Render, message});
+      return <div className="alert alert-danger">{message}</div>;
     }
 
     const result = this.execCode(args);
