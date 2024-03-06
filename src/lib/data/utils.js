@@ -14,7 +14,7 @@ export const OneNear = Big(10).pow(24);
 const AccountSafetyMargin = OneNear.div(2);
 export const ErrorScopes = {
   "Boundary": "Component triggered an Error Boundary",
-  "Compliation": "Compilation error",
+  "Compilation": "Compilation error",
   "Execution": "Execution error",
   "Render": "Render error",
   "Source": "Source code not found"
