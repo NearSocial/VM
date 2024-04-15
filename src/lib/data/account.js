@@ -20,6 +20,18 @@ const defaultAccount = {
 
 async function updateAccount(near, walletState) {
   near.accountId = walletState?.accounts?.[0]?.accountId ?? null;
+  near.connectedContractId = walletState?.contract?.contractId;
+  if (
+    near.connectedContractId &&
+    near.connectedContractId !== near.config.contractName &&
+    !near.config.allowOtherContracts
+  ) {
+    const selector = await near.selector;
+    const wallet = await selector.wallet();
+    await wallet.signOut();
+    near.connectedContractId = null;
+    walletState = selector.store.getState();
+  }
   if (near.accountId) {
     near.publicKey = null;
     try {

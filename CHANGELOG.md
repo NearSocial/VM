@@ -1,7 +1,11 @@
 # Changelog
 
 ## 2.7.0
-- Stop automatic logout after users connect to an external contract. This way, users can interact with both VM Widgets and external NEAR contracts.
+- FEAT: Made optional to logout the wallet selector when connecting to a contract different from `config.contractName`
+
+  - To enable this feature, pass the allowOtherContracts flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowOtherContracts: true }} )`
+  
+  - This feature is disabled by default to keep retrocompatibility
 
 ## 2.6.0
 
