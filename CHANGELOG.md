@@ -6,6 +6,8 @@
   - To enable this feature, pass the allowOtherContracts flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowOtherContracts: true }} )`
   
   - This feature is disabled by default to keep retrocompatibility
+ 
+- FIX: Addresses a scoping error on the optional `config.errorCallback` function triggerd during Compliation errors and 'VM is dead' errors.
 
 ## 2.6.0
 
