@@ -2,6 +2,17 @@
 
 ## Pending
 
+- Add option to bypass the commit modal and skip transaction confirmation modal for all widgets (`features.commitModalBypass.bypassAll` and `features.bypassTransactionConfirmation`). This is intended to use by the gateways that expects external wallet to confirm all transactions.
+```js
+initNear({
+  features: {
+    commitModalBypass: {
+      bypassAll: true,
+    },
+    bypassTransactionConfirmation: true,
+  },
+});
+```
 - Support `Big` and `BN` during a deep copy.
 - Fix typo.
 - FIX: Addresses a scoping error on the optional `config.errorCallback` function triggerd during Compliation errors and 'VM is dead' errors.
