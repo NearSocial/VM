@@ -2,7 +2,6 @@ import Big from "big.js";
 import React from "react";
 import equal from "deep-equal";
 import { ethers } from "ethers";
-import { BN } from "bn.js";
 
 export const TGas = Big(10).pow(12);
 export const MaxGasPerTransaction = TGas.mul(250);
@@ -14,11 +13,11 @@ const ValidAccountRe = /^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$/;
 export const OneNear = Big(10).pow(24);
 const AccountSafetyMargin = OneNear.div(2);
 export const ErrorScopes = {
-  Boundary: "Component triggered an Error Boundary",
-  Compilation: "Compilation error",
-  Execution: "Execution error",
-  Render: "Render error",
-  Source: "Source code not found",
+  "Boundary": "Component triggered an Error Boundary",
+  "Compliation": "Compilation error",
+  "Execution": "Execution error",
+  "Render": "Render error",
+  "Source": "Source code not found"
 };
 
 export const Loading = (
@@ -383,11 +382,7 @@ export const deepCopy = (o) => {
     return new Blob([o], { type: o.type });
   } else if (o instanceof Uint8Array || o instanceof ArrayBuffer) {
     return o.slice(0);
-  } else if (
-    o instanceof ethers.BigNumber ||
-    o instanceof BN ||
-    o instanceof Big
-  ) {
+  } else if (o instanceof ethers.BigNumber) {
     return o;
   } else if (o instanceof Date) {
     return new Date(o);
