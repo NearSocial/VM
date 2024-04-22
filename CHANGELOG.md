@@ -1,6 +1,6 @@
 # Changelog
 
-## Pending
+## 2.6.1
 
 - Add option to bypass the commit modal and skip transaction confirmation modal for all widgets (`features.commitModalBypass.bypassAll` and `features.bypassTransactionConfirmation`). This is intended to use by the gateways that expects external wallet to confirm all transactions.
 ```js
