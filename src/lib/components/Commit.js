@@ -165,9 +165,11 @@ export const CommitModal = (props) => {
   const bypassConfig = {
     authorIds: near?.features?.commitModalBypass?.authorIds ?? [],
     sources: near?.features?.commitModalBypass?.sources ?? [],
+    bypassAll: !!(near?.features?.commitModalBypass?.bypassAll ?? false),
   };
   const [widgetSrcAccountId] = (widgetSrc ?? "").split("/");
   const matchesModalBypassConfig =
+    bypassConfig.bypassAll ||
     (!!widgetSrcAccountId &&
       bypassConfig.authorIds.indexOf(widgetSrcAccountId) > -1) ||
     (!!widgetSrc && bypassConfig.sources.indexOf(widgetSrc.split("@")[0]) > -1);
