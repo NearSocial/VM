@@ -522,11 +522,9 @@ class VmStack {
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
     let customElement = null;
-    if (withChildren === undefined) {
-      if (this.vm.near.config.customElements.hasOwnProperty(element)) {
-        withChildren = true;
-        customElement = this.vm.near.config.customElements[element];
-      }
+    if (this.vm.near.config.customElements.hasOwnProperty(element)) {
+      withChildren = true;
+      customElement = this.vm.near.config.customElements[element];
     }
     const RadixComp = assertRadixComponent(element);
 
