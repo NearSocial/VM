@@ -4,7 +4,12 @@ import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
 import { Markdown } from "./Markdown";
-import { displayGas, displayNear, Loading, computeWritePermission } from "../data/utils";
+import {
+  displayGas,
+  displayNear,
+  Loading,
+  computeWritePermission,
+} from "../data/utils";
 import { useNear } from "../data/near";
 import { useCache } from "../data/cache";
 import { useAccountId } from "../data/account";
@@ -36,9 +41,13 @@ export default function ConfirmTransactions(props) {
   const [transactions] = useState(props.transactions);
   const [dontAskForConfirmation, setDontAskForConfirmation] = useState(null);
   const [dontAskAgainChecked, setDontAskAgainChecked] = useState(false);
-  const [dontAskAgainErrorMessage, setDontAskAgainErrorMessage] = useState(null);
+  const [dontAskAgainErrorMessage, setDontAskAgainErrorMessage] =
+    useState(null);
 
   const widgetSrc = props.widgetSrc;
+  const bypassTransactionConfirmation = !!(
+    near?.features?.bypassTransactionConfirmation ?? false
+  );
 
   const getWidgetContractPermission = async (widgetSrc, contractId) =>
     await cache.asyncLocalStorageGet(StorageDomain, {
@@ -47,17 +56,32 @@ export default function ConfirmTransactions(props) {
       type: StorageType.SendTransactionWithoutConfirmation,
     });
 
-  const eligibleForDontAskAgain = transactions[0].contractName !== near.contract.contractId && transactions.length === 1 && !(transactions[0].deposit && transactions[0].deposit.gt(0));
+  const eligibleForDontAskAgain =
+    bypassTransactionConfirmation ||
+    (transactions[0].contractName !== near.contract.contractId &&
+      transactions.length === 1 &&
+      !(transactions[0].deposit && transactions[0].deposit.gt(0)));
 
   useEffect(() => {
     (async () => {
       if (eligibleForDontAskAgain) {
         const contractId = transactions[0].contractName;
-        const isSignedIntoContract = await near.isSignedIntoContract(contractId);
+        const isSignedIntoContract = await near.isSignedIntoContract(
+          contractId
+        );
 
-        const widgetContractPermission = await getWidgetContractPermission(widgetSrc, contractId);
+        const widgetContractPermission = await getWidgetContractPermission(
+          widgetSrc,
+          contractId
+        );
 
-        const dontAskForConfirmation = !!(isSignedIntoContract && widgetContractPermission && widgetContractPermission[transactions[0].methodName]);
+        const dontAskForConfirmation =
+          bypassTransactionConfirmation ||
+          !!(
+            isSignedIntoContract &&
+            widgetContractPermission &&
+            widgetContractPermission[transactions[0].methodName]
+          );
 
         setDontAskForConfirmation(dontAskForConfirmation);
 
@@ -89,11 +113,12 @@ export default function ConfirmTransactions(props) {
     return (
       <ToastContainer position="bottom-end" className="position-fixed">
         <Toast show={show} bg="info">
-          <Toast.Header>
-            Sending transaction {Loading}
-          </Toast.Header>
+          <Toast.Header>Sending transaction {Loading}</Toast.Header>
           <Toast.Body>
-            Calling contract <span className="font-monospace">{transaction.contractName}</span> with method <span className="font-monospace">{transaction.methodName}</span>
+            Calling contract{" "}
+            <span className="font-monospace">{transaction.contractName}</span>{" "}
+            with method{" "}
+            <span className="font-monospace">{transaction.methodName}</span>
           </Toast.Body>
         </Toast>
       </ToastContainer>
@@ -119,7 +144,9 @@ export default function ConfirmTransactions(props) {
                 </div>
                 <div>
                   <span className="text-secondary">Method name: </span>
-                  <span className="font-monospace">{transaction.methodName}</span>
+                  <span className="font-monospace">
+                    {transaction.methodName}
+                  </span>
                 </div>
                 {transaction.deposit && transaction.deposit.gt(0) && (
                   <div>
@@ -138,10 +165,13 @@ export default function ConfirmTransactions(props) {
                 <Markdown text={jsonMarkdown(transaction.args)} />
               </div>
             ))}
-          {eligibleForDontAskAgain ?
+          {eligibleForDontAskAgain ? (
             <>
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="dontaskagaincheckbox"
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="dontaskagaincheckbox"
                   checked={dontAskAgainChecked}
                   onChange={() => dontAskAgainCheckboxChange()}
                 />
@@ -150,15 +180,18 @@ export default function ConfirmTransactions(props) {
                   <span className="font-monospace">{widgetSrc}</span>
                 </label>
               </div>
-              {dontAskAgainErrorMessage ?
+              {dontAskAgainErrorMessage ? (
                 <Alert variant="danger">
-                  There was an error when choosing "Don't ask again": {dontAskAgainErrorMessage}
+                  There was an error when choosing "Don't ask again":{" "}
+                  {dontAskAgainErrorMessage}
                 </Alert>
-                : <></>}
+              ) : (
+                <></>
+              )}
             </>
-            :
+          ) : (
             <></>
-          }
+          )}
         </Modal.Body>
         <Modal.Footer>
           <button
@@ -171,7 +204,9 @@ export default function ConfirmTransactions(props) {
                 const pendingTransaction = transactions[0];
                 const contractId = pendingTransaction.contractName;
                 const methodName = pendingTransaction.methodName;
-                const permissionObject = (await getWidgetContractPermission(widgetSrc, contractId)) || {};
+                const permissionObject =
+                  (await getWidgetContractPermission(widgetSrc, contractId)) ||
+                  {};
                 permissionObject[methodName] = true;
 
                 cache.localStorageSet(
@@ -186,9 +221,18 @@ export default function ConfirmTransactions(props) {
 
                 try {
                   if (!(await near.isSignedIntoContract(contractId))) {
-                    const results = await near.signInAndSetPendingTransaction(pendingTransaction);
+                    const results = await near.signInAndSetPendingTransaction(
+                      pendingTransaction
+                    );
                     setLoading(false);
-                    onHide(results ? results.find(result => result.transaction.receiver_id === contractId) : results);
+                    onHide(
+                      results
+                        ? results.find(
+                            (result) =>
+                              result.transaction.receiver_id === contractId
+                          )
+                        : results
+                    );
                     return;
                   }
                 } catch (e) {
@@ -212,7 +256,7 @@ export default function ConfirmTransactions(props) {
             Close
           </button>
         </Modal.Footer>
-      </Modal >
+      </Modal>
     );
   }
 }

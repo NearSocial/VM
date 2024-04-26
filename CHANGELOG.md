@@ -1,13 +1,29 @@
 # Changelog
 
-## 2.7.0
-- FEAT: Made optional to logout the wallet selector when connecting to a contract different from `config.contractName`
+## TBD
+- Made optional to logout the wallet selector when connecting to a contract different from `config.contractName`
 
   - To enable this feature, pass the allowOtherContracts flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowOtherContracts: true }} )`
   
   - This feature is disabled by default to keep retrocompatibility
  
+## 2.6.1
+
+- Add option to bypass the commit modal and skip transaction confirmation modal for all widgets (`features.commitModalBypass.bypassAll` and `features.bypassTransactionConfirmation`). This is intended to use by the gateways that expects external wallet to confirm all transactions.
+```js
+initNear({
+  features: {
+    commitModalBypass: {
+      bypassAll: true,
+    },
+    bypassTransactionConfirmation: true,
+  },
+});
+```
+- Support `Big` and `BN` during a deep copy.
+- Fix typo.
 - FIX: Addresses a scoping error on the optional `config.errorCallback` function triggerd during Compliation errors and 'VM is dead' errors.
+- FIX: Prevent adding `data-component` key to `<Fragment>` elements.
 
 ## 2.6.0
 
@@ -51,7 +67,7 @@ initNear({
 
 ## 2.5.3
 
-- FIX: Remove `cachedPropery` from `elliptic.utils`. Reported by BrunoModificato from OtterSec. 
+- FIX: Remove `cachedPropery` from `elliptic.utils`. Reported by BrunoModificato from OtterSec.
 - FIX: Replace url-sanitize library with dompurify. Reported by BrunoModificato from OtterSec.
 - FIX: Replace internal usage of `in` operator with `hasOwnProperty` on dictionaries to avoid exposing certain built-in methods and properties. Reported by BrunoModificato from OtterSec.
 - FIX: `atob` and `btoa` are working correctly now.
@@ -86,7 +102,7 @@ return (
 - Add `onLink` and `onImage` to Markdown component. It allows to display links and images differently.
 - Expose all VM functions into the state directly, it simplifies VM readability and implementation.
 - Expose certain native objects directly into the state. It should improve access to the functions.
-- Update the way events and errors are passed to the functions. 
+- Update the way events and errors are passed to the functions.
   - For events, expose `preventDefault()` and `stopPropagation()` functions.
   NOTE: Previously, all React's `SyntheticEvent`s were getting `preventDefault()` called by default.
   - For errors, expose `message`, `name` and `type`.
@@ -237,7 +253,7 @@ if (state.sender === undefined) {
 ```jsx
 // Import widget from testnet initialized VM
 
-<Widget 
+<Widget
   config={{
     networkId: 'mainnet'
   }}

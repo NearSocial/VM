@@ -735,7 +735,8 @@ class VmStack {
     } else if (element === "Markdown") {
       return <Markdown {...attributes} />;
     } else if (element === "Fragment") {
-      return <React.Fragment {...attributes}>{children}</React.Fragment>;
+      const { "data-component": _, ...restAttributes } = attributes;
+      return <React.Fragment {...restAttributes}>{children}</React.Fragment>;
     } else if (element === "IpfsImageUpload") {
       return (
         <div className="d-inline-block" key={attributes.key}>
