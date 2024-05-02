@@ -536,7 +536,7 @@ class VmStack {
 
     if (withChildren === undefined && !RadixComp) {
       if (customComponent === undefined) {
-        throw new Error("Unknown element: " + element);
+        return <></>;
       }
       if (
         !isStyledComponent(customComponent) &&

@@ -2,7 +2,7 @@ const path = require("path");
 const { HotModuleReplacementPlugin } = require("webpack");
 
 module.exports = () => ({
-  devtool: false,
+  devtool: "inline-source-map",
   module: {
     rules: [
       {

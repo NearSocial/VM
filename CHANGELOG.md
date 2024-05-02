@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.2
+
+- #135 Fix async behavior of VM.require incorrectly showing warnings by solidifying an expectation of a returned JSX element while async components are loading from cache. 
+
+
 ## 2.6.1
 
 - Add option to bypass the commit modal and skip transaction confirmation modal for all widgets (`features.commitModalBypass.bypassAll` and `features.bypassTransactionConfirmation`). This is intended to use by the gateways that expects external wallet to confirm all transactions.

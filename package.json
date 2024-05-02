@@ -1,6 +1,6 @@
 {
   "name": "near-social-vm",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Near Social VM",
   "main": "dist/index.js",
   "files": [
@@ -105,6 +105,7 @@
   },
   "scripts": {
     "webpack": "webpack",
+    "dev": "webpack --env mode=development --watch",
     "prod": "npm run webpack -- --env mode=production",
     "build": "npm run prod"
   },
