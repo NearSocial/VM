@@ -105,6 +105,7 @@
   },
   "scripts": {
     "webpack": "webpack",
+    "dev": "webpack --env mode=development --watch",
     "prod": "npm run webpack -- --env mode=production",
     "build": "npm run prod"
   },
