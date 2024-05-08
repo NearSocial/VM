@@ -331,7 +331,9 @@ async function web4ViewCall(contractId, methodName, args, fallback) {
 /**
  * Current VM Features:
  * - enableComponentSrcDataKey: Allows enabling the component source `data-component` attribute for rendered DOM elements. Disabled by default.
- **/
+ * - enableComponentPropsDataKey: Allows enabling the component props `data-props` attribute for rendered DOM elements. Disabled by default.
+ * - skipTxConfirmationPopup: Disables pop-ups that require the user to confirm each transaction. Disabled by default.
+ */
 async function _initNear({
   networkId,
   config,

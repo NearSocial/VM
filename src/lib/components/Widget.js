@@ -135,8 +135,13 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
         deposit: t.deposit ? Big(t.deposit) : Big(0),
         gas: t.gas ? Big(t.gas) : TGas.mul(30),
       }));
-      console.log("confirm txs", transactions);
-      setTransactions(transactions);
+
+      if (near.features.skipTxConfirmationPopup) {
+        near.sendTransactions(transactions);
+      } else {
+        console.log("confirm txs", transactions);
+        setTransactions(transactions);
+      }
     },
     [near]
   );
@@ -157,6 +162,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
       return;
     }
     setReactState({ hooks: [], state: undefined });
+
     const vm = new VM({
       near,
       rawCode: code,
@@ -204,6 +210,7 @@ export const Widget = React.forwardRef((props, forwardedRef) => {
     if (!vm) {
       return;
     }
+
     const vmInput = {
       props: propsProps || {},
       context,

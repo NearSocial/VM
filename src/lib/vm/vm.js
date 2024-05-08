@@ -522,11 +522,9 @@ class VmStack {
         : requireJSXIdentifierOrMemberExpression(code.openingElement.name);
     let withChildren = ApprovedTags[element];
     let customElement = null;
-    if (withChildren === undefined) {
-      if (this.vm.near.config.customElements.hasOwnProperty(element)) {
-        withChildren = true;
-        customElement = this.vm.near.config.customElements[element];
-      }
+    if (this.vm.near.config.customElements.hasOwnProperty(element)) {
+      withChildren = true;
+      customElement = this.vm.near.config.customElements[element];
     }
     const RadixComp = assertRadixComponent(element);
 
@@ -648,11 +646,6 @@ class VmStack {
     });
     attributes.key =
       attributes.key ?? `${this.vm.widgetSrc}-${element}-${this.vm.gIndex}`;
-
-    if (this.vm.near?.features?.enableComponentSrcDataKey == true) {
-      attributes["data-component"] =
-        attributes["data-component"] ?? this.vm.widgetSrc;
-    }
 
     delete attributes.dangerouslySetInnerHTML;
     delete attributes.is;
@@ -2303,7 +2296,17 @@ export default class VM {
       return <div className="alert alert-danger">{message}</div>;
     }
 
-    const result = this.execCode(args);
+    let result = this.execCode(args);
+
+    if (this.near.features?.enableComponentPropsDataKey && isReactObject(result)) {
+      result = { ...result };
+      result.props = { ...result.props, "data-props": JSON.stringify(args.props) };
+    }
+
+    if (this.near.features?.enableComponentSrcDataKey && isReactObject(result)) {
+      result = { ...result };
+      result.props = { ...result.props, "data-component": this.widgetSrc };
+    }
 
     return isReactObject(result) ||
       typeof result === "string" ||
