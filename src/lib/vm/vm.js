@@ -1612,6 +1612,21 @@ export default class VM {
     };
 
     const Near = {
+      signMessage: (...args) => {
+        if (args.length < 3) {
+          throw new Error(
+              "Method: Near.signMessage. Required arguments: 'message', 'recipient', 'nonce'. Optional: 'callbackUrl'"
+          );
+        }
+        const [
+          message,
+          recipient,
+          nonce,
+          callbackUrl
+        ] = args;
+
+        return this.near.signMessage(message, recipient, nonce, callbackUrl);
+      },
       view: (...args) => {
         if (args.length < 2) {
           throw new Error(
