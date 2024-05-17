@@ -1,9 +1,9 @@
 # Changelog
 
 ## TBD
-- Made optional to logout the wallet selector when connecting to a contract different from `config.contractName`
+- Allow the wallet selector to connect to an extra contract besides `config.contractName`
 
-  - To enable this feature, pass the allowOtherContracts flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowOtherContracts: true }} )`
+  - To enable this feature, pass the allowExternalContract flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowExternalContract: 'hello.near-examples.near' }} )`
   
   - This feature is disabled by default to keep retrocompatibility
  
