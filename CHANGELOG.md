@@ -1,11 +1,8 @@
 # Changelog
 
 ## TBD
-- Allow the wallet selector to connect to an extra contract besides `config.contractName`
-
-  - To enable this feature, pass the allowExternalContract flag to the config parameter of initNear: `initNear({networkId, selector, config: { allowExternalContract: 'hello.near-examples.near' }} )`
+- Allow the wallet selector to connect to an extra contract besides `config.contractName`. To enable this feature, pass the allowExternalContract flag to the config parameter of initNear, e.g. `initNear({networkId, selector, config: { allowExternalContract: 'hello.near-examples.near' }} )`
   
-  - This feature is disabled by default to keep retrocompatibility
  
 ## 2.6.1
 
