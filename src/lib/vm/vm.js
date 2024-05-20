@@ -2338,10 +2338,12 @@ export default class VM {
     }
     this.gIndex = 0;
     const { hooks, state } = reactState ?? {};
+    const {host, hostname, href, origin, pathname, port, protocol, hash} = window.location;
     this.hooks = hooks;
     this.state = {
       ...GlobalInjected,
       ...this.globalFunctions,
+      location: {host, hostname, href, origin, pathname, port, protocol, hash: hash.substring(1)}, // skip the first char (#)
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,

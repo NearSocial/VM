@@ -284,7 +284,7 @@ function setupContract(near, contractId, options) {
   return contract;
 }
 
-async function signMessage (near, message, recipient, nonce, callbackUrl) {
+async function signMessage(near, message, recipient, nonce, callbackUrl) {
   const wallet = await (await near.selector).wallet();
   return wallet.signMessage({message, recipient, nonce, callbackUrl});
 }
