@@ -246,6 +246,9 @@ const GlobalInjected = deepFreeze(
     atob: (s) => atob(s),
     decodeURI,
     encodeURI,
+    getLocationHash: () => window.location.hash.substring(1), // skip the first char (#),
+    clearLocationHash: () =>  history.pushState("", document.title, window.location.pathname
+        + window.location.search),
 
     // Libs
     nacl: {
@@ -2338,12 +2341,10 @@ export default class VM {
     }
     this.gIndex = 0;
     const { hooks, state } = reactState ?? {};
-    const {host, hostname, href, origin, pathname, port, protocol, hash} = window.location;
     this.hooks = hooks;
     this.state = {
       ...GlobalInjected,
       ...this.globalFunctions,
-      location: {host, hostname, href, origin, pathname, port, protocol, hash: hash.substring(1)}, // skip the first char (#)
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
