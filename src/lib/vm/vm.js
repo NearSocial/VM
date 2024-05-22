@@ -246,9 +246,6 @@ const GlobalInjected = deepFreeze(
     atob: (s) => atob(s),
     decodeURI,
     encodeURI,
-    getLocationHash: () => window.location.hash.substring(1), // skip the first char (#),
-    clearLocationHash: () =>  history.pushState("", document.title, window.location.pathname
-        + window.location.search),
 
     // Libs
     nacl: {
@@ -2345,6 +2342,19 @@ export default class VM {
     this.state = {
       ...GlobalInjected,
       ...this.globalFunctions,
+      window: {
+        location: {
+          get hash() {
+            return window.location.hash.substring(1) // skip the first char (#),
+          },
+          set hash(value) {
+            if (value !== "") {
+              return console.error("Set `window.location.hash` only accepts an empty string as a value.");
+            }
+            history.pushState(value, document.title, window.location.pathname + window.location.search);
+          }
+        }
+      },
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
