@@ -2345,11 +2345,11 @@ export default class VM {
       window: {
         location: {
           get hash() {
-            return window.location.hash.substring(1) // skip the first char (#),
+            return window.location.hash
           },
           set hash(value) {
             if (value !== "") {
-              return console.error("Set `window.location.hash` only accepts an empty string as a value.");
+              throw new Error("Set `window.location.hash` only accepts an empty string as a value.");
             }
             history.pushState(value, document.title, window.location.pathname + window.location.search);
           }

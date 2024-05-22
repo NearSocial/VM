@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.6.2
+
+- Add `Near.signMessage` function to sign arbitrary message with NEAR account. The message that the user needs to sign contains 4 fields:
+  - `message`: The message that the user is signing.
+  - `recipient`: The recipient of the message.
+  - `nonce`: The challenge that the user is signing.
+  - `callbackUrl`: The URL that the wallet will call with the signature.
+How to verify the signature: https://docs.near.org/build/web3-apps/backend/#3-verify-the-signature
+
+- Add get/set methods for `window.location.hash`. `Set` method only accepts an empty string as a value.
+
 ## 2.6.1
 
 - Add option to bypass the commit modal and skip transaction confirmation modal for all widgets (`features.commitModalBypass.bypassAll` and `features.bypassTransactionConfirmation`). This is intended to use by the gateways that expects external wallet to confirm all transactions.
