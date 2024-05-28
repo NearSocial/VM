@@ -1613,19 +1613,29 @@ export default class VM {
 
     const Near = {
       signMessage: (...args) => {
-        if (args.length < 3) {
+        if (args.length === 1) {
+          if (isObject(args[0])) {
+            return this.near.signMessage(args[0]);
+          } else {
+            throw new Error(
+              "Method: Near.signMessage. Required argument: '{message, recipient, nonce, callbackUrl}'"
+            );
+          }
+        } else if (args.length < 3) {
           throw new Error(
-              "Method: Near.signMessage. Required arguments: 'message', 'recipient', 'nonce'. Optional: 'callbackUrl'"
+            "Method: Near.signMessage. Required arguments: 'message', 'recipient', 'nonce'. Optional: 'callbackUrl'"
           );
         }
-        const [
-          message,
-          recipient,
-          nonce,
-          callbackUrl
-        ] = args;
-
-        return this.near.signMessage(message, recipient, nonce, callbackUrl);
+        else {
+          const [
+            message,
+            recipient,
+            nonce,
+            callbackUrl
+          ] = args;
+          
+          return this.near.signMessage({message, recipient, nonce, callbackUrl});
+        }
       },
       view: (...args) => {
         if (args.length < 2) {
