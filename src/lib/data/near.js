@@ -284,6 +284,11 @@ function setupContract(near, contractId, options) {
   return contract;
 }
 
+async function signMessage(near, args) {
+  const wallet = await (await near.selector).wallet();
+  return wallet.signMessage(args);
+}
+
 async function viewCall(
   provider,
   blockId,
@@ -401,6 +406,10 @@ async function _initNear({
           finality: config.defaultFinality ?? "optimistic",
           blockId: undefined,
         };
+
+  _near.signMessage = (args) => {
+    return signMessage(_near, args);
+  }
 
   _near.viewCall = (contractId, methodName, args, blockHeightOrFinality) => {
     const { blockId, finality } = transformBlockId(blockHeightOrFinality);

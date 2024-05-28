@@ -1612,6 +1612,31 @@ export default class VM {
     };
 
     const Near = {
+      signMessage: (...args) => {
+        if (args.length === 1) {
+          if (isObject(args[0])) {
+            return this.near.signMessage(args[0]);
+          } else {
+            throw new Error(
+              "Method: Near.signMessage. Required argument: '{message, recipient, nonce, callbackUrl}'"
+            );
+          }
+        } else if (args.length < 3) {
+          throw new Error(
+            "Method: Near.signMessage. Required arguments: 'message', 'recipient', 'nonce'. Optional: 'callbackUrl'"
+          );
+        }
+        else {
+          const [
+            message,
+            recipient,
+            nonce,
+            callbackUrl
+          ] = args;
+
+          return this.near.signMessage({message, recipient, nonce, callbackUrl});
+        }
+      },
       view: (...args) => {
         if (args.length < 2) {
           throw new Error(
@@ -2327,6 +2352,19 @@ export default class VM {
     this.state = {
       ...GlobalInjected,
       ...this.globalFunctions,
+      window: {
+        location: {
+          get hash() {
+            return window.location.hash
+          },
+          set hash(value) {
+            if (value !== "") {
+              throw new Error("Set `window.location.hash` only accepts an empty string as a value.");
+            }
+            history.pushState(value, document.title, window.location.pathname + window.location.search);
+          }
+        }
+      },
       props: isObject(props) ? Object.assign({}, props) : props,
       context,
       state,
