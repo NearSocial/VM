@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.6.2
+## Pending
 
 - Add `Near.signMessage` function to sign arbitrary message with NEAR account. The message that the user needs to sign contains 4 fields:
   - `message`: The message that the user is signing.

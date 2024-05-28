@@ -1633,7 +1633,7 @@ export default class VM {
             nonce,
             callbackUrl
           ] = args;
-          
+
           return this.near.signMessage({message, recipient, nonce, callbackUrl});
         }
       },
