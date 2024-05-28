@@ -2,6 +2,7 @@
 
 ## Pending
 
+- Add 2s animation delay to the loading spinner. Makes it visually less jarring when loading is quick.
 - Add `Near.signMessage` function to sign arbitrary message with NEAR account. The message that the user needs to sign contains 4 fields:
   - `message`: The message that the user is signing.
   - `recipient`: The recipient of the message.

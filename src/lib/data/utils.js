@@ -24,6 +24,9 @@ export const ErrorScopes = {
 export const Loading = (
   <span
     className="spinner-grow spinner-grow-sm me-1"
+    style={{
+      animationDelay: "2s",
+    }}
     role="status"
     aria-hidden="true"
   />
