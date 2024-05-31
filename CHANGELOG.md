@@ -9,8 +9,8 @@
   - `nonce`: The challenge that the user is signing.
   - `callbackUrl`: The URL that the wallet will call with the signature.
 How to verify the signature: https://docs.near.org/build/web3-apps/backend/#3-verify-the-signature
-
 - Add get/set methods for `window.location.hash`. `Set` method only accepts an empty string as a value.
+- Add methods to get `window.location.href`, `window.location.origin`, `window.location.pathname` for accessing gateway and component names.
 
 ## 2.6.1
 
