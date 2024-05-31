@@ -2354,6 +2354,15 @@ export default class VM {
       ...this.globalFunctions,
       window: {
         location: {
+          get href() {
+            return window.location.href
+          },
+          get origin() {
+            return window.location.origin
+          },
+          get pathname() {
+            return window.location.pathname
+          },
           get hash() {
             return window.location.hash
           },
