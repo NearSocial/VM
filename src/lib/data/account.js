@@ -22,7 +22,8 @@ async function updateAccount(near, walletState) {
   near.connectedContractId = walletState?.contract?.contractId;
   if (
     near.connectedContractId &&
-    near.connectedContractId !== near.config.contractName
+    near.connectedContractId !== near.config.contractName &&
+    near.connectedContractId !== near.config.allowExternalContract
   ) {
     const selector = await near.selector;
     const wallet = await selector.wallet();
