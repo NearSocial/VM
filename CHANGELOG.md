@@ -13,6 +13,8 @@ How to verify the signature: https://docs.near.org/build/web3-apps/backend/#3-ve
 - Add get/set methods for `window.location.hash`. `Set` method only accepts an empty string as a value.
 
 - Allow the wallet selector to connect to an extra contract besides `config.contractName`. To enable this feature, pass the allowExternalContract flag to the config parameter of initNear, e.g. `initNear({networkId, selector, config: { allowExternalContract: 'hello.near-examples.near' }} )`
+
+- Add support for FastAuth wallets by using `signAndSendDelegateAction()` when provided by wallet instead of `signAndSendTransaction()` when committing data to the Social DB contract.
   
 
 ## 2.6.1

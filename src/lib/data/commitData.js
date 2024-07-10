@@ -79,28 +79,30 @@ export const prepareCommit = async (
 
 export const asyncCommit = async (near, data, deposit) => {
   console.log("Committing data", data);
+  return await conditionalCommit(near, data, deposit);
 
-  return await near.contract.set(
-    {
-      data,
-    },
-    TGas.mul(100).toFixed(0),
-    deposit.toFixed(0)
-  );
+  // return await near.contract.set(
+  //   {
+  //     data,
+  //   },
+  //   TGas.mul(100).toFixed(0),
+  //   deposit.toFixed(0)
+  // );
 };
 
-export const asyncCommitData = async (near, originalData, forceRewrite) => {
-  const { data, deposit } = await prepareCommit(
-    near,
-    originalData,
-    forceRewrite
-  );
-  return asyncCommit(near, data, deposit);
-};
+// NOTE: The following method is commented out since it's not being used anywhere...
+// export const asyncCommitData = async (near, originalData, forceRewrite) => {
+//   const { data, deposit } = await prepareCommit(
+//     near,
+//     originalData,
+//     forceRewrite
+//   );
+//   return asyncCommit(near, data, deposit);
+// };
 
 export const requestPermissionAndCommit = async (near, data, deposit) => {
-  const wallet = await (await near.selector).wallet();
   const actions = [];
+
   if (near.publicKey) {
     actions.push(
       functionCallCreator(
@@ -115,6 +117,14 @@ export const requestPermissionAndCommit = async (near, data, deposit) => {
     );
     deposit = Big(0);
   }
+
+  return await conditionalCommit(near, data, deposit, actions);
+};
+
+const conditionalCommit = async (near, data, deposit, otherActions = []) => {
+  const wallet = await (await near.selector).wallet();
+  const actions = [...otherActions];
+
   actions.push(
     functionCallCreator(
       "set",
@@ -123,6 +133,23 @@ export const requestPermissionAndCommit = async (near, data, deposit) => {
       deposit.gt(0) ? deposit.toFixed(0) : "1"
     )
   );
+
+  if (wallet.signAndSendDelegateAction) {
+    /*
+      If the user is signed in with FastAuth, use the delegate action to pass through the relayer.
+      The relayer automatically deposits a certain amount of storage for each FastAuth account, which 
+      is enough for most actions on Social DB. Passing a non-zero amount of deposit to the relayer 
+      currently throws an error due to the SDK not using a full access key.
+    */
+
+    actions.forEach((action) => (action.params.deposit = "0"));
+
+    return await wallet.signAndSendDelegateAction({
+      receiverId: near.config.contractName,
+      actions,
+    });
+  }
+
   return await wallet.signAndSendTransaction({
     receiverId: near.config.contractName,
     actions,

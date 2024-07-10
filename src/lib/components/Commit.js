@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   asyncCommit,
   prepareCommit,
@@ -37,7 +37,7 @@ export const CommitModal = (props) => {
   const accountId = useAccountId(props.networkId);
   const cache = useCache();
 
-  const [asyncCommitStarted, setAsyncAsyncCommitStarted] = useState(false);
+  const asyncCommitStarted = useRef(false);
   const [extraStorage, setExtraStorage] = useState(0);
   const [commitInProgress, setCommitInProgress] = useState(false);
 
@@ -143,7 +143,7 @@ export const CommitModal = (props) => {
   if (
     !commitInProgress &&
     !cantCommit &&
-    !asyncCommitStarted &&
+    !asyncCommitStarted.current &&
     commit &&
     showIntent &&
     writePermission &&
@@ -156,8 +156,8 @@ export const CommitModal = (props) => {
           computeWritePermission(writePermission, commit.data[accountId])
         ) === JSON.stringify(writePermission)
       ) {
-        setAsyncAsyncCommitStarted(true);
-        onCommit().then(() => setAsyncAsyncCommitStarted(false));
+        asyncCommitStarted.current = true;
+        onCommit().then(() => (asyncCommitStarted.current = false));
       }
     }
   }
@@ -176,7 +176,10 @@ export const CommitModal = (props) => {
   const shouldBypassModal = !cantCommit && matchesModalBypassConfig;
 
   const isReadyToCommit =
-    !!commit && showIntent && !asyncCommitStarted && writePermission !== null;
+    !!commit &&
+    showIntent &&
+    !asyncCommitStarted.current &&
+    writePermission !== null;
   const show = isReadyToCommit && !shouldBypassModal;
 
   useEffect(() => {
