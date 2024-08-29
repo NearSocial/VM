@@ -1,10 +1,10 @@
-const webpack = require("webpack");
+const rspack = require("@rspack/core");
 const paths = require("./config/paths");
 const path = require("path");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const { merge } = require("webpack-merge");
 const loadPreset = require("./config/presets/loadPreset");
-const loadConfig = (mode) => require(`./config/webpack.${mode}.js`)(mode);
+const loadConfig = (mode) => require(`./config/rspack.${mode}.js`)(mode);
 const nodeExternals = require("webpack-node-externals");
 
 module.exports = function (env) {
@@ -44,9 +44,22 @@ module.exports = function (env) {
             },
           },
           {
-            test: /\.js$/,
-            use: ["babel-loader"],
-            exclude: path.resolve(__dirname, "node_modules"),
+            test: /\.(j|t)s$/,
+            exclude: [/[\\/]node_modules[\\/]/],
+            loader: "builtin:swc-loader",
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'ecmascript',
+                  jsx: true,
+                },
+                externalHelpers: true,
+              },
+              env: {
+                targets: "Chrome >= 48",
+              },
+            },
+            type: 'javascript/auto',
           },
           // Images: Copy image files to build folder
           { test: /\.(?:ico|gif|png|jpg|jpeg)$/i, type: "asset/resource" },
@@ -65,13 +78,9 @@ module.exports = function (env) {
       },
       target: "node",
       plugins: [
-        // new webpack.EnvironmentPlugin({
-        //   // Configure environment variables here.
-        //   ENVIRONMENT: "browser",
-        // }),
         new CleanWebpackPlugin(),
-        new webpack.ProgressPlugin(),
-        new webpack.ProvidePlugin({
+        new rspack.ProgressPlugin(),
+        new rspack.ProvidePlugin({
           process: "process/browser",
           Buffer: [require.resolve("buffer/"), "Buffer"],
         }),

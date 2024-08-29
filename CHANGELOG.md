@@ -13,7 +13,9 @@ How to verify the signature: https://docs.near.org/build/web3-apps/backend/#3-ve
 - Add get/set methods for `window.location.hash`. `Set` method only accepts an empty string as a value.
 
 - Allow the wallet selector to connect to an extra contract besides `config.contractName`. To enable this feature, pass the allowExternalContract flag to the config parameter of initNear, e.g. `initNear({networkId, selector, config: { allowExternalContract: 'hello.near-examples.near' }} )`
-  
+
+- Use [rspack](https://rspack.dev/) for build and bundle rather than webpack
+- Replace unsupported node-sass packages with recent packages and versions
 
 ## 2.6.1
 

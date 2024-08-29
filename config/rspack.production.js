@@ -1,25 +1,10 @@
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-const path = require("path");
+const rspack = require("@rspack/core")
 
 module.exports = () => {
   return {
-    // output: {
-    //   path: path.resolve(__dirname, "../dist"),
-    //   publicPath: "./",
-    //   // filename: "[name].[contenthash].bundle.js",
-    //   filename: "index.js",
-    // },
     devtool: false,
     module: {
       rules: [
-        // {
-        //   test: /\.(css)$/,
-        //   use: [MiniCssExtractPlugin.loader, "css-loader"],
-        //   //   options: {
-        //   //     sourceMap: false,
-        //   //   },
-        // },
         {
           test: /\.(scss|css)$/,
           use: [
@@ -54,17 +39,14 @@ module.exports = () => {
       ],
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new rspack.CssExtractRspackPlugin({
         filename: "styles/[name].[contenthash].css",
         chunkFilename: "[id].css",
-      }),
+      })
     ],
     optimization: {
       minimize: true,
-      minimizer: [new CssMinimizerPlugin(), "..."],
-      // runtimeChunk: {
-      //   name: "runtime",
-      // },
+      minimizer: [new rspack.LightningCssMinimizerRspackPlugin(), "..."],
     },
     performance: {
       hints: false,
